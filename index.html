@@ -1,0 +1,2909 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="icon" type="image/png" href="icons/flavicon.png" />
+  <link rel="apple-touch-icon" id="apple-touch-icon" href="icons/flavicon.png" />
+  <title>fuck instagram</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-container-high": "#e6e8ec",
+            "surface-variant": "#dfe3e7",
+            "tertiary": "#c1000a",
+            "on-secondary-fixed": "#3e3f43",
+            "inverse-primary": "#4b8eff",
+            "primary": "#007AFF",
+            "on-error": "#fff7f6",
+            "surface-container": "#eceef1",
+            "on-secondary-container": "#515156",
+            "background": "#f9f9fb",
+            "error-container": "#fa746f",
+            "outline": "#777b7f",
+            "error-dim": "#67040d",
+            "inverse-on-surface": "#9c9d9f",
+            "secondary-container": "#e3e2e7",
+            "tertiary-fixed": "#f9362c",
+            "surface-dim": "#d7dadf",
+            "tertiary-dim": "#ab0008",
+            "error": "#a83836",
+            "on-primary": "#f9f8ff",
+            "on-secondary-fixed-variant": "#5b5b60",
+            "on-primary-fixed-variant": "#f8f8ff",
+            "secondary": "#5e5f63",
+            "surface-container-highest": "#dfe3e7",
+            "on-surface": "#2e3336",
+            "on-tertiary-fixed-variant": "#150000",
+            "primary-fixed-dim": "#006ee6",
+            "on-background": "#2e3336",
+            "surface": "#f9f9fb",
+            "on-surface-variant": "#5b6063",
+            "on-error-container": "#6e0a12",
+            "surface-container-lowest": "#ffffff",
+            "on-secondary": "#f9f8fe",
+            "surface-container-low": "#f2f4f6",
+            "inverse-surface": "#0c0e10",
+            "on-tertiary-container": "#000000",
+            "outline-variant": "#aeb2b6",
+            "on-tertiary": "#fff7f6",
+            "primary-fixed": "#007aff",
+            "primary-dim": "#0050ab",
+            "on-primary-fixed": "#ffffff",
+            "surface-bright": "#f9f9fb",
+            "tertiary-container": "#f9362c",
+            "on-primary-container": "#000000",
+            "secondary-fixed": "#e3e2e7",
+            "secondary-fixed-dim": "#d5d4d9",
+            "tertiary-fixed-dim": "#e62721",
+            "secondary-dim": "#525357",
+            "primary-container": "#007aff",
+            "on-tertiary-fixed": "#000000",
+            "surface-tint": "#005bc2"
+          },
+          fontFamily: {
+            "headline": ["Inter"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          },
+          borderRadius: { "DEFAULT": "0.5rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .glass-panel {
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+    }
+
+    .desktop-bg {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ambient-shadow {
+      box-shadow: 0px 20px 50px rgba(12, 14, 16, 0.08);
+    }
+
+    .folder-gradient {
+      background: linear-gradient(180deg, #007aff 0%, #005bc2 100%);
+    }
+
+    .draggable-handle:active {
+      cursor: grabbing;
+    }
+
+    /* ql-time style for Quick Look */
+    #ql-time {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      font-variant-numeric: tabular-nums;
+      width: 2rem;
+    }
+
+    /* Selection Styles for Desktop Icons */
+    .desktop-icon.selected>span {
+      background-color: #007AFF !important;
+      color: white !important;
+      backdrop-filter: none;
+    }
+
+    .desktop-icon.selected>div {
+      filter: brightness(0.8);
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2), 0 0 10px rgba(0, 122, 255, 0.5);
+    }
+
+    /* Custom Range Slider */
+    .mag-slider {
+      transition: all 0.2s ease;
+    }
+
+    .mag-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 20px;
+      width: 42px;
+      /* Pill shape as requested */
+      margin-top: -7px;
+      border-radius: 20px;
+      background: currentColor;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .mag-slider:active::-webkit-slider-thumb {
+      transform: scale(0.95);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .mag-slider::-webkit-slider-runnable-track {
+      height: 6px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    /* Status Bar Dropdowns */
+    .menu-item {
+      position: relative;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: calc(100% + 2px);
+      left: 0;
+      min-width: 200px;
+      background: rgba(252, 252, 252, 0.94);
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      border-radius: 7px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18), 0 8px 32px rgba(0, 0, 0, 0.14), 0 0 0 0.5px rgba(0, 0, 0, 0.12);
+      border: none;
+      padding: 4px;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.97) translateY(-3px);
+      transform-origin: top left;
+      transition: opacity 0.12s ease, transform 0.12s ease, visibility 0.12s;
+      z-index: 1000;
+    }
+
+    .dark .dropdown-menu {
+      background: rgba(36, 36, 36, 0.92);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+    }
+
+    .dropdown-menu.open {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1) translateY(0);
+    }
+
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 10px 4px 22px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      font-weight: 400;
+      color: #1d1d1f;
+      cursor: default;
+      user-select: none;
+      transition: background 0.06s ease, color 0.06s ease;
+      position: relative;
+    }
+
+    .dark .dropdown-item {
+      color: #f5f5f7;
+    }
+
+    .dropdown-item:hover {
+      background: #1a6cff;
+      color: white !important;
+      border-radius: 4px;
+    }
+
+    .dropdown-item:hover .dropdown-shortcut {
+      color: rgba(255, 255, 255, 0.7) !important;
+    }
+
+    .dropdown-item:hover .submenu-arrow {
+      color: white !important;
+    }
+
+    .dropdown-shortcut {
+      font-size: 13px;
+      color: #8e8e93;
+      margin-left: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    .dark .dropdown-shortcut {
+      color: #8e8e93;
+    }
+
+    .dropdown-separator {
+      height: 1px;
+      background: rgba(0, 0, 0, 0.1);
+      margin: 4px 0;
+    }
+
+    .dark .dropdown-separator {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .dropdown-checkmark {
+      position: absolute;
+      left: 6px;
+      font-size: 11px;
+      color: #1d1d1f;
+    }
+
+    .dark .dropdown-checkmark {
+      color: #f5f5f7;
+    }
+
+    .dropdown-item:hover .dropdown-checkmark {
+      color: white;
+    }
+
+    .submenu-arrow {
+      font-size: 11px;
+      color: #8e8e93;
+    }
+
+    /* Submenus */
+    .submenu-container {
+      position: relative;
+    }
+
+    .submenu {
+      position: absolute;
+      left: calc(100% + 2px);
+      top: -4px;
+      min-width: 160px;
+      background: rgba(252, 252, 252, 0.94);
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      border: none;
+      border-radius: 7px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18), 0 8px 32px rgba(0, 0, 0, 0.14), 0 0 0 0.5px rgba(0, 0, 0, 0.12);
+      padding: 4px;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.97) translateX(-3px);
+      transform-origin: top left;
+      transition: opacity 0.12s ease, transform 0.12s ease, visibility 0.12s;
+    }
+
+    .dark .submenu {
+      background: rgba(36, 36, 36, 0.92);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+    }
+
+    .submenu-container:hover>.submenu {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1) translateX(0);
+    }
+
+    .theme-glass .glass-panel {
+      backdrop-filter: blur(60px) saturate(210%);
+      -webkit-backdrop-filter: blur(60px) saturate(210%);
+      background: rgba(255, 255, 255, 0.25) !important;
+      border-color: rgba(255, 255, 255, 0.4) !important;
+    }
+
+    .theme-glass.dark .glass-panel {
+      background: rgba(0, 0, 0, 0.3) !important;
+      border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+
+    /* Pink Theme */
+    .theme-pink {
+      --primary: #ff4b8e;
+      --primary-dim: #d93d7a;
+      --primary-fixed: #ff4b8e;
+      --primary-fixed-dim: #ff4b8e;
+    }
+
+    .theme-pink .bg-primary {
+      background-color: var(--primary) !important;
+    }
+
+    .theme-pink .text-primary {
+      color: var(--primary) !important;
+    }
+
+    .theme-pink .border-primary {
+      border-color: var(--primary) !important;
+    }
+
+    .theme-pink .folder-gradient {
+      background: linear-gradient(180deg, #ff4b8e 0%, #d93d7a 100%);
+    }
+
+    .theme-pink .glass-panel {
+      background: rgba(255, 240, 245, 0.85) !important;
+      border-color: rgba(255, 75, 142, 0.25) !important;
+    }
+
+    .dark.theme-pink .glass-panel {
+      background: rgba(45, 20, 30, 0.85) !important;
+      border-color: rgba(255, 75, 142, 0.35) !important;
+    }
+
+    .dragging-window {
+      transition: none !important;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .dragging-window * {
+      pointer-events: none;
+    }
+
+    /* Mobile: Hide macOS UI, show iOS screen */
+    @media (max-width: 768px) {
+
+      header,
+      #desktop-main,
+      #macos-dock {
+        display: none !important;
+      }
+
+      #ios-screen {
+        display: flex !important;
+      }
+
+      #quick-look-modal {
+        position: fixed !important;
+      }
+    }
+
+    /* iOS UI Styles */
+    .ios-dock-item>div {
+      transition: transform 0.12s ease;
+    }
+
+    .ios-dock-item:active>div {
+      transform: scale(0.88) !important;
+    }
+
+    .ios-app-overlay {
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1),
+        opacity 0.3s ease,
+        border-radius 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+      transform-origin: center bottom;
+    }
+
+    .ios-app-overlay.closing {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.7, 0.2),
+        opacity 0.18s cubic-bezier(0.6, 0, 1, 1),
+        border-radius 0.3s cubic-bezier(0.4, 0, 0.7, 0.2);
+    }
+
+    #quick-look-modal {
+      -webkit-mask-image: radial-gradient(white, black);
+      mask-image: radial-gradient(white, black);
+    }
+  </style>
+</head>
+
+<body class="bg-background text-on-surface h-screen overflow-hidden select-none">
+  <!-- TopAppBar -->
+  <header
+    class="fixed top-0 left-0 w-full z-50 flex items-center h-8 px-4 justify-between bg-white/40 dark:bg-black/40 backdrop-blur-2xl border-b border-white/30 dark:border-white/8 transition-colors duration-150 ease-in-out">
+    <div class="flex items-center space-x-4">
+      <span class="text-[14px] font-bold text-slate-900 dark:text-slate-100 px-2 tracking-normal cursor-pointer"
+        onclick="location.reload()"
+        style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">EDDIE</span>
+      <nav class="hidden md:flex items-center space-x-1">
+        <a class="text-slate-900 dark:text-white font-semibold hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded px-2 py-0.5 text-[13px] tracking-tight transition-colors"
+          href="#">File</a>
+        <div class="menu-item">
+          <a class="text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded px-2 py-0.5 text-[13px] tracking-tight transition-colors cursor-pointer"
+            href="#">Edit</a>
+          <div class="dropdown-menu">
+            <div id="btn-toggle-dock" class="dropdown-item">
+              <span>Hide Dock</span>
+              <span class="dropdown-shortcut">⌘D</span>
+            </div>
+            <div class="dropdown-separator hidden"></div>
+            <div class="dropdown-item submenu-container hidden">
+              <span>Themes</span>
+              <span class="submenu-arrow">▶</span>
+              <div class="submenu">
+                <div class="dropdown-item" id="theme-item-light" onclick="setDarkMode(false)">
+                  <span>Light Mode</span>
+                </div>
+                <div class="dropdown-item" id="theme-item-dark" onclick="setDarkMode(true)">
+                  <span>Dark Mode</span>
+                </div>
+                <div class="dropdown-separator"></div>
+                <div class="dropdown-item" id="theme-item-default" onclick="setTheme('default')">
+                  <span>Aero Blue</span>
+                </div>
+                <div class="dropdown-item" id="theme-item-glass" onclick="setTheme('glass')">
+                  <span>Glass</span>
+                </div>
+                <div class="dropdown-item" id="theme-item-pink" onclick="setTheme('pink')">
+                  <span>Pink</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <a id="menu-view"
+          class="text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded px-2 py-0.5 text-[13px] tracking-tight transition-colors cursor-pointer">View</a>
+        <a class="text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded px-2 py-0.5 text-[13px] tracking-tight transition-colors"
+          href="#">Go</a>
+        <a class="text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded px-2 py-0.5 text-[13px] tracking-tight transition-colors"
+          href="#">Window</a>
+        <a id="menu-help"
+          class="text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded px-2 py-0.5 text-[13px] tracking-tight transition-colors cursor-pointer">Help</a>
+      </nav>
+    </div>
+    <div class="flex items-center space-x-3 text-slate-900 dark:text-slate-100">
+      <span id="theme-toggle"
+        class="material-symbols-outlined text-[18px] cursor-pointer hover:text-primary transition-colors"
+        title="Toggle Theme">dark_mode</span>
+      <span id="system-wifi" class="material-symbols-outlined text-[18px]">wifi</span>
+      <div id="system-battery-container" class="flex items-center space-x-1" title="Battery" style="display: none;">
+        <span id="system-battery-icon" class="material-symbols-outlined text-[18px]">battery_full</span>
+        <span id="system-battery-text" class="text-[11px] font-medium"></span>
+      </div>
+      <span id="system-clock" class="text-[12px] font-medium ml-2">--:-- AM</span>
+    </div>
+  </header>
+  <!-- Desktop Canvas -->
+  <main id="desktop-main"
+    class="desktop-bg w-full h-full pt-8 flex relative transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] transform origin-left"
+    style="background: #ffffff;">
+
+    <!-- Dark Mode Gradient Overlay for seamless transition -->
+    <div class="absolute inset-0 opacity-0 dark:opacity-100 transition-opacity duration-300 pointer-events-none z-0"
+      style="background: linear-gradient(160deg, #06080f 0%, #0a0e20 50%, #0e0618 100%);">
+    </div>
+
+    <!-- Desktop Background Elements -->
+    <div id="desktop-icons-container" class="absolute inset-0 z-10">
+      <!-- Desktop Column 1 (Far Right) -->
+      <div class="desktop-icon absolute group flex flex-col items-center space-y-1 cursor-pointer"
+        style="top: 64px; right: 24px;" data-name="LDN x UKG">
+        <div
+          class="w-[60px] h-[60px] group-hover:scale-110 transition-all duration-200 drop-shadow-lg group-hover:drop-shadow-xl">
+          <img src="icons/folder.png" class="w-full h-full object-contain" draggable="false" />
+        </div><span
+          class="text-[11px] font-medium text-slate-800 dark:text-white/90 bg-white/50 dark:bg-black/50 px-1.5 py-0.5 rounded-md backdrop-blur-md shadow-sm">LDN
+          x UKG</span>
+      </div>
+      <div class="desktop-icon absolute group flex flex-col items-center space-y-1 cursor-pointer"
+        style="top: 164px; right: 24px;" data-name="milano">
+        <div
+          class="w-[60px] h-[60px] group-hover:scale-110 transition-all duration-200 drop-shadow-lg group-hover:drop-shadow-xl">
+          <img src="icons/folder.png" class="w-full h-full object-contain" draggable="false" />
+        </div><span
+          class="text-[11px] font-medium text-slate-800 dark:text-white/90 bg-white/50 dark:bg-black/50 px-1.5 py-0.5 rounded-md backdrop-blur-md shadow-sm">milano</span>
+      </div>
+      <div class="desktop-icon absolute group flex flex-col items-center space-y-1 cursor-pointer"
+        style="top: 264px; right: 24px;" data-name="tipsy triad">
+        <div
+          class="w-[60px] h-[60px] group-hover:scale-110 transition-all duration-200 drop-shadow-lg group-hover:drop-shadow-xl">
+          <img src="icons/folder.png" class="w-full h-full object-contain" draggable="false" />
+        </div><span
+          class="text-[11px] font-medium text-slate-800 dark:text-white/90 bg-white/50 dark:bg-black/50 px-1.5 py-0.5 rounded-md backdrop-blur-md shadow-sm">tipsy
+          triad</span>
+      </div>
+      <div class="desktop-icon absolute group flex flex-col items-center space-y-1 cursor-pointer"
+        style="top: 364px; right: 24px;" data-name="birthday kisses">
+        <div
+          class="w-[60px] h-[60px] group-hover:scale-110 transition-all duration-200 drop-shadow-lg group-hover:drop-shadow-xl">
+          <img src="icons/folder.png" class="w-full h-full object-contain" draggable="false" />
+        </div><span
+          class="text-[11px] font-medium text-slate-800 dark:text-white/90 bg-white/50 dark:bg-black/50 px-1.5 py-0.5 rounded-md backdrop-blur-md shadow-sm">birthday
+          kisses</span>
+      </div>
+      <div class="desktop-icon absolute group flex flex-col items-center space-y-1 cursor-pointer"
+        style="top: 464px; right: 24px;" data-name="ftlotg">
+        <div
+          class="w-[60px] h-[60px] group-hover:scale-110 transition-all duration-200 drop-shadow-lg group-hover:drop-shadow-xl">
+          <img src="icons/folder.png" class="w-full h-full object-contain" draggable="false" />
+        </div><span
+          class="text-[11px] font-medium text-slate-800 dark:text-white/90 bg-white/50 dark:bg-black/50 px-1.5 py-0.5 rounded-md backdrop-blur-md shadow-sm">ftlotg</span>
+      </div>
+      <div class="desktop-icon absolute group flex flex-col items-center space-y-1 cursor-pointer"
+        style="top: 564px; right: 24px;" data-name="5am in munic">
+        <div
+          class="w-[60px] h-[60px] group-hover:scale-110 transition-all duration-200 drop-shadow-lg group-hover:drop-shadow-xl">
+          <img src="icons/folder.png" class="w-full h-full object-contain" draggable="false" />
+        </div><span
+          class="text-[11px] font-medium text-slate-800 dark:text-white/90 bg-white/50 dark:bg-black/50 px-1.5 py-0.5 rounded-md backdrop-blur-md shadow-sm">5am
+          in munic</span>
+      </div>
+
+      <!-- Desktop Column 2 -->
+      <div class="desktop-icon absolute group flex flex-col items-center space-y-1 cursor-pointer"
+        style="top: 64px; right: 124px;" data-name="lindsay lohan">
+        <div
+          class="w-[60px] h-[60px] group-hover:scale-110 transition-all duration-200 drop-shadow-lg group-hover:drop-shadow-xl">
+          <img src="icons/folder.png" class="w-full h-full object-contain" draggable="false" />
+        </div><span
+          class="text-[11px] font-medium text-slate-800 dark:text-white/90 bg-white/50 dark:bg-black/50 px-1.5 py-0.5 rounded-md backdrop-blur-md shadow-sm">lindsay
+          lohan</span>
+      </div>
+      <div class="desktop-icon absolute group flex flex-col items-center space-y-1 cursor-pointer"
+        style="top: 164px; right: 124px;" data-name="Lunatic">
+        <div
+          class="w-[60px] h-[60px] group-hover:scale-110 transition-all duration-200 drop-shadow-lg group-hover:drop-shadow-xl">
+          <img src="icons/folder.png" class="w-full h-full object-contain" draggable="false" />
+        </div><span
+          class="text-[11px] font-medium text-slate-800 dark:text-white/90 bg-white/50 dark:bg-black/50 px-1.5 py-0.5 rounded-md backdrop-blur-md shadow-sm">Lunatic</span>
+      </div>
+      <div class="desktop-icon absolute group flex flex-col items-center space-y-1 cursor-pointer"
+        style="top: 264px; right: 124px;" data-name="hlfatpch">
+        <div
+          class="w-[60px] h-[60px] group-hover:scale-110 transition-all duration-200 drop-shadow-lg group-hover:drop-shadow-xl">
+          <img src="icons/folder.png" class="w-full h-full object-contain" draggable="false" />
+        </div><span
+          class="text-[11px] font-medium text-slate-800 dark:text-white/90 bg-white/50 dark:bg-black/50 px-1.5 py-0.5 rounded-md backdrop-blur-md shadow-sm">hlfatpch</span>
+      </div>
+      <div class="desktop-icon absolute group flex flex-col items-center space-y-1 cursor-pointer"
+        style="top: 364px; right: 124px;" data-name="bents n glitches">
+        <div
+          class="w-[60px] h-[60px] group-hover:scale-110 transition-all duration-200 drop-shadow-lg group-hover:drop-shadow-xl">
+          <img src="icons/folder.png" class="w-full h-full object-contain" draggable="false" />
+        </div><span
+          class="text-[11px] font-medium text-slate-800 dark:text-white/90 bg-white/50 dark:bg-black/50 px-1.5 py-0.5 rounded-md backdrop-blur-md shadow-sm">bents
+          n glitches</span>
+      </div>
+      <div class="desktop-icon absolute group flex flex-col items-center space-y-1 cursor-pointer"
+        style="top: 464px; right: 124px;" data-name="stoical">
+        <div
+          class="w-[60px] h-[60px] group-hover:scale-110 transition-all duration-200 drop-shadow-lg group-hover:drop-shadow-xl">
+          <img src="icons/folder.png" class="w-full h-full object-contain" draggable="false" />
+        </div><span
+          class="text-[11px] font-medium text-slate-800 dark:text-white/90 bg-white/50 dark:bg-black/50 px-1.5 py-0.5 rounded-md backdrop-blur-md shadow-sm">stoical</span>
+      </div>
+      <div class="desktop-icon absolute group flex flex-col items-center space-y-1 cursor-pointer text-center"
+        style="top: 564px; right: 124px;" data-name="schimmel in schladming">
+        <div
+          class="w-[60px] h-[60px] group-hover:scale-110 transition-all duration-200 drop-shadow-lg group-hover:drop-shadow-xl">
+          <img src="icons/folder.png" class="w-full h-full object-contain" draggable="false" />
+        </div><span
+          class="text-[11px] font-medium text-slate-800 dark:text-white/90 bg-white/50 dark:bg-black/50 px-1.5 py-0.5 rounded-md backdrop-blur-md shadow-sm">schimmel<br>in
+          schladming</span>
+      </div>
+
+      <!-- Desktop Column 3 -->
+      <div class="desktop-icon absolute group flex flex-col items-center space-y-1 cursor-pointer"
+        style="top: 64px; right: 224px;" data-name="TOMIN INDEX.TXT">
+        <div
+          class="w-[60px] h-[60px] group-hover:scale-110 transition-all duration-200 drop-shadow-lg group-hover:drop-shadow-xl">
+          <img src="icons/tomin-index.png" class="w-full h-full object-contain" draggable="false" />
+        </div><span
+          class="text-[11px] font-medium text-slate-800 dark:text-white/90 bg-white/50 dark:bg-black/50 px-1.5 py-0.5 rounded-md backdrop-blur-md shadow-sm">TOMIN<br />INDEX.TXT</span>
+      </div>
+    </div>
+    <!-- Finder Window Template -->
+    <template id="finder-window-template">
+      <div
+        class="app-window absolute w-[960px] h-[620px] bg-white/80 dark:bg-slate-900/90 glass-panel rounded-xl ambient-shadow border border-white/40 dark:border-white/10 flex overflow-hidden ring-1 ring-black/5 shadow-2xl transition-all duration-300">
+        <!-- SideNavBar -->
+        <aside
+          class="w-56 bg-slate-100/40 dark:bg-black/20 backdrop-blur-lg flex flex-col p-4 space-y-1 border-r border-slate-200/20 dark:border-white/5 draggable-handle transition-colors duration-300">
+          <div class="flex items-center space-x-2 px-1 py-2 mb-6">
+            <div class="flex space-x-2">
+              <div
+                class="btn-close-window w-3 h-3 relative rounded-full bg-red-500 hover:bg-red-600 transition-colors shadow-sm cursor-pointer before:absolute before:-inset-1.5 before:content-['']"
+                title="Close"></div>
+              <div
+                class="btn-minimize-window w-3 h-3 relative rounded-full bg-yellow-500 hover:bg-yellow-600 transition-colors shadow-sm cursor-pointer before:absolute before:-inset-1.5 before:content-['']"
+                title="Close"></div>
+              <div
+                class="btn-fullscreen-window w-3 h-3 relative rounded-full bg-green-500 hover:bg-green-600 transition-colors shadow-sm cursor-pointer before:absolute before:-inset-1.5 before:content-['']"
+                title="Full Screen"></div>
+            </div>
+          </div>
+          <div class="mb-6">
+            <h3 class="px-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Favorites</h3>
+            <nav class="favorites-nav space-y-0.5 overflow-y-auto max-h-[250px] pr-2">
+              <!-- Injected -->
+            </nav>
+          </div>
+          <div class="mt-auto">
+            <h3 class="px-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">
+              Tags</h3>
+            <div class="px-2 flex flex-col space-y-2 py-2">
+              <div class="flex items-center space-x-2">
+                <div class="w-2.5 h-2.5 rounded-full bg-pink-500"></div><span
+                  class="text-[11px] text-slate-700 dark:text-slate-300 font-medium">NEW</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+        <!-- Main Content Area -->
+        <section class="flex-1 flex flex-col bg-white/60 dark:bg-white/0 transition-colors duration-300">
+          <div
+            class="h-14 flex items-center justify-between px-6 border-b border-slate-200/20 dark:border-white/5 draggable-handle transition-colors duration-300">
+            <div class="flex items-center space-x-6">
+              <div class="flex items-center space-x-2">
+                <span
+                  class="btn-back material-symbols-outlined text-slate-300 text-[20px] transition-colors">arrow_back_ios</span>
+                <span
+                  class="btn-forward material-symbols-outlined text-slate-300 text-[20px] transition-colors">arrow_forward_ios</span>
+              </div>
+              <h2 class="finder-title text-[14px] font-bold text-on-surface dark:text-slate-100">Finder</h2>
+            </div>
+            <!-- View Toggle Buttons -->
+            <div class="flex items-center bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg">
+              <button id="btn-view-grid" class="p-1 px-3 flex items-center justify-center transition-all duration-200">
+                <span class="material-symbols-outlined text-[18px]">grid_view</span>
+              </button>
+              <button id="btn-view-list"
+                class="p-1 px-3 flex items-center justify-center transition-all duration-200 text-slate-400">
+                <span class="material-symbols-outlined text-[18px]">format_list_bulleted</span>
+              </button>
+            </div>
+          </div>
+          <div class="flex flex-1 overflow-hidden">
+            <div
+              class="finder-main-area flex-1 overflow-y-auto bg-white/50 dark:bg-white/0 relative transition-colors duration-300">
+            </div>
+          </div>
+        </section>
+      </div>
+    </template>
+
+  </main>
+
+  <!-- About Me Modal (outside desktop-main for mobile support) -->
+  <div id="about-me-modal"
+    class="app-window hidden fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[90%] md:w-[320px] bg-white/80 dark:bg-slate-900/90 glass-panel rounded-xl shadow-2xl border border-white/40 dark:border-white/10 flex flex-col overflow-hidden z-50 transition-opacity duration-300 ring-1 ring-black/5">
+    <div
+      class="h-10 flex items-center px-4 border-b border-slate-200/20 dark:border-white/5 bg-slate-100/30 dark:bg-black/10 draggable-handle">
+      <div class="flex space-x-2">
+        <div id="btn-close-about"
+          class="w-3 h-3 relative rounded-full bg-red-500 hover:bg-red-600 transition-colors shadow-sm cursor-pointer before:absolute before:-inset-1.5 before:content-['']"
+          title="Close">
+        </div>
+        <div class="w-3 h-3 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+        <div class="w-3 h-3 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+      </div>
+      <span class="flex-1 text-center text-[12px] font-semibold text-slate-500 dark:text-slate-400 mr-8">About This
+        OS</span>
+    </div>
+    <div class="p-6 flex flex-col items-center">
+      <div
+        class="w-20 h-20 bg-gradient-to-br from-primary to-purple-600 rounded-full mb-4 shadow-lg flex items-center justify-center">
+        <span class="text-white font-bold text-2xl">ED</span>
+      </div>
+      <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-1">EDDIE</h2>
+
+      <div
+        class="w-full text-xs text-slate-600 dark:text-slate-300 space-y-2 bg-slate-50/50 dark:bg-black/20 rounded-lg p-3 border border-transparent dark:border-white/5">
+        <div class="flex justify-between"><span class="font-semibold text-slate-700 dark:text-slate-200">Website</span>
+          <span>2.0</span>
+        </div>
+        <div class="flex justify-between"><span
+            class="font-semibold text-slate-700 dark:text-slate-200">Instagram</span>
+          <span>@edpz</span>
+        </div>
+        <div class="flex justify-between"><span class="font-semibold text-slate-700 dark:text-slate-200">Mail</span>
+          <span>info@tomin.world</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Look Modal (outside desktop-main for mobile support) -->
+  <div id="quick-look-modal"
+    class="app-window hidden fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-fit h-fit min-w-[300px] bg-white/80 dark:bg-slate-900/95 glass-panel rounded-xl shadow-2xl border border-white/40 dark:border-white/10 z-[100] flex flex-col opacity-0 transition-opacity duration-300 ring-1 ring-black/5 overflow-hidden">
+    <div
+      class="h-10 shrink-0 flex items-center px-4 border-b border-slate-200/20 dark:border-white/5 bg-slate-100/30 dark:bg-black/10 draggable-handle">
+      <div id="btn-close-quick-look"
+        class="w-3 h-3 relative rounded-full bg-red-500 hover:bg-red-600 transition-colors shadow-sm cursor-pointer before:absolute before:-inset-2 before:content-['']"
+        title="Schließen (ESC)"></div>
+      <div id="quick-look-title"
+        class="flex-1 text-center text-[12px] font-semibold text-slate-500 dark:text-slate-400 mr-4 truncate px-4 pointer-events-none tracking-tight">
+        Preview
+      </div>
+    </div>
+    <div class="relative group bg-black">
+      <div id="quick-look-content" class="flex items-center justify-center"></div>
+      <div
+        class="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center space-x-3 bg-black/60 dark:bg-white/10 backdrop-blur-2xl px-5 py-2.5 rounded-2xl shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-auto"
+        id="quick-look-controls">
+        <span id="ql-play-pause"
+          class="material-symbols-outlined text-white text-[26px] cursor-pointer hover:scale-110 active:scale-95 transition-transform select-none"
+          style="font-variation-settings: 'FILL' 1;">pause_circle</span>
+        <div class="w-44 h-5 flex flex-col justify-center cursor-pointer group/bar" id="ql-progress-bg">
+          <div class="w-full h-[3px] bg-white/20 rounded-full relative group-hover/bar:h-[5px] transition-all">
+            <div class="h-full bg-white rounded-full w-0 transition-none" id="ql-progress-bar"></div>
+          </div>
+        </div>
+        <span id="ql-time" class="text-white/80 text-[11px] font-medium tracking-wider tabular-nums w-8">0:00</span>
+        <span id="ql-fullscreen"
+          class="material-symbols-outlined text-white text-[22px] cursor-pointer hover:scale-110 active:scale-95 transition-transform select-none"
+          title="Vollbild">fullscreen</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- BottomNavBar (Dock-style) -->
+  <nav id="macos-dock" class="fixed bottom-0 left-0 right-0 z-[200] flex justify-center pb-3 pointer-events-none"
+    style="transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s ease;">
+    <div
+      class="pointer-events-auto rounded-[22px] mx-auto mb-1 w-fit px-4 py-2.5 bg-white/50 dark:bg-white/10 backdrop-blur-3xl shadow-2xl shadow-slate-900/30 dark:shadow-black/60 flex items-end space-x-2 border border-white/60 dark:border-white/15">
+
+      <!-- Edits -->
+      <div
+        class="dock-item relative flex flex-col items-center cursor-pointer transition-all duration-200 ease-out hover:scale-125 hover:-translate-y-3 group"
+        title="Edits" onclick="openEditsViewer()">
+        <div class="w-14 h-14 drop-shadow-lg group-hover:drop-shadow-xl transition-all">
+          <img src="icons/edits.png" class="w-full h-full object-contain" draggable="false" />
+        </div>
+        <span
+          class="absolute -bottom-5 text-[10px] font-medium text-slate-600 dark:text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Edits</span>
+      </div>
+
+      <!-- Finder -->
+      <div
+        class="dock-item relative flex flex-col items-center cursor-pointer transition-all duration-200 ease-out hover:scale-125 hover:-translate-y-3 group"
+        title="Finder" onclick="handleFinderClick()">
+        <div class="w-14 h-14 drop-shadow-lg group-hover:drop-shadow-xl transition-all">
+          <img src="icons/finder.png" class="w-full h-full object-contain" draggable="false" />
+        </div>
+        <span
+          class="absolute -bottom-5 text-[10px] font-medium text-slate-600 dark:text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Finder</span>
+      </div>
+
+      <!-- Contact -->
+      <div
+        class="dock-item relative flex flex-col items-center cursor-pointer transition-all duration-200 ease-out hover:scale-125 hover:-translate-y-3 group"
+        title="Contact" onclick="openAboutMeModal()">
+        <div class="w-14 h-14 drop-shadow-lg group-hover:drop-shadow-xl transition-all">
+          <img src="icons/contact.png" class="w-full h-full object-contain" draggable="false" />
+        </div>
+        <span
+          class="absolute -bottom-5 text-[10px] font-medium text-slate-600 dark:text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Contact</span>
+      </div>
+
+    </div>
+  </nav>
+
+  <!-- ===== iOS Homescreen (mobile only) ===== -->
+  <div id="ios-screen" class="fixed inset-0 z-[60] flex flex-col select-none"
+    style="display:none; background: #ffffff;">
+
+    <!-- safe area spacer -->
+    <div style="height:env(safe-area-inset-top, 0px); flex-shrink:0;"></div>
+
+    <!-- Empty homescreen wallpaper area -->
+    <div class="flex-1"></div>
+
+
+    <!-- iOS Dock -->
+    <div class="flex justify-center px-4" style="padding-bottom: max(28px, env(safe-area-inset-bottom, 28px));">
+      <div class="flex items-center justify-center gap-3 px-4 py-3 rounded-[26px]"
+        style="background:rgba(232,232,232,0.72); backdrop-filter:blur(40px) saturate(180%); -webkit-backdrop-filter:blur(40px) saturate(180%); border:1px solid rgba(0,0,0,0.06); max-width:calc(100vw - 32px);">
+
+        <!-- Edits -->
+        <div class="ios-dock-item cursor-pointer" onclick="iosOpenEdits()">
+          <div class="w-[62px] h-[62px] drop-shadow-md">
+            <img src="icons/edits.png" class="w-full h-full object-contain" draggable="false" />
+          </div>
+        </div>
+
+        <!-- Magazines -->
+        <div class="ios-dock-item cursor-pointer" onclick="iosOpenMagazines()">
+          <div class="w-[62px] h-[62px] drop-shadow-md">
+            <img src="icons/magazine.png" class="w-full h-full object-contain" draggable="false" />
+          </div>
+        </div>
+
+        <!-- BTS -->
+        <div class="ios-dock-item cursor-pointer" onclick="iosOpenBts()">
+          <div class="w-[62px] h-[62px] drop-shadow-md">
+            <img src="icons/bts.png" class="w-full h-full object-contain" draggable="false" />
+          </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="ios-dock-item cursor-pointer" onclick="iosOpenContact()">
+          <div class="w-[62px] h-[62px] drop-shadow-md">
+            <img src="icons/contact.png" class="w-full h-full object-contain" draggable="false" />
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- iOS Magazines App -->
+  <div id="ios-magazines-app" class="ios-app-overlay fixed inset-0 z-[90] flex flex-col"
+    style="display:none; background:#1a1a1a; transform:scale(0.4); opacity:0; border-radius:40px;">
+
+    <!-- === Grid Screen === -->
+    <div id="ios-mag-screen-grid" class="flex flex-col flex-1 min-h-0">
+      <!-- Header -->
+      <div class="shrink-0 px-5 pb-4"
+        style="background:#1a1a1a; padding-top:max(env(safe-area-inset-top, 0px), 12px);">
+        <button onclick="iosCloseMagazines()"
+          class="flex items-center text-[#0a84ff] mb-3 active:opacity-50 transition-opacity cursor-pointer"
+          style="-webkit-tap-highlight-color:transparent;">
+          <span class="material-symbols-outlined text-[20px]"
+            style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
+          <span class="text-[17px] font-normal ml-0.5">Back</span>
+        </button>
+        <h1 class="text-white font-bold text-[28px] tracking-tight">Magazines</h1>
+      </div>
+
+      <!-- Magazine grid -->
+      <div id="ios-mag-grid" class="flex-1 overflow-y-auto px-4 pt-2" style="padding-bottom: max(100px, env(safe-area-inset-bottom, 100px));
+               display:grid; grid-template-columns:1fr 1fr; gap:20px 14px;">
+      </div>
+    </div>
+
+    <!-- === Reader Screen (hidden by default) === -->
+    <div id="ios-mag-screen-reader" class="absolute inset-0 flex flex-col" style="display:none; background:#1a1a1a;">
+      <!-- Reader header -->
+      <div class="shrink-0 px-5 pb-3"
+        style="background:#1a1a1a; padding-top:max(env(safe-area-inset-top, 0px), 12px);">
+        <button onclick="iosCloseReader()"
+          class="flex items-center text-[#0a84ff] active:opacity-50 transition-opacity cursor-pointer"
+          style="-webkit-tap-highlight-color:transparent;">
+          <span class="material-symbols-outlined text-[20px]"
+            style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
+          <span class="text-[17px] font-normal ml-0.5">Back</span>
+        </button>
+        <h1 id="ios-mag-reader-title" class="text-white font-bold text-[22px] tracking-tight mt-2">Magazine</h1>
+      </div>
+
+      <!-- Pages (horizontal swipe) -->
+      <div id="ios-mag-reader-pages" class="flex-1 flex overflow-x-auto"
+        style="overflow-y:hidden; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; gap:0; font-size:0; line-height:0;">
+      </div>
+
+      <!-- Page indicator bar -->
+      <div class="shrink-0 flex items-center gap-3 justify-center"
+        style="padding:10px 20px max(14px, env(safe-area-inset-bottom, 14px)); background:#1a1a1a;">
+        <span id="ios-mag-page-label"
+          style="color:rgba(255,255,255,0.5); font-size:12px; font-variant-numeric:tabular-nums;">1 / 1</span>
+        <div
+          style="flex:1; max-width:200px; height:3px; background:rgba(255,255,255,0.15); border-radius:2px; overflow:hidden;">
+          <div id="ios-mag-page-progress"
+            style="height:100%; width:0%; background:rgba(255,255,255,0.7); border-radius:2px; transition:width 0.2s ease;">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- iOS Edits App -->
+  <div id="ios-edits-app" class="ios-app-overlay fixed inset-0 z-[90] flex flex-col"
+    style="display:none; background:#1a1a1a; transform:scale(0.4); opacity:0; border-radius:40px;">
+
+    <!-- Header -->
+    <div class="shrink-0 flex items-center px-4"
+      style="background:#1a1a1a; padding-top:max(env(safe-area-inset-top, 0px), 12px); padding-bottom:10px; min-height:calc(44px + max(54px, env(safe-area-inset-top, 54px)));">
+      <button onclick="iosCloseEdits()"
+        class="flex items-center text-[#0a84ff] active:opacity-50 transition-opacity cursor-pointer mr-3"
+        style="-webkit-tap-highlight-color:transparent;">
+        <span class="material-symbols-outlined text-[20px]"
+          style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
+        <span class="text-[17px] font-normal ml-0.5">Back</span>
+      </button>
+      <h1 class="text-white font-semibold text-[17px] tracking-tight flex-1 text-center">Edits</h1>
+      <div class="w-16"></div><!-- spacer to center title -->
+    </div>
+
+    <!-- Video player -->
+    <div style="background:#000; flex:0 0 auto; position:relative;">
+      <video id="ios-edits-video" class="w-full" style="aspect-ratio:16/9; object-fit:contain; background:#000;"
+        autoplay loop playsinline></video>
+      <!-- Media controls -->
+      <div id="ios-edits-controls"
+        style="position:absolute; bottom:0; left:0; right:0; padding:10px 16px 12px; background:linear-gradient(transparent, rgba(0,0,0,0.7)); display:flex; align-items:center; gap:10px;">
+        <span id="ios-edits-play-pause" class="material-symbols-outlined"
+          style="color:#fff; font-size:28px; cursor:pointer; flex-shrink:0; font-variation-settings:'FILL' 1;">pause_circle</span>
+        <div id="ios-edits-progress-bg"
+          style="flex:1; height:20px; display:flex; align-items:center; cursor:pointer; touch-action:none;">
+          <div style="width:100%; height:3px; background:rgba(255,255,255,0.3); border-radius:2px; position:relative;">
+            <div id="ios-edits-progress-bar" style="height:100%; width:0%; background:#fff; border-radius:2px;"></div>
+          </div>
+        </div>
+        <span id="ios-edits-time"
+          style="color:rgba(255,255,255,0.8); font-size:11px; font-variant-numeric:tabular-nums; flex-shrink:0; min-width:28px;">0:00</span>
+        <span id="ios-edits-fullscreen" class="material-symbols-outlined"
+          style="color:#fff; font-size:22px; cursor:pointer; flex-shrink:0;">fullscreen</span>
+      </div>
+    </div>
+
+    <!-- Edit list -->
+    <div id="ios-edits-list" class="flex-1 overflow-y-auto"
+      style="padding-bottom: max(100px, env(safe-area-inset-bottom, 100px));">
+    </div>
+  </div>
+
+  <!-- iOS BTS App -->
+  <div id="ios-bts-app" class="ios-app-overlay fixed inset-0 z-[90] flex flex-col"
+    style="display:none; background:#1a1a1a; transform:scale(0.4); opacity:0; border-radius:40px;">
+
+    <!-- === Folder List Screen === -->
+    <div id="ios-bts-screen-folders" class="flex flex-col flex-1 min-h-0">
+      <div class="shrink-0 flex items-center px-4"
+        style="background:#1a1a1a; padding-top:max(env(safe-area-inset-top, 0px), 12px); padding-bottom:10px;">
+        <button onclick="iosCloseBts()"
+          class="flex items-center text-[#0a84ff] active:opacity-50 transition-opacity cursor-pointer mr-3"
+          style="-webkit-tap-highlight-color:transparent;">
+          <span class="material-symbols-outlined text-[20px]"
+            style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
+          <span class="text-[17px] font-normal ml-0.5">Back</span>
+        </button>
+        <h1 class="text-white font-semibold text-[17px] tracking-tight flex-1 text-center">Behind the Scenes</h1>
+        <div class="w-16"></div>
+      </div>
+      <div id="ios-bts-folder-list" class="flex-1 overflow-y-auto px-4"
+        style="padding-bottom:max(100px, env(safe-area-inset-bottom, 100px));">
+      </div>
+    </div>
+
+    <!-- === File Grid Screen === -->
+    <div id="ios-bts-screen-files" class="absolute inset-0 flex flex-col" style="display:none; background:#1a1a1a;">
+      <div class="shrink-0 flex items-center px-4"
+        style="background:#1a1a1a; padding-top:max(env(safe-area-inset-top, 0px), 12px); padding-bottom:10px;">
+        <button onclick="iosBtsBackToFolders()"
+          class="flex items-center text-[#0a84ff] active:opacity-50 transition-opacity cursor-pointer mr-3"
+          style="-webkit-tap-highlight-color:transparent;">
+          <span class="material-symbols-outlined text-[20px]"
+            style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
+          <span class="text-[17px] font-normal ml-0.5">Back</span>
+        </button>
+        <h1 id="ios-bts-folder-title" class="text-white font-semibold text-[17px] tracking-tight flex-1 text-center">
+          Folder</h1>
+        <div class="w-16"></div>
+      </div>
+      <div id="ios-bts-file-grid" class="flex-1 overflow-y-auto px-2"
+        style="display:grid; grid-template-columns:repeat(3,1fr); gap:2px; align-content:start; padding-bottom:max(100px, env(safe-area-inset-bottom, 100px));">
+      </div>
+    </div>
+
+    <!-- === Photo Viewer === -->
+    <div id="ios-bts-viewer" class="absolute inset-0 flex flex-col" style="display:none; background:#000; z-index:10;">
+      <div class="shrink-0 flex items-center justify-between px-4"
+        style="padding-top:max(env(safe-area-inset-top, 0px), 12px); padding-bottom:8px; background:rgba(0,0,0,0.6); z-index:2;">
+        <button onclick="iosBtsCloseViewer()" class="text-[#0a84ff] text-[17px] active:opacity-50 cursor-pointer"
+          style="-webkit-tap-highlight-color:transparent;">Done</button>
+        <span id="ios-bts-viewer-counter"
+          style="color:rgba(255,255,255,0.6); font-size:13px; font-variant-numeric:tabular-nums;">1 / 1</span>
+        <div class="w-12"></div>
+      </div>
+      <div id="ios-bts-viewer-pages" class="flex-1 flex overflow-x-auto"
+        style="overflow-y:hidden; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none;">
+      </div>
+    </div>
+  </div>
+
+  <!-- iOS Contact App -->
+  <div id="ios-contact-app" class="ios-app-overlay fixed inset-0 z-[90] flex flex-col"
+    style="display:none; background:#1a1a1a; transform:scale(0.4); opacity:0; border-radius:40px;">
+
+    <!-- Header -->
+    <div class="shrink-0 px-5 pb-4" style="background:#1a1a1a; padding-top:max(env(safe-area-inset-top, 0px), 12px);">
+      <button onclick="iosCloseContact()"
+        class="flex items-center text-[#0a84ff] mb-3 active:opacity-50 transition-opacity cursor-pointer"
+        style="-webkit-tap-highlight-color:transparent;">
+        <span class="material-symbols-outlined text-[20px]"
+          style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
+        <span class="text-[17px] font-normal ml-0.5">Back</span>
+      </button>
+      <h1 class="text-white font-bold text-[28px] tracking-tight">Contact</h1>
+    </div>
+
+    <!-- Contact content -->
+    <div class="flex-1 overflow-y-auto px-5" style="padding-bottom: max(100px, env(safe-area-inset-bottom, 100px));">
+      <!-- Avatar -->
+      <div class="flex flex-col items-center pt-6 pb-8">
+        <div class="w-24 h-24 rounded-full flex items-center justify-center shadow-lg mb-4"
+          style="background:linear-gradient(135deg,#6366f1,#a855f7);">
+          <span class="text-white font-bold text-3xl">ED</span>
+        </div>
+        <h2 class="text-white font-semibold text-[22px]">EDDIE</h2>
+
+      </div>
+
+      <!-- Info cards -->
+      <div style="background:rgba(255,255,255,0.08); border-radius:12px; overflow:hidden;">
+        <div
+          style="display:flex; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.06);">
+          <span style="color:rgba(255,255,255,0.55); font-size:15px;">Website</span>
+          <span style="color:#fff; font-size:15px;">2.0</span>
+        </div>
+        <div
+          style="display:flex; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.06);">
+          <span style="color:rgba(255,255,255,0.55); font-size:15px;">Instagram</span>
+          <span style="color:#fff; font-size:15px;">@edpz</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:14px 16px;">
+          <span style="color:rgba(255,255,255,0.55); font-size:15px;">Mail</span>
+          <span style="color:#fff; font-size:15px;">info@tomin.world</span>
+        </div>
+      </div>
+
+      <!-- App Icon Picker -->
+      <div style="margin-top:32px; background:rgba(255,255,255,0.08); border-radius:12px; padding:18px 16px;">
+        <p style="color:#fff; font-size:15px; font-weight:600; margin-bottom:6px;">App Icon</p>
+        <p style="color:rgba(255,255,255,0.45); font-size:13px; line-height:1.5; margin-bottom:14px;">Wähle ein Icon
+          aus, dann speichere die Seite zum Home-Bildschirm.</p>
+        <div id="icon-picker" style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:16px;">
+          <div class="icon-pick-option" onclick="setAppIcon('icons/flavicon.png', this)"
+            style="cursor:pointer; position:relative; -webkit-tap-highlight-color:transparent;">
+            <img src="icons/flavicon.png"
+              style="width:60px; height:60px; border-radius:14px; border:3px solid #0a84ff;" />
+            <span class="icon-pick-check"
+              style="position:absolute; bottom:-2px; right:-2px; width:20px; height:20px; background:#0a84ff; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+              <span class="material-symbols-outlined" style="font-size:14px; color:#fff;">check</span>
+            </span>
+          </div>
+          <div class="icon-pick-option" onclick="setAppIcon('icons/icon alts/MugEddie.png', this)"
+            style="cursor:pointer; position:relative; -webkit-tap-highlight-color:transparent;">
+            <img src="icons/icon alts/MugEddie.png"
+              style="width:60px; height:60px; border-radius:14px; border:3px solid transparent;" />
+          </div>
+          <div class="icon-pick-option" onclick="setAppIcon('icons/icon alts/fuck instagram.png', this)"
+            style="cursor:pointer; position:relative; -webkit-tap-highlight-color:transparent;">
+            <img src="icons/icon alts/fuck instagram.png"
+              style="width:60px; height:60px; border-radius:14px; border:3px solid transparent;" />
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; color:rgba(255,255,255,0.6); font-size:13px;">
+          <span class="material-symbols-outlined" style="font-size:20px; color:#0a84ff;">ios_share</span>
+          <span>Tippe auf <strong style="color:#fff;">Teilen</strong> → <strong style="color:#fff;">Zum
+              Home-Bildschirm</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Magazine Reader Workspace -->
+  <section id="magazine-reader"
+    class="fixed inset-0 z-[100] bg-slate-50 dark:bg-[#111] flex flex-col transform translate-x-full transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]">
+    <!-- Topbar -->
+    <div
+      class="h-14 flex items-center justify-between px-6 bg-white dark:bg-[#1a1a1a] shadow-sm dark:shadow-md z-10 shrink-0 border-b border-slate-200 dark:border-white/5 transition-colors">
+      <div class="flex items-center space-x-4">
+        <span id="btn-close-magazine"
+          class="material-symbols-outlined text-slate-500 dark:text-white/50 hover:text-primary dark:hover:text-white cursor-pointer transition-colors text-2xl"
+          title="Go back to Desktop">arrow_back</span>
+        <h2 id="magazine-title"
+          class="text-slate-900 dark:text-white font-serif tracking-wider font-bold text-lg select-none">Magazine</h2>
+      </div>
+      <div class="flex items-center space-x-4">
+        <span id="mag-theme-toggle"
+          class="material-symbols-outlined text-slate-500 dark:text-white/50 hover:text-primary dark:hover:text-white cursor-pointer transition-colors text-[22px]"
+          title="Toggle Theme">dark_mode</span>
+        <span id="mag-fullscreen-toggle"
+          class="material-symbols-outlined text-slate-500 dark:text-white/50 hover:text-primary dark:hover:text-white cursor-pointer transition-colors text-[24px]"
+          title="Toggle Fullscreen">fullscreen</span>
+      </div>
+    </div>
+    <!-- Reader Container -->
+    <div id="magazine-scroller" class="flex-1 flex overflow-x-auto overflow-y-hidden items-center relative"
+      style="scrollbar-width: none; cursor: default;">
+      <!-- items injected here -->
+    </div>
+    <!-- Bottom Pagination -->
+    <div
+      class="relative bg-white dark:bg-[#1a1a1a] flex flex-col justify-center px-6 shrink-0 border-t border-slate-200 dark:border-white/5 select-none shadow-[0_-2px_10px_rgba(0,0,0,0.05)] dark:shadow-[0_-10px_20px_rgba(0,0,0,0.5)] transition-colors pt-3 pb-36">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3 w-1/4">
+          <span class="text-slate-500 dark:text-white/70 font-mono text-sm tracking-widest"><span
+              id="magazine-current-page">1</span> / <span id="magazine-total-pages">0</span></span>
+        </div>
+        <div class="flex-1 px-8 relative flex items-center justify-center py-2">
+          <input type="range" id="magazine-progress" min="1" max="1" value="1"
+            class="mag-slider w-full text-primary dark:text-white h-1 bg-slate-300 dark:bg-white/20 rounded-full appearance-none outline-none cursor-pointer">
+        </div>
+        <div class="w-1/4 flex justify-end"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Edits Viewer -->
+  <section id="edits-viewer"
+    class="fixed inset-0 z-[100] bg-white dark:bg-[#0e0e0e] flex flex-col transform -translate-x-full transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]">
+    <!-- Topbar: title + close on the RIGHT -->
+    <div
+      class="h-14 shrink-0 flex items-center justify-end px-6 bg-white dark:bg-[#0e0e0e] border-b border-slate-100 dark:border-white/5 z-10">
+      <div class="flex items-center space-x-4">
+        <h2 class="text-slate-900 dark:text-white font-light tracking-[0.3em] text-sm uppercase select-none">Edits</h2>
+        <span id="btn-close-edits"
+          class="material-symbols-outlined text-slate-400 dark:text-white/40 hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors text-2xl">arrow_forward</span>
+      </div>
+    </div>
+    <!-- Content -->
+    <div class="flex-1 flex overflow-hidden">
+      <!-- Left: scrollable edit list -->
+      <div id="edits-list" class="w-64 shrink-0 overflow-y-auto border-r border-slate-100 dark:border-white/5 py-4"
+        style="scrollbar-width: none;">
+        <!-- injected by JS -->
+      </div>
+      <!-- Right: Video Player with bottom padding and white background -->
+      <div
+        class="flex-1 flex items-center justify-center bg-white dark:bg-[#0e0e0e] overflow-hidden relative pb-24 p-4">
+        <div class="relative w-full h-full group">
+          <video id="edits-video" class="w-full h-full object-contain rounded-lg shadow-sm" autoplay loop
+            playsinline></video>
+          <div id="edits-empty"
+            class="absolute inset-0 flex items-center justify-center text-slate-200 dark:text-white/10 text-sm tracking-widest uppercase pointer-events-none">
+            Select an edit</div>
+          <!-- Minimal media controls -->
+          <div
+            class="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center space-x-3 bg-black/60 dark:bg-white/10 backdrop-blur-2xl px-5 py-2.5 rounded-2xl shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-auto">
+            <span id="edits-play-pause"
+              class="material-symbols-outlined text-white text-[26px] cursor-pointer hover:scale-110 active:scale-95 transition-transform select-none"
+              style="font-variation-settings: 'FILL' 1;">pause_circle</span>
+            <div class="w-44 h-5 flex flex-col justify-center cursor-pointer group/bar" id="edits-progress-bg">
+              <div class="w-full h-[3px] bg-white/20 rounded-full relative group-hover/bar:h-[5px] transition-all">
+                <div class="h-full bg-white rounded-full w-0 transition-none" id="edits-progress-bar"></div>
+              </div>
+            </div>
+            <span class="text-white/80 text-[11px] font-medium tracking-wider tabular-nums w-8"
+              id="edits-time">0:00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="data.js"></script>
+  <script>
+    // --- System Bar Logic ---
+    function updateClock() {
+      const now = new Date();
+      const options = { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' };
+      document.getElementById('system-clock').innerText = now.toLocaleDateString('en-US', options).replace(',', '');
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    const batContainer = document.getElementById('system-battery-container');
+    const batText = document.getElementById('system-battery-text');
+    const batIcon = document.getElementById('system-battery-icon');
+    if (navigator.getBattery) {
+      navigator.getBattery().then(battery => {
+        batContainer.style.display = 'flex';
+        function updateBattery() {
+          let level = Math.round(battery.level * 100);
+          batText.innerText = `${level}%`;
+          if (battery.charging) {
+            batIcon.innerText = 'battery_charging_full';
+          } else if (level > 80) {
+            batIcon.innerText = 'battery_full';
+          } else if (level > 40) {
+            batIcon.innerText = 'battery_5_bar';
+          } else if (level > 10) {
+            batIcon.innerText = 'battery_2_bar';
+          } else {
+            batIcon.innerText = 'battery_0_bar';
+          }
+        }
+        updateBattery();
+        battery.addEventListener('levelchange', updateBattery);
+        battery.addEventListener('chargingchange', updateBattery);
+      });
+    }
+
+    const themeToggle = document.getElementById('theme-toggle');
+    const magThemeToggle = document.getElementById('mag-theme-toggle');
+    function updateThemeCheckmarks() {
+      const html = document.documentElement;
+      const isDark = html.classList.contains('dark');
+      const isGlass = html.classList.contains('theme-glass');
+      const isPink = html.classList.contains('theme-pink');
+
+      const marks = {
+        'theme-item-light': !isDark,
+        'theme-item-dark': isDark,
+        'theme-item-default': !isGlass && !isPink,
+        'theme-item-glass': isGlass,
+        'theme-item-pink': isPink,
+      };
+      Object.entries(marks).forEach(([id, active]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const existing = el.querySelector('.dropdown-checkmark');
+        if (active && !existing) {
+          const mark = document.createElement('span');
+          mark.className = 'dropdown-checkmark';
+          mark.textContent = '✓';
+          el.prepend(mark);
+        } else if (!active && existing) {
+          existing.remove();
+        }
+      });
+    }
+
+    function setDarkMode(isDark) {
+      const html = document.documentElement;
+      const themeToggle = document.getElementById('theme-toggle');
+      const magThemeToggle = document.getElementById('mag-theme-toggle');
+
+      if (isDark) {
+        html.classList.add('dark');
+      } else {
+        html.classList.remove('dark');
+      }
+
+      const icon = isDark ? 'light_mode' : 'dark_mode';
+      if (themeToggle) themeToggle.innerText = icon;
+      if (magThemeToggle) magThemeToggle.innerText = icon;
+      updateThemeCheckmarks();
+    }
+
+    function setTheme(mode) {
+      const html = document.documentElement;
+      html.classList.remove('theme-glass', 'theme-pink');
+      if (mode === 'glass') html.classList.add('theme-glass');
+      if (mode === 'pink') html.classList.add('theme-pink');
+      updateThemeCheckmarks();
+    }
+
+    updateThemeCheckmarks();
+
+    // Dropdown open/close with animation
+    document.querySelectorAll('.menu-item').forEach(item => {
+      const menu = item.querySelector('.dropdown-menu');
+      if (!menu) return;
+      let closeTimer = null;
+
+      const openMenu = () => {
+        if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+        menu.classList.add('open');
+      };
+      const closeMenu = () => {
+        closeTimer = setTimeout(() => menu.classList.remove('open'), 120);
+      };
+
+      item.addEventListener('mouseenter', openMenu);
+      item.addEventListener('mouseleave', closeMenu);
+      menu.addEventListener('mouseenter', () => { if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; } });
+      menu.addEventListener('mouseleave', closeMenu);
+    });
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.contains('dark');
+      setDarkMode(!isDark);
+    }
+
+    if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
+
+    const menuView = document.getElementById('menu-view');
+    if (menuView) {
+      menuView.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(err => {
+            console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+          });
+        } else {
+          if (document.exitFullscreen) document.exitFullscreen();
+        }
+      });
+    }
+
+    const macosDock = document.getElementById('macos-dock');
+    const toggleDockBtn = document.getElementById('btn-toggle-dock');
+
+    function toggleDock() {
+      if (!macosDock) return;
+      const isHidden = macosDock.classList.contains('translate-y-full');
+      if (isHidden) {
+        macosDock.classList.remove('translate-y-full', 'opacity-0');
+        toggleDockBtn.querySelector('span').innerText = 'Hide Dock';
+      } else {
+        macosDock.classList.add('translate-y-full', 'opacity-0');
+        toggleDockBtn.querySelector('span').innerText = 'Show Dock';
+      }
+    }
+
+    if (toggleDockBtn) toggleDockBtn.addEventListener('click', toggleDock);
+
+    // Global click listener to close dropdowns if needed (though hover handles it mostly)
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.menu-item')) {
+        // Any specific click-to-close logic can go here if needed.
+      }
+    });
+
+    // Handle Edit menu explicitly if needed (currently hover)
+    const editMenu = document.querySelector('.menu-item');
+    if (editMenu) {
+      editMenu.addEventListener('click', (e) => {
+        // Allow clicking the text itself to toggle on mobile if needed.
+      });
+    }
+    if (magThemeToggle) magThemeToggle.addEventListener('click', toggleTheme);
+
+    // Dock toggle unified above
+
+    window.openAboutMeModal = function () {
+      const aboutModal = document.getElementById('about-me-modal');
+      aboutModal.classList.remove('hidden');
+      bringToFront(aboutModal);
+    };
+
+    document.getElementById('btn-close-about').onclick = () => {
+      document.getElementById('about-me-modal').classList.add('hidden');
+    };
+    // --- Window Dragging Logic ---
+    let highestZIndex = 100;
+    function bringToFront(element) {
+      if (!element) return;
+      highestZIndex++;
+      element.style.zIndex = highestZIndex;
+    }
+    const aboutModal = document.getElementById('about-me-modal');
+    const quickLookModal = document.getElementById('quick-look-modal');
+    const finderTemplate = document.getElementById('finder-window-template');
+    let windowCount = 0;
+
+    function createWindow(folderName) {
+      if (!folderName || !portfolioData[folderName]) {
+        // Fallback to first folder if key not found
+        folderName = Object.keys(portfolioData).find(k => !k.includes('/')) || folderName;
+      }
+
+      windowCount++;
+      const clone = finderTemplate.content.cloneNode(true);
+      const win = clone.querySelector('.app-window');
+
+      const id = `window-${windowCount}`;
+      win.id = id;
+      win.dataset.folder = folderName;
+      win.dataset.viewMode = 'grid';
+      win.style.display = 'flex';
+      win.style.zIndex = ++highestZIndex;
+
+      // Detect Mobile
+      const isMobile = window.innerWidth <= 768;
+
+      if (isMobile) {
+        win.style.width = '100%';
+        win.style.height = '100%';
+        win.style.left = '0';
+        win.style.top = '0';
+        win.style.borderRadius = '0';
+        win.style.margin = '0';
+        win.style.transform = 'none';
+      } else {
+        // Stagger initial position
+        const offset = (windowCount % 10) * 30;
+        win.style.left = `calc(50% + ${offset}px - 480px)`;
+        win.style.top = `calc(50% + ${offset}px - 310px)`;
+        win.style.transform = 'none';
+        win.classList.remove('left-1/2', 'top-1/2', '-translate-x-1/2', '-translate-y-1/2', 'transform');
+      }
+
+      // Initial Focus
+      win.addEventListener('mousedown', () => bringToFront(win));
+
+      // Drag Logic
+      const handles = win.querySelectorAll('.draggable-handle');
+      handles.forEach(handle => {
+        handle.onmousedown = (e) => {
+          if (isMobile) return; // No dragging on mobile
+          if (e.target.closest('.cursor-pointer') || e.target.closest('.btn-close-window') || e.target.closest('.btn-fullscreen-window') || e.target.closest('.favorites-nav') || e.target.closest('button')) return;
+          bringToFront(win);
+          win.classList.add('dragging-window');
+          const rect = win.getBoundingClientRect();
+          const offX = e.clientX - rect.left;
+          const offY = e.clientY - rect.top;
+
+          const move = (ev) => {
+            win.style.left = `${ev.clientX - offX}px`;
+            win.style.top = `${ev.clientY - offY}px`;
+          };
+          const up = () => {
+            win.classList.remove('dragging-window');
+            window.removeEventListener('mousemove', move);
+            window.removeEventListener('mouseup', up);
+          };
+          window.addEventListener('mousemove', move);
+          window.addEventListener('mouseup', up);
+        };
+      });
+
+      // UI setup
+      win.querySelector('.btn-close-window').onclick = () => win.remove();
+      win.querySelector('.btn-minimize-window').onclick = () => win.remove();
+      win.querySelector('.btn-fullscreen-window').onclick = () => toggleFullscreen(win);
+
+      const btnGrid = win.querySelector('#btn-view-grid');
+      const btnList = win.querySelector('#btn-view-list');
+
+      const updateViewTabs = () => {
+        if (!btnGrid || !btnList) return;
+        if (win.dataset.viewMode === 'grid') {
+          btnGrid.classList.add('bg-white', 'dark:bg-slate-600', 'shadow-sm', 'text-primary', 'dark:text-white', 'rounded-md');
+          btnGrid.classList.remove('text-slate-400', 'dark:text-slate-500');
+          btnList.classList.remove('bg-white', 'dark:bg-slate-600', 'shadow-sm', 'text-primary', 'dark:text-white', 'rounded-md');
+          btnList.classList.add('text-slate-400', 'dark:text-slate-500');
+        } else {
+          btnList.classList.add('bg-white', 'dark:bg-slate-600', 'shadow-sm', 'text-primary', 'dark:text-white', 'rounded-md');
+          btnList.classList.remove('text-slate-400', 'dark:text-slate-500');
+          btnGrid.classList.remove('bg-white', 'dark:bg-slate-600', 'shadow-sm', 'text-primary', 'dark:text-white', 'rounded-md');
+          btnGrid.classList.add('text-slate-400', 'dark:text-slate-500');
+        }
+      };
+
+      if (btnGrid) btnGrid.onclick = () => {
+        win.dataset.viewMode = 'grid';
+        updateViewTabs();
+        renderFolderContent(win, win.dataset.folder);
+      };
+      if (btnList) btnList.onclick = () => {
+        win.dataset.viewMode = 'list';
+        updateViewTabs();
+        renderFolderContent(win, win.dataset.folder);
+      };
+
+      // Inject Favorites
+      const favNav = win.querySelector('.favorites-nav');
+      Object.keys(portfolioData).forEach(key => {
+        if (key.includes('/')) return;
+        const a = document.createElement('a');
+        a.className = "flex items-center space-x-2 px-2 py-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded-md text-[12px] font-medium transition-colors cursor-pointer focus-nav-item select-none";
+        a.innerHTML = `<span>${key}</span>`;
+        if (key === folderName) a.classList.add('bg-primary/90', 'text-white');
+        a.onclick = (e) => {
+          e.stopPropagation();
+          win.dataset.folder = key;
+          renderFolderContent(win, key);
+        };
+        favNav.appendChild(a);
+      });
+
+      document.getElementById('desktop-main').appendChild(win);
+      updateViewTabs();
+      renderFolderContent(win, folderName);
+      return win;
+    }
+
+    function renderFolderContent(win, folderName) {
+      if (!win) return;
+
+      const mainArea = win.querySelector('.finder-main-area');
+      const title = win.querySelector('.finder-title');
+      if (title) title.innerText = folderName;
+
+      const viewMode = win.dataset.viewMode || 'grid';
+
+      // Update fav selection 
+      const favLinks = win.querySelectorAll('.favorites-nav a');
+      favLinks.forEach(a => {
+        if (a.innerText.trim() === folderName) {
+          a.classList.add('bg-primary/90', 'text-white');
+          a.classList.remove('text-slate-600', 'dark:text-slate-400');
+        } else {
+          a.classList.remove('bg-primary/90', 'text-white');
+          a.classList.add('text-slate-600', 'dark:text-slate-400');
+        }
+      });
+
+      const data = portfolioData[folderName] || [];
+      // Sort data
+      const sortedData = [...data].sort((a, b) => {
+        if (a.isVideo && !b.isVideo) return -1;
+        if (!a.isVideo && b.isVideo) return 1;
+        return a.name.localeCompare(b.name);
+      });
+
+      if (sortedData.length === 0) {
+        mainArea.innerHTML = `<div class="flex flex-col items-center justify-center h-full opacity-40">
+          <span class="material-symbols-outlined text-6xl">folder_open</span>
+          <p class="mt-2 text-sm font-medium">This folder is empty</p>
+        </div>`;
+        return;
+      }
+
+      if (viewMode === 'list') {
+        let html = `
+          <table class="w-full text-left text-[12px] border-collapse bg-transparent">
+            <thead class="sticky top-0 bg-white/50 dark:bg-slate-900/80 backdrop-blur-md text-slate-500 font-medium border-b border-slate-200/20 dark:border-white/5 shadow-sm z-10 transition-colors duration-300">
+              <tr>
+                <th class="py-3 px-4 font-semibold w-1/2">Name</th>
+                <th class="py-3 px-2 font-semibold">Type</th>
+                <th class="py-3 px-2 font-semibold">Size</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100/10 dark:divide-slate-700/50">
+        `;
+        sortedData.forEach((item, index) => {
+          let icon = 'image';
+          if (item.isVideo) icon = 'movie';
+          const clickAction = `handleItemClick('${folderName.replace(/'/g, "\\'")}', ${index}, event)`;
+          html += `
+            <tr class="group hover:bg-primary/10 dark:hover:bg-white/5 transition-colors cursor-pointer" onclick="${clickAction}">
+              <td class="py-2 px-4 flex items-center space-x-2">
+                <span class="material-symbols-outlined text-[14px] text-sky-500 bg-primary/20 p-0.5 rounded mr-2">${item.isVideo ? 'movie' : 'image'}</span>
+                <span class="text-on-surface dark:text-slate-100 font-semibold group-hover:text-primary dark:group-hover:text-white transition-colors">${item.name}</span>
+              </td>
+              <td class="py-2 px-2 text-slate-500 dark:text-slate-400">${item.type}</td>
+              <td class="py-2 px-2 text-slate-500 dark:text-slate-400">${item.size}</td>
+            </tr>
+          `;
+        });
+        html += `</tbody></table>`;
+        mainArea.innerHTML = html;
+      } else {
+        let html = `<div class="p-6 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">`;
+        sortedData.forEach((item, i) => {
+          let thumb;
+          if (item.isMagazine) {
+            const magKey = folderName + '/' + item.name;
+            const pages = portfolioData[magKey] || [];
+            const cover = pages.find(p => !p.isVideo && p.src);
+            thumb = cover
+              ? `<img src="${cover.src}" class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />`
+              : `<div class="w-full h-full flex items-center justify-center bg-slate-200 dark:bg-slate-700"><span class="material-symbols-outlined text-slate-400 text-3xl" style="font-variation-settings:'FILL' 1;">auto_stories</span></div>`;
+          } else if (item.isVideo) {
+            thumb = `<video src="${item.src}" class="w-full h-full object-cover" muted preload="metadata" onloadedmetadata="this.currentTime=0.001" style="pointer-events:none;"></video>`;
+          } else {
+            thumb = `<img src="${item.src}" class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />`;
+          }
+          html += `
+            <div class="flex flex-col items-center group cursor-pointer" onclick="handleItemClick('${folderName.replace(/'/g, "\\'")}', ${i}, event)">
+              <div class="w-20 h-20 mb-2 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 transition-all duration-200 group-hover:scale-105 group-hover:shadow-lg ring-2 ring-transparent group-hover:ring-primary/40">
+                ${thumb}
+              </div>
+              <span class="text-[10px] text-center text-slate-700 dark:text-slate-300 font-medium break-all px-1 rounded group-hover:bg-primary group-hover:text-white transition-colors max-w-[80px] truncate">${item.name}</span>
+            </div>
+          `;
+        });
+        html += `</div>`;
+        mainArea.innerHTML = html;
+      }
+    }
+
+    // Generic Drag Logic for standalone windows (About, QuickLook)
+    function makeDraggable(el, handleSelector) {
+      const handles = el.querySelectorAll(handleSelector);
+      if (handles.length === 0) {
+        // If no handle selector found, use the element itself
+        attachHandler(el, el);
+        return;
+      }
+      handles.forEach(h => attachHandler(el, h));
+
+      function attachHandler(targetEl, handle) {
+        handle.onmousedown = (e) => {
+          if (e.target.closest('.cursor-pointer') || e.target.closest('button') || e.target.closest('.btn-close-window')) return;
+          bringToFront(targetEl);
+
+          const rect = targetEl.getBoundingClientRect();
+          targetEl.style.position = 'fixed';
+          targetEl.style.left = rect.left + 'px';
+          targetEl.style.top = rect.top + 'px';
+          targetEl.style.transform = 'none';
+          targetEl.style.margin = '0';
+          targetEl.classList.remove('left-1/2', 'top-1/2', '-translate-x-1/2', '-translate-y-1/2');
+
+          targetEl.classList.add('dragging-window');
+          const offX = e.clientX - rect.left;
+          const offY = e.clientY - rect.top;
+
+          const move = (ev) => {
+            targetEl.style.left = `${ev.clientX - offX}px`;
+            targetEl.style.top = `${ev.clientY - offY}px`;
+          };
+          const up = () => {
+            targetEl.classList.remove('dragging-window');
+            window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up);
+          };
+          window.addEventListener('mousemove', move); window.addEventListener('mouseup', up);
+        };
+      }
+    }
+
+    // Initializing standalone draggables
+    setTimeout(() => {
+      const about = document.getElementById('about-me-modal');
+      const ql = document.getElementById('quick-look-modal');
+      makeDraggable(about, '.draggable-handle');
+      makeDraggable(ql, '.draggable-handle');
+    }, 500);
+
+    window.handleItemClick = function (folder, index, event) {
+      const item = portfolioData[folder][index];
+
+      // Handle Magazines/Folders first
+      const magKey = folder + "/" + item.name;
+      if (portfolioData[magKey]) {
+        openMagazineReader(folder, index);
+        return;
+      }
+
+      // Everything else (Images and Videos) goes to Quick Look as default
+      openQuickLook(item);
+    };
+
+    function toggleFullscreen(win) {
+      if (win.dataset.isMaximized === 'true') {
+        win.style.width = '960px';
+        win.style.height = '620px';
+        win.style.left = win.dataset.prevLeft || '50%';
+        win.style.top = win.dataset.prevTop || '50%';
+        win.style.transform = win.dataset.prevLeft ? 'none' : 'translate(-50%, -50%)';
+        win.dataset.isMaximized = 'false';
+      } else {
+        win.dataset.prevLeft = win.style.left;
+        win.dataset.prevTop = win.style.top;
+        win.style.width = '100vw';
+        win.style.height = 'calc(100vh - 2rem)';
+        win.style.left = '0';
+        win.style.top = '2rem';
+        win.style.transform = 'none';
+        win.dataset.isMaximized = 'true';
+      }
+    }
+
+    function openFinderFor(folderName) {
+      createWindow(folderName);
+    }
+
+    // --- Desktop Icons Dragging Logic ---
+    const desktopIcons = document.querySelectorAll('.desktop-icon');
+    let draggedIcon = null, iconIsDragging = false, iconOffsetX, iconOffsetY;
+
+    const iconsContainer = document.getElementById('desktop-icons-container');
+
+    desktopIcons.forEach(icon => {
+      icon.addEventListener('mousedown', (e) => {
+        iconIsDragging = false;
+        draggedIcon = icon;
+        const containerRect = iconsContainer.getBoundingClientRect();
+        const rect = icon.getBoundingClientRect();
+        iconOffsetX = e.clientX - rect.left;
+        iconOffsetY = e.clientY - rect.top;
+        desktopIcons.forEach(i => i.style.zIndex = '1');
+        icon.style.zIndex = '10';
+
+        icon.style.right = 'auto';
+        icon.style.bottom = 'auto';
+        icon.style.left = `${rect.left - containerRect.left}px`;
+        icon.style.top = `${rect.top - containerRect.top}px`;
+      });
+      icon.addEventListener('click', (e) => {
+        if (!iconIsDragging) {
+          desktopIcons.forEach(i => i.classList.remove('selected'));
+          icon.classList.add('selected');
+        }
+      });
+      icon.addEventListener('dblclick', (e) => {
+        createWindow(icon.dataset.name);
+      });
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (draggedIcon) {
+        iconIsDragging = true;
+        const containerRect = iconsContainer.getBoundingClientRect();
+        draggedIcon.style.left = `${e.clientX - iconOffsetX - containerRect.left}px`;
+        draggedIcon.style.top = `${e.clientY - iconOffsetY - containerRect.top}px`;
+      }
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (draggedIcon) {
+        setTimeout(() => { iconIsDragging = false; draggedIcon = null; }, 50);
+      }
+    });
+
+    document.addEventListener('mousedown', (e) => {
+      if (!e.target.closest('.desktop-icon')) {
+        desktopIcons.forEach(i => i.classList.remove('selected'));
+      }
+    });
+
+    // --- Finder View Logic ---
+    // Legacy singleton variables removed. Logic moved into createWindow and renderFolderContent.
+
+    // --- Quick Look Logic ---
+    window.openQuickLook = function (item) {
+      const quickLookTitle = document.getElementById('quick-look-title');
+      const quickLookContent = document.getElementById('quick-look-content');
+      const quickLookModal = document.getElementById('quick-look-modal');
+      quickLookTitle.innerText = item.name;
+
+      const qlControls = document.getElementById('quick-look-controls');
+      let contentHtml = '';
+      if (item.isVideo) {
+        contentHtml = `<video class="max-w-[85vw] max-h-[75vh] object-contain block" src="${item.src}" autoplay loop playsinline></video>`;
+        qlControls.style.display = '';
+      } else {
+        contentHtml = `<img class="max-w-[85vw] max-h-[75vh] object-contain block" src="${item.src}" />`;
+        qlControls.style.display = 'none';
+      }
+      quickLookContent.innerHTML = contentHtml;
+
+      // Setup custom media controls
+      const videoEl = quickLookContent.querySelector('video');
+      const playPauseBtn = document.getElementById('ql-play-pause');
+      const progressBar = document.getElementById('ql-progress-bar');
+      const progressBg = document.getElementById('ql-progress-bg');
+      const timeSpan = document.getElementById('ql-time');
+      const fullscreenBtn = document.getElementById('ql-fullscreen');
+
+      // Reset controls state
+      if (progressBar) progressBar.style.width = '0%';
+      if (timeSpan) timeSpan.textContent = '0:00';
+      if (playPauseBtn) playPauseBtn.textContent = 'pause_circle';
+
+      if (videoEl) {
+        // Clone elements first to remove stale listeners, then get fresh references
+        const newPlay = playPauseBtn.cloneNode(true);
+        playPauseBtn.parentNode.replaceChild(newPlay, playPauseBtn);
+
+        const newProgress = progressBg.cloneNode(true);
+        progressBg.parentNode.replaceChild(newProgress, progressBg);
+        const newProgressBar = newProgress.querySelector('#ql-progress-bar');
+
+        const newFs = fullscreenBtn.cloneNode(true);
+        fullscreenBtn.parentNode.replaceChild(newFs, fullscreenBtn);
+
+        // Wire up listeners using fresh references
+        videoEl.addEventListener('timeupdate', () => {
+          if (videoEl.duration) {
+            const pct = (videoEl.currentTime / videoEl.duration) * 100;
+            if (newProgressBar) newProgressBar.style.width = pct + '%';
+            const m = Math.floor(videoEl.currentTime / 60);
+            const s = Math.floor(videoEl.currentTime % 60).toString().padStart(2, '0');
+            timeSpan.textContent = `${m}:${s}`;
+          }
+        });
+        videoEl.addEventListener('play', () => { newPlay.textContent = 'pause_circle'; });
+        videoEl.addEventListener('pause', () => { newPlay.textContent = 'play_circle'; });
+
+        newPlay.addEventListener('click', () => { if (videoEl.paused) videoEl.play(); else videoEl.pause(); });
+
+        let qlDragging = false;
+        const qlSeek = (clientX) => {
+          const rect = newProgress.getBoundingClientRect();
+          const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+          videoEl.currentTime = pct * videoEl.duration;
+          if (newProgressBar) newProgressBar.style.width = (pct * 100) + '%';
+        };
+        newProgress.addEventListener('mousedown', (e) => { qlDragging = true; qlSeek(e.clientX); });
+        newProgress.addEventListener('touchstart', (e) => { qlDragging = true; qlSeek(e.touches[0].clientX); }, { passive: true });
+        window.addEventListener('mousemove', (e) => { if (qlDragging) qlSeek(e.clientX); });
+        window.addEventListener('touchmove', (e) => { if (qlDragging) qlSeek(e.touches[0].clientX); }, { passive: true });
+        window.addEventListener('mouseup', () => { qlDragging = false; });
+        window.addEventListener('touchend', () => { qlDragging = false; });
+
+        newFs.addEventListener('click', () => {
+          if (videoEl.requestFullscreen) videoEl.requestFullscreen();
+          else if (videoEl.webkitRequestFullscreen) videoEl.webkitRequestFullscreen();
+        });
+      }
+
+      quickLookModal.classList.remove('hidden');
+      setTimeout(() => {
+        quickLookModal.classList.remove('opacity-0');
+        quickLookModal.classList.add('opacity-100');
+      }, 10);
+      bringToFront(quickLookModal);
+    };
+
+    window.closeQuickLook = function () {
+      const quickLookModal = document.getElementById('quick-look-modal');
+      const quickLookContent = document.getElementById('quick-look-content');
+      quickLookModal.classList.remove('opacity-100');
+      quickLookModal.classList.add('opacity-0');
+      setTimeout(() => {
+        quickLookModal.classList.add('hidden');
+        quickLookContent.innerHTML = '';
+      }, 300);
+    };
+
+    document.getElementById('btn-close-quick-look').addEventListener('click', closeQuickLook);
+
+    document.addEventListener('keydown', (e) => {
+      const quickLookModal = document.getElementById('quick-look-modal');
+      if (quickLookModal.classList.contains('hidden')) return;
+      if (e.key === 'Escape') {
+        closeQuickLook();
+      } else if (e.code === 'Space') {
+        e.preventDefault();
+        const v = quickLookModal.querySelector('video');
+        if (v) { if (v.paused) v.play(); else v.pause(); }
+      }
+    });
+
+    // --- Legacy Cleanup Done ---
+
+
+
+
+
+
+    // --- Edits Viewer Logic ---
+    const editsViewer = document.getElementById('edits-viewer');
+    const editsList = document.getElementById('edits-list');
+    const editsVideo = document.getElementById('edits-video');
+    const editsEmpty = document.getElementById('edits-empty');
+    const btnCloseEdits = document.getElementById('btn-close-edits');
+
+    let editsItems = [];
+    let selectedEditIndex = -1;
+
+    // Collect all videos with 3 or fewer digit characters in the name
+    const collectEdits = () => {
+      const results = [];
+      Object.keys(portfolioData).forEach(folderKey => {
+        if (folderKey.startsWith('TOMIN INDEX.TXT')) return;
+        const items = portfolioData[folderKey];
+        if (!Array.isArray(items)) return;
+        items.forEach(item => {
+          if (!item.isVideo) return;
+          const nameNoExt = item.name.replace(/\.[^/.]+$/, '');
+          const digitCount = (nameNoExt.match(/\d/g) || []).length;
+          if (digitCount <= 3) {
+            results.push({ ...item, folder: folderKey });
+          }
+        });
+      });
+      return results;
+    };
+
+    const editsPlayPause = document.getElementById('edits-play-pause');
+    const editsProgressBar = document.getElementById('edits-progress-bar');
+    const editsProgressBg = document.getElementById('edits-progress-bg');
+    const editsTimeEl = document.getElementById('edits-time');
+
+    // Wire up media controls
+    editsPlayPause.addEventListener('click', () => {
+      if (editsVideo.paused) {
+        editsVideo.play();
+        editsPlayPause.innerText = 'pause_circle';
+      } else {
+        editsVideo.pause();
+        editsPlayPause.innerText = 'play_circle';
+      }
+    });
+
+    editsVideo.addEventListener('timeupdate', () => {
+      if (!editsVideo.duration) return;
+      const pct = (editsVideo.currentTime / editsVideo.duration) * 100;
+      editsProgressBar.style.width = pct + '%';
+      const m = Math.floor(editsVideo.currentTime / 60);
+      const s = Math.floor(editsVideo.currentTime % 60).toString().padStart(2, '0');
+      editsTimeEl.innerText = `${m}:${s}`;
+    });
+
+    editsVideo.addEventListener('play', () => { editsPlayPause.innerText = 'pause_circle'; });
+    editsVideo.addEventListener('pause', () => { editsPlayPause.innerText = 'play_circle'; });
+
+    editsProgressBg.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      if (!editsVideo.duration) return;
+      const scrub = (ev) => {
+        const rect = editsProgressBg.getBoundingClientRect();
+        const pos = Math.max(0, Math.min(1, (ev.clientX - rect.left) / rect.width));
+        editsVideo.currentTime = pos * editsVideo.duration;
+        editsProgressBar.style.width = (pos * 100) + '%';
+      };
+      scrub(e);
+      const onMove = ev => scrub(ev);
+      const onUp = () => { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); };
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+    });
+
+    const selectEdit = (index) => {
+      if (index < 0 || index >= editsItems.length) return;
+      selectedEditIndex = index;
+
+      // Update list highlight
+      const rows = editsList.querySelectorAll('.edit-row');
+      rows.forEach((r, i) => {
+        if (i === index) {
+          r.classList.add('bg-slate-100', 'dark:bg-white/5');
+          r.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        } else {
+          r.classList.remove('bg-slate-100', 'dark:bg-white/5');
+        }
+      });
+
+      // Play video, reset controls
+      const item = editsItems[index];
+      editsVideo.src = item.src;
+      editsVideo.play();
+      editsProgressBar.style.width = '0%';
+      editsTimeEl.innerText = '0:00';
+      if (editsEmpty) editsEmpty.style.display = 'none';
+    };
+
+    const renderEditsList = () => {
+      editsList.innerHTML = '';
+      editsItems.forEach((item, i) => {
+        const nameNoExt = item.name.replace(/\.[^/.]+$/, '');
+        const row = document.createElement('div');
+        row.className = 'edit-row px-6 py-2 cursor-pointer text-slate-800 dark:text-white/80 text-sm font-light tracking-widest transition-colors hover:bg-slate-100 dark:hover:bg-white/5';
+        row.innerText = nameNoExt;
+        row.addEventListener('click', () => selectEdit(i));
+        editsList.appendChild(row);
+      });
+    };
+
+    window.openEditsViewer = function () {
+      // Pause Quick Look video if playing
+      const qlVideo = document.querySelector('#quick-look-modal video');
+      if (qlVideo) qlVideo.pause();
+
+      editsItems = collectEdits();
+      renderEditsList();
+      selectedEditIndex = -1;
+      editsVideo.src = '';
+      if (editsEmpty) editsEmpty.style.display = '';
+
+      const viewer = document.getElementById('edits-viewer');
+      bringToFront(viewer);
+      desktopMain.classList.add('translate-x-1/4', 'scale-95', 'opacity-50');
+      viewer.classList.remove('-translate-x-full');
+      viewer.classList.add('translate-x-0');
+
+      // Auto-select first edit
+      setTimeout(() => selectEdit(0), 100);
+    };
+
+    btnCloseEdits.addEventListener('click', () => {
+      desktopMain.classList.remove('translate-x-1/4', 'scale-95', 'opacity-50');
+      editsViewer.classList.remove('translate-x-0');
+      editsViewer.classList.add('-translate-x-full');
+      editsVideo.pause();
+      editsVideo.src = '';
+    });
+
+    // Arrow key & Space navigation in edits viewer
+    document.addEventListener('keydown', (e) => {
+      if (!editsViewer.classList.contains('translate-x-0')) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectEdit(selectedEditIndex + 1);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectEdit(selectedEditIndex - 1);
+      } else if (e.code === 'Space') {
+        e.preventDefault();
+        if (editsVideo.paused) editsVideo.play();
+        else editsVideo.pause();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        btnCloseEdits.click();
+      }
+    });
+
+    window.handleFinderClick = function () {
+      // Check if Edits Viewer is open
+      if (editsViewer && editsViewer.classList.contains('translate-x-0')) {
+        btnCloseEdits.click();
+        return;
+      }
+
+      // Check if Magazine Reader is open
+      if (magazineReader && magazineReader.classList.contains('translate-x-0')) {
+        btnCloseMagazine.click();
+        return;
+      }
+
+      // Otherwise, open Finder (creating a new window if none exist)
+      const firstFolder = Object.keys(portfolioData).find(k => !k.includes('/')) || '';
+      createWindow(firstFolder);
+    };
+
+    const desktopMain = document.getElementById('desktop-main');
+
+    const magazineReader = document.getElementById('magazine-reader');
+    const btnCloseMagazine = document.getElementById('btn-close-magazine');
+    const magazineScroller = document.getElementById('magazine-scroller');
+    const magazineTitle = document.getElementById('magazine-title');
+    const magazineProgress = document.getElementById('magazine-progress');
+    const magazineCurrentPage = document.getElementById('magazine-current-page');
+    const magazineTotalPages = document.getElementById('magazine-total-pages');
+
+    let isDraggingSlider = false;
+    magazineProgress.addEventListener('mousedown', () => isDraggingSlider = true);
+    magazineProgress.addEventListener('touchstart', () => isDraggingSlider = true, { passive: true });
+    window.addEventListener('mouseup', () => isDraggingSlider = false);
+    window.addEventListener('touchend', () => isDraggingSlider = false);
+
+    window.openMagazineReader = function (folder, index) {
+      const magItem = portfolioData[folder][index];
+      const magKey = folder + "/" + magItem.name;
+      const images = portfolioData[magKey] || [];
+
+      bringToFront(magazineReader);
+      magazineTitle.innerText = magItem.name;
+      magazineScroller.innerHTML = "";
+
+      if (images.length === 0) {
+        magazineScroller.innerHTML = `<div class="w-full h-full flex items-center justify-center text-slate-500 dark:text-white/50">No pages found in this magazine.</div>`;
+        magazineProgress.max = 1;
+        magazineTotalPages.innerText = "0";
+      } else {
+        magazineScroller.style.scrollSnapType = 'none';
+        magazineScroller.style.scrollBehavior = 'auto'; // allow pure scroll sync dragging
+
+        // Dynamic spacers that will be adjusted once image/video widths are known
+        let htmlSnippet = `<div id="mag-spacer-start" class="shrink-0 h-full pointer-events-none bg-transparent" style="width: 50vw;"></div>`;
+        images.forEach((img, i) => {
+          if (img.isVideo) {
+            htmlSnippet += `
+              <video src="${img.src}" class="mag-page h-full w-auto object-contain shrink-0 block mx-0 pointer-events-none" 
+                data-index="${i}" style="max-height: 100vh;" autoplay loop muted playsinline></video>
+            `;
+          } else {
+            htmlSnippet += `
+              <img src="${img.src}" class="mag-page h-full w-auto object-contain shrink-0 block mx-0 pointer-events-none" 
+                data-index="${i}" style="max-height: 100vh;">
+            `;
+          }
+        });
+        htmlSnippet += `<div id="mag-spacer-end" class="shrink-0 h-full pointer-events-none bg-transparent" style="width: 50vw;"></div>`;
+        magazineScroller.innerHTML = htmlSnippet;
+
+        // Seamless video loop
+        magazineScroller.querySelectorAll('video').forEach(v => {
+          v.addEventListener('timeupdate', () => {
+            if (v.duration && v.currentTime > v.duration - 0.08) {
+              v.currentTime = 0;
+              v.play();
+            }
+          });
+        });
+
+        // The slider tracks "Views" for navigation, but the total text shows actual pages
+        const viewsCount = images.length + (images.length > 1 ? 1 : 0);
+        magazineProgress.max = 10000;
+        magazineProgress.value = 0;
+        magazineTotalPages.innerText = images.length;
+        magazineCurrentPage.innerText = 1;
+
+        let cachedViews = [];
+        const updateCachedViews = () => {
+          cachedViews = getMagazineViews();
+        };
+
+        const getViewIndex = () => {
+          const current = magazineScroller.scrollLeft;
+          // Fallback if cache isn't ready yet
+          const activeViews = (cachedViews && cachedViews.length > 0) ? cachedViews : getMagazineViews();
+          let closestIndex = 0;
+          let minDiff = Infinity;
+          for (let i = 0; i < activeViews.length; i++) {
+            const diff = Math.abs(current - activeViews[i]);
+            if (diff < minDiff) {
+              minDiff = diff;
+              closestIndex = i;
+            }
+          }
+          return closestIndex;
+        };
+
+        const updatePageIndicator = (viewIndex) => {
+          const activeViews = (cachedViews && cachedViews.length > 0) ? cachedViews : getMagazineViews();
+          if (activeViews.length === 0) return;
+
+          if (viewIndex === 0) {
+            magazineCurrentPage.innerText = "1";
+          } else if (viewIndex === activeViews.length - 1 && images.length > 1) {
+            magazineCurrentPage.innerText = images.length;
+          } else {
+            magazineCurrentPage.innerText = `${viewIndex}-${viewIndex + 1}`;
+          }
+        };
+
+        const snapToView = () => {
+          updateCachedViews(); // Ensure we have latest layout
+          const current = magazineScroller.scrollLeft;
+          if (cachedViews.length === 0) return;
+          let closest = cachedViews[0];
+          let minDiff = Infinity;
+          cachedViews.forEach(v => {
+            const diff = Math.abs(current - v);
+            if (diff < minDiff) {
+              minDiff = diff;
+              closest = v;
+            }
+          });
+          magazineScroller.scrollTo({ left: closest, behavior: 'smooth' });
+        };
+
+        magazineScroller.onscroll = () => {
+          if (isDraggingSlider || isPanning) {
+            updatePageIndicator(getViewIndex());
+            return;
+          }
+          const maxScroll = magazineScroller.scrollWidth - magazineScroller.clientWidth;
+          if (maxScroll > 0) {
+            const progress = (magazineScroller.scrollLeft / maxScroll) * 10000;
+            magazineProgress.value = progress;
+          }
+          updatePageIndicator(getViewIndex());
+        };
+
+        magazineProgress.oninput = (e) => {
+          const val = parseInt(e.target.value);
+          const maxScroll = magazineScroller.scrollWidth - magazineScroller.clientWidth;
+          const targetScroll = (val / 10000) * maxScroll;
+          magazineScroller.scrollTo({ left: targetScroll, behavior: 'auto' });
+          updatePageIndicator(getViewIndex());
+        };
+
+        magazineProgress.onchange = () => {
+          snapToView();
+        };
+
+        // Setup custom drag to pan
+        let isPanning = false;
+        let startX;
+        let scrollLeft;
+        magazineScroller.hasDragged = false;
+
+        magazineScroller.onpointerdown = (e) => {
+          isPanning = true;
+          magazineScroller.style.cursor = 'grabbing';
+          magazineScroller.style.scrollBehavior = 'auto'; // Immediate response
+          // Cancel any ongoing smooth scroll
+          magazineScroller.scrollTo({ left: magazineScroller.scrollLeft, behavior: 'instant' });
+
+          startX = e.clientX;
+          scrollLeft = magazineScroller.scrollLeft;
+          magazineScroller.hasDragged = false;
+        };
+
+        magazineScroller.onpointerleave = () => {
+          if (isPanning) {
+            isPanning = false;
+            magazineScroller.style.cursor = 'auto';
+            snapToView();
+          }
+        };
+
+        magazineScroller.onpointerup = () => {
+          if (isPanning) {
+            isPanning = false;
+            magazineScroller.style.cursor = 'auto';
+            snapToView();
+          }
+        };
+
+        magazineScroller.onpointermove = (e) => {
+          if (!isPanning) return;
+          e.preventDefault();
+          const walk = (e.clientX - startX);
+          if (Math.abs(walk) > 10) {
+            magazineScroller.hasDragged = true;
+          }
+          magazineScroller.scrollLeft = scrollLeft - walk;
+        };
+
+        // Setup click navigation right on the scroller bounds
+        magazineScroller.onclick = (e) => {
+          if (magazineScroller.hasDragged) {
+            magazineScroller.hasDragged = false;
+            return;
+          }
+          const rect = magazineScroller.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const views = getMagazineViews();
+          const current = magazineScroller.scrollLeft;
+
+          if (x < rect.width * 0.25) {
+            const prev = [...views].reverse().find(v => v < current - 10);
+            if (prev !== undefined) {
+              magazineScroller.scrollTo({ left: prev, behavior: 'smooth' });
+            } else {
+              magazineScroller.scrollTo({ left: 0, behavior: 'smooth' });
+            }
+          } else if (x > rect.width * 0.75) {
+            const next = views.find(v => v > current + 10);
+            if (next !== undefined) {
+              magazineScroller.scrollTo({ left: next, behavior: 'smooth' });
+            } else {
+              magazineScroller.scrollTo({ left: magazineScroller.scrollWidth, behavior: 'smooth' });
+            }
+          }
+        };
+      }
+
+      // Fedora swipe animation left
+      desktopMain.classList.add('-translate-x-1/4', 'scale-95', 'opacity-50');
+      magazineReader.classList.remove('translate-x-full');
+      magazineReader.classList.add('translate-x-0');
+
+      // Auto-align spacers so the cover centers at scrollLeft = 0
+      const firstImg = magazineScroller.querySelector('.mag-page');
+      const lastImg = Array.from(magazineScroller.querySelectorAll('.mag-page')).pop();
+      const startSpacer = document.getElementById('mag-spacer-start');
+      const endSpacer = document.getElementById('mag-spacer-end');
+
+      let scrollAttempts = 0;
+      const alignSpacersAndScroll = () => {
+        const half = magazineScroller.clientWidth / 2;
+        const firstImgWidth = firstImg ? firstImg.offsetWidth : 0;
+        const lastImgWidth = lastImg ? lastImg.offsetWidth : 0;
+
+        // If image width isn't ready, wait
+        if (firstImgWidth === 0 && scrollAttempts < 25) {
+          scrollAttempts++;
+          requestAnimationFrame(alignSpacersAndScroll);
+          return;
+        }
+
+        // Adjust spacers so cover center is at 0 and back center is at maxScroll
+        if (startSpacer && firstImgWidth > 0) {
+          startSpacer.style.width = (half - firstImgWidth / 2) + "px";
+        }
+        if (endSpacer && lastImgWidth > 0) {
+          endSpacer.style.width = (half - lastImgWidth / 2) + "px";
+        }
+
+        updateCachedViews();
+        magazineScroller.scrollTo({ left: 0, behavior: 'instant' });
+      };
+
+      if (firstImg) {
+        if (firstImg.tagName === 'VIDEO') {
+          firstImg.onloadedmetadata = alignSpacersAndScroll;
+        } else {
+          if (firstImg.complete) {
+            alignSpacersAndScroll();
+          } else {
+            firstImg.onload = alignSpacersAndScroll;
+          }
+        }
+      }
+      setTimeout(alignSpacersAndScroll, 100);
+      setTimeout(alignSpacersAndScroll, 500);
+    };
+
+    const magFullscreenToggle = document.getElementById('mag-fullscreen-toggle');
+    if (magFullscreenToggle) {
+      magFullscreenToggle.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+        } else {
+          document.exitFullscreen();
+        }
+      });
+    }
+
+    btnCloseMagazine.addEventListener('click', () => {
+      // Fedora swipe animation right
+      desktopMain.classList.remove('-translate-x-1/4', 'scale-95', 'opacity-50');
+      magazineReader.classList.remove('translate-x-0');
+      magazineReader.classList.add('translate-x-full');
+
+      setTimeout(() => {
+        magazineScroller.innerHTML = "";
+      }, 500); // clear after animation
+    });
+
+    const getMagazineViews = () => {
+      const views = [];
+      const imgs = magazineScroller.querySelectorAll('.mag-page');
+      const halfScreen = magazineScroller.clientWidth / 2;
+      const maxScroll = Math.max(0, magazineScroller.scrollWidth - magazineScroller.clientWidth);
+
+      if (imgs.length > 0) {
+        // View 1: Center of first image (Cover)
+        const v0 = imgs[0].offsetLeft + (imgs[0].offsetWidth / 2) - halfScreen;
+        views.push(Math.max(0, Math.min(v0, maxScroll)));
+
+        // Views 2 to N: Center of all seams between images (Spreads)
+        for (let i = 1; i < imgs.length; i++) {
+          const vi = imgs[i].offsetLeft - halfScreen;
+          views.push(Math.max(0, Math.min(vi, maxScroll)));
+        }
+
+        // Last View: Center of last image (Back Cover)
+        if (imgs.length > 1) {
+          const vLast = imgs[imgs.length - 1].offsetLeft + (imgs[imgs.length - 1].offsetWidth / 2) - halfScreen;
+          views.push(Math.max(0, Math.min(vLast, maxScroll)));
+        }
+      }
+      return views;
+    };
+
+    document.addEventListener('keydown', (e) => {
+      // Only process keys if magazine reader is fully open (translate-x-0)
+      if (magazineReader.classList.contains('translate-x-0')) {
+        const views = getMagazineViews();
+        const current = magazineScroller.scrollLeft;
+
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          const next = views.find(v => v > current + 10);
+          if (next !== undefined) {
+            magazineScroller.scrollTo({ left: next, behavior: 'smooth' });
+          }
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          const prev = [...views].reverse().find(v => v < current - 10);
+          if (prev !== undefined) {
+            magazineScroller.scrollTo({ left: prev, behavior: 'smooth' });
+          }
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          btnCloseMagazine.click();
+        }
+      }
+    });
+
+    // ====== iOS Homescreen Logic ======
+    (function () {
+      const iosScreen = document.getElementById('ios-screen');
+      const iosMagazinesApp = document.getElementById('ios-magazines-app');
+      const iosMagGrid = document.getElementById('ios-mag-grid');
+
+      function isMobileView() { return window.innerWidth <= 768; }
+
+      function applyScreen() {
+        if (isMobileView()) {
+          iosScreen.style.display = 'flex';
+        } else {
+          iosScreen.style.display = 'none';
+          iosMagazinesApp.style.display = 'none';
+        }
+      }
+      applyScreen();
+      window.addEventListener('resize', applyScreen);
+
+      // iOS clock
+      function updateClock() {
+        const el = document.getElementById('ios-clock');
+        if (!el) return;
+        const n = new Date();
+        el.textContent = n.getHours().toString().padStart(2, '0') + ':' + n.getMinutes().toString().padStart(2, '0');
+      }
+      updateClock();
+      setInterval(updateClock, 10000);
+
+      // iOS battery
+      if (navigator.getBattery) {
+        navigator.getBattery().then(bat => {
+          const icon = document.getElementById('ios-battery-icon');
+          function upd() {
+            const lvl = Math.round(bat.level * 100);
+            icon.textContent = bat.charging ? 'battery_charging_full'
+              : lvl > 80 ? 'battery_full'
+                : lvl > 40 ? 'battery_5_bar'
+                  : lvl > 10 ? 'battery_2_bar' : 'battery_0_bar';
+          }
+          upd();
+          bat.addEventListener('levelchange', upd);
+          bat.addEventListener('chargingchange', upd);
+        });
+      }
+
+      // Open Magazines app
+      window.iosOpenMagazines = function () {
+        // Build grid from portfolioData
+        const magazines = [];
+        Object.keys(portfolioData).forEach(key => {
+          if (key.includes('/')) return;
+          const items = portfolioData[key];
+          if (!Array.isArray(items)) return;
+          items.forEach((item, idx) => {
+            if (!item.isMagazine) return;
+            const magKey = key + '/' + item.name;
+            const pages = portfolioData[magKey] || [];
+            const cover = pages[0] ? pages[0].src : null;
+            magazines.push({ folder: key, index: idx, name: item.name, cover });
+          });
+        });
+
+        iosMagGrid.innerHTML = magazines.length === 0
+          ? '<div style="grid-column:1/-1;text-align:center;padding-top:80px;color:rgba(255,255,255,0.3);font-size:14px;">No magazines found</div>'
+          : magazines.map(mag => `
+              <div onclick="iosTapMagazine('${mag.folder.replace(/'/g, "\\'")}',${mag.index})"
+                style="-webkit-tap-highlight-color:transparent;cursor:pointer;">
+                <div style="border-radius:14px;overflow:hidden;aspect-ratio:3/4;background:#1e293b;box-shadow:0 8px 24px rgba(0,0,0,0.6);">
+                  ${mag.cover
+              ? `<img src="${mag.cover}" style="width:100%;height:100%;object-fit:cover;" />`
+              : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:12px;">${mag.name}</div>`}
+                </div>
+                <p style="color:#fff;font-weight:600;font-size:13px;margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${mag.name}</p>
+                <p style="color:rgba(255,255,255,0.45);font-size:11px;margin-top:1px;">Today</p>
+              </div>`).join('');
+
+        iosMagazinesApp.classList.remove('closing');
+        iosMagazinesApp.style.display = 'flex';
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          iosMagazinesApp.style.transform = 'scale(1)';
+          iosMagazinesApp.style.opacity = '1';
+          iosMagazinesApp.style.borderRadius = '0';
+        }));
+      };
+
+      window.iosCloseMagazines = function () {
+        iosMagazinesApp.classList.add('closing');
+        requestAnimationFrame(() => {
+          iosMagazinesApp.style.transform = 'scale(0.4)';
+          iosMagazinesApp.style.opacity = '0';
+          iosMagazinesApp.style.borderRadius = '40px';
+        });
+        setTimeout(() => {
+          iosMagazinesApp.style.display = 'none';
+          iosMagazinesApp.classList.remove('closing');
+          iosMagScreenReader.style.display = 'none';
+          iosMagScreenReader.style.transform = '';
+          iosMagScreenGrid.style.transform = '';
+          iosMagScreenGrid.style.opacity = '';
+          iosMagReaderPages.innerHTML = '';
+        }, 350);
+      };
+
+      const iosMagScreenGrid = document.getElementById('ios-mag-screen-grid');
+      const iosMagScreenReader = document.getElementById('ios-mag-screen-reader');
+      const iosMagReaderTitle = document.getElementById('ios-mag-reader-title');
+      const iosMagReaderPages = document.getElementById('ios-mag-reader-pages');
+      const iosMagPageLabel = document.getElementById('ios-mag-page-label');
+      const iosMagPageProgress = document.getElementById('ios-mag-page-progress');
+
+      function iosMagUpdatePageIndicator() {
+        const w = iosMagReaderPages.clientWidth;
+        if (!w) return;
+        const total = iosMagReaderPages.children.length;
+        const current = Math.round(iosMagReaderPages.scrollLeft / w) + 1;
+        iosMagPageLabel.textContent = current + ' / ' + total;
+        iosMagPageProgress.style.width = (current / total * 100) + '%';
+      }
+
+      iosMagReaderPages.addEventListener('scroll', iosMagUpdatePageIndicator);
+
+      window.iosTapMagazine = function (folder, index) {
+        const magItem = portfolioData[folder][index];
+        const magKey = folder + '/' + magItem.name;
+        const pages = portfolioData[magKey] || [];
+
+        iosMagReaderTitle.textContent = magItem.name;
+        const pageStyle = 'flex:0 0 100vw; width:100vw; min-width:100vw; height:100%; scroll-snap-align:start; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#000;';
+        iosMagReaderPages.innerHTML = pages.length === 0
+          ? '<div style="flex:0 0 100%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:14px;">No pages found.</div>'
+          : pages.map(p => p.isVideo
+            ? `<div style="${pageStyle}"><video src="${p.src}" style="width:100%;height:100%;object-fit:contain;" autoplay loop muted playsinline></video></div>`
+            : `<div style="${pageStyle}"><img src="${p.src}" style="width:100%;height:auto;flex-shrink:0;" /></div>`
+          ).join('');
+
+        iosMagReaderPages.scrollLeft = 0;
+        setTimeout(iosMagUpdatePageIndicator, 50);
+
+        // Play/pause videos based on visibility + seamless loop
+        const iosMagVideos = iosMagReaderPages.querySelectorAll('video');
+        iosMagVideos.forEach(v => {
+          v.pause();
+          v.addEventListener('timeupdate', () => {
+            if (v.duration && v.currentTime > v.duration - 0.08) {
+              v.currentTime = 0;
+              v.play();
+            }
+          });
+        });
+
+        function iosMagPlayVisibleVideo() {
+          const w = iosMagReaderPages.clientWidth;
+          const currentIndex = Math.round(iosMagReaderPages.scrollLeft / w);
+          iosMagVideos.forEach((v, i) => {
+            const page = v.closest('div');
+            const pageIndex = Array.from(iosMagReaderPages.children).indexOf(page);
+            if (pageIndex === currentIndex) {
+              if (v.paused) v.play();
+            } else {
+              v.pause();
+            }
+          });
+        }
+
+        iosMagReaderPages.addEventListener('scroll', iosMagPlayVisibleVideo);
+        setTimeout(iosMagPlayVisibleVideo, 100);
+
+        // Push transition: grid slides left, reader slides in from right
+        iosMagScreenGrid.style.transition = 'transform 0.35s cubic-bezier(0.25,1,0.5,1), opacity 0.35s ease';
+        iosMagScreenReader.style.transition = 'transform 0.35s cubic-bezier(0.25,1,0.5,1)';
+        iosMagScreenReader.style.display = 'flex';
+        iosMagScreenReader.style.transform = 'translateX(100%)';
+
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          iosMagScreenGrid.style.transform = 'translateX(-30%)';
+          iosMagScreenGrid.style.opacity = '0.4';
+          iosMagScreenReader.style.transform = 'translateX(0)';
+        }));
+      };
+
+      window.iosCloseReader = function () {
+        iosMagScreenGrid.style.transform = 'translateX(0)';
+        iosMagScreenGrid.style.opacity = '1';
+        iosMagScreenReader.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+          iosMagScreenReader.style.display = 'none';
+          iosMagReaderPages.innerHTML = '';
+        }, 350);
+      };
+
+      // ---- iOS Edits App ----
+      const iosEditsApp = document.getElementById('ios-edits-app');
+      const iosEditsVideo = document.getElementById('ios-edits-video');
+      const iosEditsList = document.getElementById('ios-edits-list');
+      const iosEditsPlayPause = document.getElementById('ios-edits-play-pause');
+      const iosEditsProgressBg = document.getElementById('ios-edits-progress-bg');
+      const iosEditsProgressBar = document.getElementById('ios-edits-progress-bar');
+      const iosEditsTime = document.getElementById('ios-edits-time');
+      const iosEditsFullscreen = document.getElementById('ios-edits-fullscreen');
+      let iosEditsItems = [];
+      let iosSelectedEdit = -1;
+
+      // Media controls wiring
+      iosEditsPlayPause.addEventListener('click', () => {
+        if (iosEditsVideo.paused) iosEditsVideo.play(); else iosEditsVideo.pause();
+      });
+      iosEditsFullscreen.addEventListener('click', () => {
+        if (iosEditsVideo.requestFullscreen) iosEditsVideo.requestFullscreen();
+        else if (iosEditsVideo.webkitEnterFullscreen) iosEditsVideo.webkitEnterFullscreen();
+      });
+      iosEditsVideo.addEventListener('play', () => { iosEditsPlayPause.textContent = 'pause_circle'; });
+      iosEditsVideo.addEventListener('pause', () => { iosEditsPlayPause.textContent = 'play_circle'; });
+      iosEditsVideo.addEventListener('timeupdate', () => {
+        if (!iosEditsVideo.duration) return;
+        const pct = (iosEditsVideo.currentTime / iosEditsVideo.duration) * 100;
+        iosEditsProgressBar.style.width = pct + '%';
+        const m = Math.floor(iosEditsVideo.currentTime / 60);
+        const s = Math.floor(iosEditsVideo.currentTime % 60).toString().padStart(2, '0');
+        iosEditsTime.textContent = `${m}:${s}`;
+      });
+
+      let iosEditsDragging = false;
+      const iosEditsSeek = (clientX) => {
+        if (!iosEditsVideo.duration) return;
+        const rect = iosEditsProgressBg.getBoundingClientRect();
+        const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+        iosEditsVideo.currentTime = pct * iosEditsVideo.duration;
+        iosEditsProgressBar.style.width = (pct * 100) + '%';
+      };
+      iosEditsProgressBg.addEventListener('mousedown', (e) => { iosEditsDragging = true; iosEditsSeek(e.clientX); });
+      iosEditsProgressBg.addEventListener('touchstart', (e) => { iosEditsDragging = true; iosEditsSeek(e.touches[0].clientX); }, { passive: true });
+      window.addEventListener('mousemove', (e) => { if (iosEditsDragging) iosEditsSeek(e.clientX); });
+      window.addEventListener('touchmove', (e) => { if (iosEditsDragging) iosEditsSeek(e.touches[0].clientX); }, { passive: true });
+      window.addEventListener('mouseup', () => { iosEditsDragging = false; });
+      window.addEventListener('touchend', () => { iosEditsDragging = false; });
+
+      function iosCollectEdits() {
+        const results = [];
+        Object.keys(portfolioData).forEach(folderKey => {
+          if (folderKey.startsWith('TOMIN INDEX.TXT')) return;
+          const items = portfolioData[folderKey];
+          if (!Array.isArray(items)) return;
+          items.forEach(item => {
+            if (!item.isVideo) return;
+            const nameNoExt = item.name.replace(/\.[^/.]+$/, '');
+            const digitCount = (nameNoExt.match(/\d/g) || []).length;
+            if (digitCount <= 3) {
+              results.push({ ...item, folder: folderKey });
+            }
+          });
+        });
+        return results;
+      }
+
+      function iosSelectEdit(index) {
+        if (index < 0 || index >= iosEditsItems.length) return;
+        iosSelectedEdit = index;
+        const item = iosEditsItems[index];
+        iosEditsVideo.src = item.src;
+        iosEditsVideo.play();
+
+        // Update highlight
+        iosEditsList.querySelectorAll('.ios-edit-row').forEach((r, i) => {
+          if (i === index) {
+            r.style.background = 'rgba(255,255,255,0.08)';
+            r.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          } else {
+            r.style.background = 'transparent';
+          }
+        });
+      }
+
+      function iosRenderEditsList() {
+        iosEditsList.innerHTML = '';
+        iosEditsItems.forEach((item, i) => {
+          const nameNoExt = item.name.replace(/\.[^/.]+$/, '');
+          const row = document.createElement('div');
+          row.className = 'ios-edit-row';
+          row.style.cssText = 'padding:14px 20px; cursor:pointer; color:#fff; font-size:15px; font-weight:400; border-bottom:1px solid rgba(255,255,255,0.06); -webkit-tap-highlight-color:transparent;';
+          row.textContent = nameNoExt;
+          row.addEventListener('click', () => iosSelectEdit(i));
+          iosEditsList.appendChild(row);
+        });
+      }
+
+      window.iosOpenEdits = function () {
+        iosEditsItems = iosCollectEdits();
+        iosRenderEditsList();
+        iosSelectedEdit = -1;
+        iosEditsVideo.src = '';
+
+        iosEditsApp.classList.remove('closing');
+        iosEditsApp.style.display = 'flex';
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          iosEditsApp.style.transform = 'scale(1)';
+          iosEditsApp.style.opacity = '1';
+          iosEditsApp.style.borderRadius = '0';
+        }));
+
+        // Auto-select first edit
+        setTimeout(() => iosSelectEdit(0), 100);
+      };
+
+      window.iosCloseEdits = function () {
+        iosEditsApp.classList.add('closing');
+        iosEditsVideo.pause();
+        iosEditsVideo.src = '';
+        requestAnimationFrame(() => {
+          iosEditsApp.style.transform = 'scale(0.4)';
+          iosEditsApp.style.opacity = '0';
+          iosEditsApp.style.borderRadius = '40px';
+        });
+        setTimeout(() => {
+          iosEditsApp.style.display = 'none';
+          iosEditsApp.classList.remove('closing');
+        }, 350);
+      };
+
+      // ---- App Icon Picker ----
+      window.setAppIcon = function (src, el) {
+        document.getElementById('apple-touch-icon').href = src;
+        document.querySelectorAll('.icon-pick-option').forEach(opt => {
+          opt.querySelector('img').style.border = '3px solid transparent';
+          const check = opt.querySelector('.icon-pick-check');
+          if (check) check.remove();
+        });
+        el.querySelector('img').style.border = '3px solid #0a84ff';
+        const check = document.createElement('span');
+        check.className = 'icon-pick-check';
+        check.style.cssText = 'position:absolute; bottom:-2px; right:-2px; width:20px; height:20px; background:#0a84ff; border-radius:50%; display:flex; align-items:center; justify-content:center;';
+        check.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px; color:#fff;">check</span>';
+        el.appendChild(check);
+      };
+
+      // ---- iOS Contact App ----
+      const iosContactApp = document.getElementById('ios-contact-app');
+
+      window.iosOpenContact = function () {
+        iosContactApp.classList.remove('closing');
+        iosContactApp.style.display = 'flex';
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          iosContactApp.style.transform = 'scale(1)';
+          iosContactApp.style.opacity = '1';
+          iosContactApp.style.borderRadius = '0';
+        }));
+      };
+
+      window.iosCloseContact = function () {
+        iosContactApp.classList.add('closing');
+        requestAnimationFrame(() => {
+          iosContactApp.style.transform = 'scale(0.4)';
+          iosContactApp.style.opacity = '0';
+          iosContactApp.style.borderRadius = '40px';
+        });
+        setTimeout(() => {
+          iosContactApp.style.display = 'none';
+          iosContactApp.classList.remove('closing');
+        }, 350);
+      };
+
+      // ---- iOS BTS App ----
+      const iosBtsApp = document.getElementById('ios-bts-app');
+      const iosBtsFolderList = document.getElementById('ios-bts-folder-list');
+      const iosBtsScreenFolders = document.getElementById('ios-bts-screen-folders');
+      const iosBtsScreenFiles = document.getElementById('ios-bts-screen-files');
+      const iosBtsFolderTitle = document.getElementById('ios-bts-folder-title');
+      const iosBtsFileGrid = document.getElementById('ios-bts-file-grid');
+      const iosBtsViewer = document.getElementById('ios-bts-viewer');
+      const iosBtsViewerPages = document.getElementById('ios-bts-viewer-pages');
+      const iosBtsViewerCounter = document.getElementById('ios-bts-viewer-counter');
+
+      let iosBtsCurrentFiles = [];
+
+      function iosBtsCollectFolders() {
+        const folders = [];
+        Object.keys(portfolioData).forEach(key => {
+          if (key.includes('/')) return;
+          if (key.startsWith('TOMIN INDEX.TXT')) return;
+          const items = portfolioData[key];
+          if (!Array.isArray(items)) return;
+          const btsFiles = items.filter(item => {
+            const nameNoExt = item.name.replace(/\.[^/.]+$/, '');
+            const digitCount = (nameNoExt.match(/\d/g) || []).length;
+            return digitCount >= 4 && !item.isMagazine;
+          });
+          if (btsFiles.length > 0) {
+            folders.push({ name: key, count: btsFiles.length });
+          }
+        });
+        return folders;
+      }
+
+      function iosBtsCollectFiles(folderName) {
+        const items = portfolioData[folderName] || [];
+        return items.filter(item => {
+          const nameNoExt = item.name.replace(/\.[^/.]+$/, '');
+          const digitCount = (nameNoExt.match(/\d/g) || []).length;
+          return digitCount >= 4 && !item.isMagazine;
+        });
+      }
+
+      window.iosOpenBts = function () {
+        const folders = iosBtsCollectFolders();
+        iosBtsFolderList.innerHTML = folders.length === 0
+          ? '<div style="text-align:center;padding-top:80px;color:rgba(255,255,255,0.3);font-size:14px;">No folders found</div>'
+          : folders.map(f => `
+            <div onclick="iosBtsTapFolder('${f.name.replace(/'/g, "\\'")}')"
+              style="display:flex; align-items:center; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.06); cursor:pointer; -webkit-tap-highlight-color:transparent;">
+              <img src="icons/folder.png" style="width:44px; height:44px; object-fit:contain; margin-right:12px; flex-shrink:0;" />
+              <div style="flex:1; min-width:0;">
+                <p style="color:#fff; font-size:15px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${f.name}</p>
+                <p style="color:rgba(255,255,255,0.4); font-size:13px;">${f.count} items</p>
+              </div>
+              <span class="material-symbols-outlined" style="color:rgba(255,255,255,0.2); font-size:20px;">chevron_right</span>
+            </div>
+          `).join('');
+
+        iosBtsScreenFolders.style.display = '';
+        iosBtsScreenFiles.style.display = 'none';
+        iosBtsViewer.style.display = 'none';
+
+        iosBtsApp.classList.remove('closing');
+        iosBtsApp.style.display = 'flex';
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          iosBtsApp.style.transform = 'scale(1)';
+          iosBtsApp.style.opacity = '1';
+          iosBtsApp.style.borderRadius = '0';
+        }));
+      };
+
+      window.iosCloseBts = function () {
+        iosBtsApp.classList.add('closing');
+        requestAnimationFrame(() => {
+          iosBtsApp.style.transform = 'scale(0.4)';
+          iosBtsApp.style.opacity = '0';
+          iosBtsApp.style.borderRadius = '40px';
+        });
+        setTimeout(() => {
+          iosBtsApp.style.display = 'none';
+          iosBtsApp.classList.remove('closing');
+          iosBtsScreenFiles.style.display = 'none';
+          iosBtsViewer.style.display = 'none';
+        }, 350);
+      };
+
+      window.iosBtsTapFolder = function (folderName) {
+        iosBtsCurrentFiles = iosBtsCollectFiles(folderName);
+        iosBtsFolderTitle.textContent = folderName;
+
+        iosBtsFileGrid.innerHTML = iosBtsCurrentFiles.map((f, i) =>
+          f.isVideo
+            ? `<div onclick="iosBtsOpenViewer(${i})" style="aspect-ratio:1;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;background:#111;">
+                <video src="${f.src}" style="width:100%;height:100%;object-fit:cover;" muted playsinline preload="metadata"></video>
+              </div>`
+            : `<div onclick="iosBtsOpenViewer(${i})" style="aspect-ratio:1;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;background:#111;">
+                <img src="${f.src}" style="width:100%;height:100%;object-fit:cover;" />
+              </div>`
+        ).join('');
+
+        // Push transition
+        iosBtsScreenFiles.style.display = 'flex';
+        iosBtsScreenFiles.style.transform = 'translateX(100%)';
+        iosBtsScreenFolders.style.transition = 'transform 0.35s cubic-bezier(0.25,1,0.5,1), opacity 0.35s ease';
+        iosBtsScreenFiles.style.transition = 'transform 0.35s cubic-bezier(0.25,1,0.5,1)';
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          iosBtsScreenFolders.style.transform = 'translateX(-30%)';
+          iosBtsScreenFolders.style.opacity = '0.4';
+          iosBtsScreenFiles.style.transform = 'translateX(0)';
+        }));
+      };
+
+      window.iosBtsBackToFolders = function () {
+        iosBtsScreenFolders.style.transform = 'translateX(0)';
+        iosBtsScreenFolders.style.opacity = '1';
+        iosBtsScreenFiles.style.transform = 'translateX(100%)';
+        setTimeout(() => { iosBtsScreenFiles.style.display = 'none'; }, 350);
+      };
+
+      window.iosBtsOpenViewer = function (index) {
+        iosBtsViewer.style.display = 'flex';
+
+        iosBtsViewerPages.innerHTML = iosBtsCurrentFiles.map((f, i) => {
+          const pageStyle = 'flex:0 0 100vw; width:100vw; min-width:100vw; height:100%; scroll-snap-align:start; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#000;';
+          if (f.isVideo) {
+            return `<div style="${pageStyle}"><video src="${f.src}" style="width:100%;height:100%;object-fit:contain;" autoplay loop playsinline></video></div>`;
+          } else {
+            return `<div style="${pageStyle}"><img src="${f.src}" style="max-width:100%;max-height:100%;object-fit:contain;" /></div>`;
+          }
+        }).join('');
+
+        // Scroll to selected
+        requestAnimationFrame(() => {
+          iosBtsViewerPages.scrollLeft = index * iosBtsViewerPages.clientWidth;
+          iosBtsUpdateViewerCounter();
+        });
+
+        // Seamless video loop + play visible
+        const vids = iosBtsViewerPages.querySelectorAll('video');
+        vids.forEach(v => {
+          v.pause();
+          v.addEventListener('timeupdate', () => {
+            if (v.duration && v.currentTime > v.duration - 0.08) { v.currentTime = 0; v.play(); }
+          });
+        });
+        function playVisible() {
+          const w = iosBtsViewerPages.clientWidth;
+          const ci = Math.round(iosBtsViewerPages.scrollLeft / w);
+          vids.forEach((v, i) => {
+            const pi = Array.from(iosBtsViewerPages.children).indexOf(v.closest('div'));
+            if (pi === ci) { if (v.paused) v.play(); } else { v.pause(); }
+          });
+        }
+        iosBtsViewerPages.addEventListener('scroll', playVisible);
+        setTimeout(playVisible, 100);
+      };
+
+      function iosBtsUpdateViewerCounter() {
+        const w = iosBtsViewerPages.clientWidth;
+        if (!w) return;
+        const total = iosBtsCurrentFiles.length;
+        const current = Math.round(iosBtsViewerPages.scrollLeft / w) + 1;
+        iosBtsViewerCounter.textContent = current + ' / ' + total;
+      }
+      iosBtsViewerPages.addEventListener('scroll', iosBtsUpdateViewerCounter);
+
+      window.iosBtsCloseViewer = function () {
+        iosBtsViewer.style.display = 'none';
+        iosBtsViewerPages.innerHTML = '';
+      };
+
+    })();
+
+  </script>
+</body>
+
+</html>
