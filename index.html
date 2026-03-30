@@ -1186,6 +1186,19 @@
 
   <script src="data.js"></script>
   <script>
+    // Prepend R2 base URL to all src values when running in production
+    (function() {
+      const BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? ''
+        : 'https://pub-859f13be44eb4577b0cb23c8d8440a59.r2.dev/';
+      if (BASE_URL) {
+        Object.keys(portfolioData).forEach(key => {
+          portfolioData[key].forEach(item => {
+            if (item.src) item.src = BASE_URL + item.src;
+          });
+        });
+      }
+    })();
     // --- System Bar Logic ---
     function updateClock() {
       const now = new Date();
