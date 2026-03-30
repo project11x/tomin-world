@@ -1,0 +1,22 @@
+# macOS metadata
+._*
+.DS_Store
+
+# Media folders (hosted on Cloudflare R2)
+5am in munic/
+LDN x UKG/
+Lunatic/
+bents n glitches/
+birthday kisses/
+ftlotg/
+hlfatpch/
+lindsay lohan/
+milano/
+schimmel in schladming/
+stoical/
+tipsy triad/
+TOMIN INDEX.TXT/
+
+# Misc
+screen.png
+DESIGN.md
