@@ -908,7 +908,7 @@
       </div>
 
       <!-- Magazine grid -->
-      <div id="ios-mag-grid" class="flex-1 overflow-y-auto px-4 pt-2" style="padding-bottom: max(100px, env(safe-area-inset-bottom, 100px));
+      <div id="ios-mag-grid" class="flex-1 overflow-y-auto px-4 pt-2" style="padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));
                display:grid; grid-template-columns:1fr 1fr; gap:20px 14px;">
       </div>
     </div>
@@ -990,7 +990,7 @@
 
     <!-- Edit list -->
     <div id="ios-edits-list" class="flex-1 overflow-y-auto"
-      style="padding-bottom: max(100px, env(safe-area-inset-bottom, 100px));">
+      style="padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));">
     </div>
   </div>
 
@@ -1013,7 +1013,7 @@
         <div class="w-16"></div>
       </div>
       <div id="ios-bts-folder-list" class="flex-1 overflow-y-auto px-4"
-        style="padding-bottom:max(100px, env(safe-area-inset-bottom, 100px));">
+        style="padding-bottom:max(24px, env(safe-area-inset-bottom, 24px));">
       </div>
     </div>
 
@@ -1033,7 +1033,7 @@
         <div class="w-16"></div>
       </div>
       <div id="ios-bts-file-grid" class="flex-1 overflow-y-auto px-2"
-        style="display:grid; grid-template-columns:repeat(3,1fr); gap:2px; align-content:start; padding-bottom:max(100px, env(safe-area-inset-bottom, 100px));">
+        style="display:grid; grid-template-columns:repeat(3,1fr); gap:2px; align-content:start; padding-bottom:max(24px, env(safe-area-inset-bottom, 24px));">
       </div>
     </div>
 
@@ -1070,7 +1070,7 @@
     </div>
 
     <!-- Contact content -->
-    <div class="flex-1 overflow-y-auto px-5" style="padding-bottom: max(100px, env(safe-area-inset-bottom, 100px));">
+    <div class="flex-1 overflow-y-auto px-5" style="padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));">
       <!-- Avatar -->
       <div class="flex flex-col items-center pt-6 pb-8">
         <div class="w-24 h-24 rounded-full flex items-center justify-center shadow-lg mb-4"
@@ -2483,6 +2483,7 @@
 
       // Open Magazines app
       window.iosOpenMagazines = function () {
+        setThemeColorForApp();
         // Build grid from portfolioData
         const magazines = [];
         Object.keys(portfolioData).forEach(key => {
@@ -2522,6 +2523,7 @@
       };
 
       window.iosCloseMagazines = function () {
+        setThemeColorForScreen();
         iosMagazinesApp.classList.add('closing');
         requestAnimationFrame(() => {
           iosMagazinesApp.style.transform = 'scale(0.4)';
@@ -2722,6 +2724,7 @@
       }
 
       window.iosOpenEdits = function () {
+        setThemeColorForApp();
         iosEditsItems = iosCollectEdits();
         iosRenderEditsList();
         iosSelectedEdit = -1;
@@ -2740,6 +2743,7 @@
       };
 
       window.iosCloseEdits = function () {
+        setThemeColorForScreen();
         iosEditsApp.classList.add('closing');
         iosEditsVideo.pause();
         iosEditsVideo.src = '';
@@ -2755,7 +2759,20 @@
       };
 
       // ---- iOS Theme ----
+      // Update the Safari status bar color
+      window._iosDark = false;
+      function setThemeColor(color) {
+        document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.content = color);
+      }
+      function setThemeColorForScreen() {
+        setThemeColor(window._iosDark ? '#000000' : '#ffffff');
+      }
+      function setThemeColorForApp() {
+        setThemeColor(window._iosDark ? '#1c1c1e' : '#f2f2f7');
+      }
+
       function applyIosTheme(isDark) {
+        window._iosDark = isDark;
         // Toggle on body so ALL elements (including app overlays) inherit the variables
         if (isDark) {
           document.body.classList.add('ios-dark');
@@ -2767,6 +2784,9 @@
         if (screen) {
           screen.style.background = 'var(--ios-bg)';
         }
+        // Update status bar color (check if any app is open)
+        const anyAppOpen = document.querySelector('.ios-app-overlay[style*="display: flex"], .ios-app-overlay[style*="display:flex"]');
+        if (anyAppOpen) { setThemeColorForApp(); } else { setThemeColorForScreen(); }
         // Update theme toggle buttons
         const autoBtn = document.getElementById('ios-theme-auto');
         const lightBtn = document.getElementById('ios-theme-light');
@@ -2834,6 +2854,7 @@
       const iosContactApp = document.getElementById('ios-contact-app');
 
       window.iosOpenContact = function () {
+        setThemeColorForApp();
         iosContactApp.classList.remove('closing');
         iosContactApp.style.display = 'flex';
         requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -2844,6 +2865,7 @@
       };
 
       window.iosCloseContact = function () {
+        setThemeColorForScreen();
         iosContactApp.classList.add('closing');
         requestAnimationFrame(() => {
           iosContactApp.style.transform = 'scale(0.4)';
@@ -2898,6 +2920,7 @@
       }
 
       window.iosOpenBts = function () {
+        setThemeColorForApp();
         const folders = iosBtsCollectFolders();
         iosBtsFolderList.innerHTML = folders.length === 0
           ? '<div style="text-align:center;padding-top:80px;color:var(--ios-text-secondary);font-size:14px;">No folders found</div>'
@@ -2927,6 +2950,7 @@
       };
 
       window.iosCloseBts = function () {
+        setThemeColorForScreen();
         iosBtsApp.classList.add('closing');
         requestAnimationFrame(() => {
           iosBtsApp.style.transform = 'scale(0.4)';
