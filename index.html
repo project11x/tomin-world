@@ -389,6 +389,38 @@
       }
     }
 
+    /* iOS Theme Variables — Light (default) */
+    #ios-screen {
+      --ios-bg: #ffffff;
+      --ios-app-bg: #f2f2f7;
+      --ios-text: #000;
+      --ios-text-secondary: rgba(0,0,0,0.5);
+      --ios-card-bg: rgba(0,0,0,0.04);
+      --ios-card-border: rgba(0,0,0,0.1);
+      --ios-dock-bg: rgba(232,232,232,0.72);
+      --ios-dock-border: rgba(0,0,0,0.06);
+      --ios-list-border: rgba(0,0,0,0.06);
+      --ios-list-hover: rgba(0,0,0,0.04);
+      --ios-progress-bg: rgba(0,0,0,0.1);
+      --ios-progress-fill: rgba(0,0,0,0.4);
+    }
+
+    /* iOS Theme Variables — Dark */
+    #ios-screen.ios-dark {
+      --ios-bg: #000;
+      --ios-app-bg: #1a1a1a;
+      --ios-text: #fff;
+      --ios-text-secondary: rgba(255,255,255,0.55);
+      --ios-card-bg: rgba(255,255,255,0.08);
+      --ios-card-border: rgba(255,255,255,0.06);
+      --ios-dock-bg: rgba(30,30,30,0.72);
+      --ios-dock-border: rgba(255,255,255,0.08);
+      --ios-list-border: rgba(255,255,255,0.06);
+      --ios-list-hover: rgba(255,255,255,0.08);
+      --ios-progress-bg: rgba(255,255,255,0.15);
+      --ios-progress-fill: rgba(255,255,255,0.7);
+    }
+
     /* iOS UI Styles */
     .ios-dock-item>div {
       transition: transform 0.12s ease;
@@ -802,7 +834,7 @@
 
   <!-- ===== iOS Homescreen (mobile only) ===== -->
   <div id="ios-screen" class="fixed inset-0 z-[60] flex flex-col select-none"
-    style="display:none; background: #ffffff;">
+    style="display:none; background: var(--ios-bg);">
 
     <!-- safe area spacer -->
     <div style="height:env(safe-area-inset-top, 0px); flex-shrink:0;"></div>
@@ -814,7 +846,7 @@
     <!-- iOS Dock -->
     <div class="flex justify-center px-4" style="padding-bottom: max(28px, env(safe-area-inset-bottom, 28px));">
       <div class="flex items-center justify-center gap-3 px-4 py-3 rounded-[26px]"
-        style="background:rgba(232,232,232,0.72); backdrop-filter:blur(40px) saturate(180%); -webkit-backdrop-filter:blur(40px) saturate(180%); border:1px solid rgba(0,0,0,0.06); max-width:calc(100vw - 32px);">
+        style="background:var(--ios-dock-bg); backdrop-filter:blur(40px) saturate(180%); -webkit-backdrop-filter:blur(40px) saturate(180%); border:1px solid var(--ios-dock-border); max-width:calc(100vw - 32px);">
 
         <!-- Edits -->
         <div class="ios-dock-item cursor-pointer" onclick="iosOpenEdits()">
@@ -850,13 +882,13 @@
 
   <!-- iOS Magazines App -->
   <div id="ios-magazines-app" class="ios-app-overlay fixed inset-0 z-[90] flex flex-col"
-    style="display:none; background:#1a1a1a; transform:scale(0.4); opacity:0; border-radius:40px;">
+    style="display:none; background:var(--ios-app-bg); transform:scale(0.4); opacity:0; border-radius:40px;">
 
     <!-- === Grid Screen === -->
     <div id="ios-mag-screen-grid" class="flex flex-col flex-1 min-h-0">
       <!-- Header -->
       <div class="shrink-0 px-5 pb-4"
-        style="background:#1a1a1a; padding-top:max(env(safe-area-inset-top, 0px), 12px);">
+        style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 12px);">
         <button onclick="iosCloseMagazines()"
           class="flex items-center text-[#0a84ff] mb-3 active:opacity-50 transition-opacity cursor-pointer"
           style="-webkit-tap-highlight-color:transparent;">
@@ -864,7 +896,7 @@
             style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
           <span class="text-[17px] font-normal ml-0.5">Back</span>
         </button>
-        <h1 class="text-white font-bold text-[28px] tracking-tight">Magazines</h1>
+        <h1 class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text)">Magazines</h1>
       </div>
 
       <!-- Magazine grid -->
@@ -874,10 +906,10 @@
     </div>
 
     <!-- === Reader Screen (hidden by default) === -->
-    <div id="ios-mag-screen-reader" class="absolute inset-0 flex flex-col" style="display:none; background:#1a1a1a;">
+    <div id="ios-mag-screen-reader" class="absolute inset-0 flex flex-col" style="display:none; background:#000;">
       <!-- Reader header -->
       <div class="shrink-0 px-5 pb-3"
-        style="background:#1a1a1a; padding-top:max(env(safe-area-inset-top, 0px), 12px);">
+        style="background:#000; padding-top:max(env(safe-area-inset-top, 0px), 12px);">
         <button onclick="iosCloseReader()"
           class="flex items-center text-[#0a84ff] active:opacity-50 transition-opacity cursor-pointer"
           style="-webkit-tap-highlight-color:transparent;">
@@ -895,7 +927,7 @@
 
       <!-- Page indicator bar -->
       <div class="shrink-0 flex items-center gap-3 justify-center"
-        style="padding:10px 20px max(14px, env(safe-area-inset-bottom, 14px)); background:#1a1a1a;">
+        style="padding:10px 20px max(14px, env(safe-area-inset-bottom, 14px)); background:#000;">
         <span id="ios-mag-page-label"
           style="color:rgba(255,255,255,0.5); font-size:12px; font-variant-numeric:tabular-nums;">1 / 1</span>
         <div
@@ -910,11 +942,11 @@
 
   <!-- iOS Edits App -->
   <div id="ios-edits-app" class="ios-app-overlay fixed inset-0 z-[90] flex flex-col"
-    style="display:none; background:#1a1a1a; transform:scale(0.4); opacity:0; border-radius:40px;">
+    style="display:none; background:var(--ios-app-bg); transform:scale(0.4); opacity:0; border-radius:40px;">
 
     <!-- Header -->
     <div class="shrink-0 flex items-center px-4"
-      style="background:#1a1a1a; padding-top:max(env(safe-area-inset-top, 0px), 12px); padding-bottom:10px; min-height:calc(44px + max(54px, env(safe-area-inset-top, 54px)));">
+      style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 12px); padding-bottom:10px; min-height:calc(44px + max(54px, env(safe-area-inset-top, 54px)));">
       <button onclick="iosCloseEdits()"
         class="flex items-center text-[#0a84ff] active:opacity-50 transition-opacity cursor-pointer mr-3"
         style="-webkit-tap-highlight-color:transparent;">
@@ -922,7 +954,7 @@
           style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
         <span class="text-[17px] font-normal ml-0.5">Back</span>
       </button>
-      <h1 class="text-white font-semibold text-[17px] tracking-tight flex-1 text-center">Edits</h1>
+      <h1 class="font-semibold text-[17px] tracking-tight flex-1 text-center" style="color:var(--ios-text)">Edits</h1>
       <div class="w-16"></div><!-- spacer to center title -->
     </div>
 
@@ -956,12 +988,12 @@
 
   <!-- iOS BTS App -->
   <div id="ios-bts-app" class="ios-app-overlay fixed inset-0 z-[90] flex flex-col"
-    style="display:none; background:#1a1a1a; transform:scale(0.4); opacity:0; border-radius:40px;">
+    style="display:none; background:var(--ios-app-bg); transform:scale(0.4); opacity:0; border-radius:40px;">
 
     <!-- === Folder List Screen === -->
     <div id="ios-bts-screen-folders" class="flex flex-col flex-1 min-h-0">
       <div class="shrink-0 flex items-center px-4"
-        style="background:#1a1a1a; padding-top:max(env(safe-area-inset-top, 0px), 12px); padding-bottom:10px;">
+        style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 12px); padding-bottom:10px;">
         <button onclick="iosCloseBts()"
           class="flex items-center text-[#0a84ff] active:opacity-50 transition-opacity cursor-pointer mr-3"
           style="-webkit-tap-highlight-color:transparent;">
@@ -969,7 +1001,7 @@
             style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
           <span class="text-[17px] font-normal ml-0.5">Back</span>
         </button>
-        <h1 class="text-white font-semibold text-[17px] tracking-tight flex-1 text-center">Behind the Scenes</h1>
+        <h1 class="font-semibold text-[17px] tracking-tight flex-1 text-center" style="color:var(--ios-text)">Behind the Scenes</h1>
         <div class="w-16"></div>
       </div>
       <div id="ios-bts-folder-list" class="flex-1 overflow-y-auto px-4"
@@ -978,9 +1010,9 @@
     </div>
 
     <!-- === File Grid Screen === -->
-    <div id="ios-bts-screen-files" class="absolute inset-0 flex flex-col" style="display:none; background:#1a1a1a;">
+    <div id="ios-bts-screen-files" class="absolute inset-0 flex flex-col" style="display:none; background:var(--ios-app-bg);">
       <div class="shrink-0 flex items-center px-4"
-        style="background:#1a1a1a; padding-top:max(env(safe-area-inset-top, 0px), 12px); padding-bottom:10px;">
+        style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 12px); padding-bottom:10px;">
         <button onclick="iosBtsBackToFolders()"
           class="flex items-center text-[#0a84ff] active:opacity-50 transition-opacity cursor-pointer mr-3"
           style="-webkit-tap-highlight-color:transparent;">
@@ -988,7 +1020,7 @@
             style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
           <span class="text-[17px] font-normal ml-0.5">Back</span>
         </button>
-        <h1 id="ios-bts-folder-title" class="text-white font-semibold text-[17px] tracking-tight flex-1 text-center">
+        <h1 id="ios-bts-folder-title" class="font-semibold text-[17px] tracking-tight flex-1 text-center" style="color:var(--ios-text)">
           Folder</h1>
         <div class="w-16"></div>
       </div>
@@ -1015,10 +1047,10 @@
 
   <!-- iOS Contact App -->
   <div id="ios-contact-app" class="ios-app-overlay fixed inset-0 z-[90] flex flex-col"
-    style="display:none; background:#1a1a1a; transform:scale(0.4); opacity:0; border-radius:40px;">
+    style="display:none; background:var(--ios-app-bg); transform:scale(0.4); opacity:0; border-radius:40px;">
 
     <!-- Header -->
-    <div class="shrink-0 px-5 pb-4" style="background:#1a1a1a; padding-top:max(env(safe-area-inset-top, 0px), 12px);">
+    <div class="shrink-0 px-5 pb-4" style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 12px);">
       <button onclick="iosCloseContact()"
         class="flex items-center text-[#0a84ff] mb-3 active:opacity-50 transition-opacity cursor-pointer"
         style="-webkit-tap-highlight-color:transparent;">
@@ -1026,7 +1058,7 @@
           style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
         <span class="text-[17px] font-normal ml-0.5">Back</span>
       </button>
-      <h1 class="text-white font-bold text-[28px] tracking-tight">Contact</h1>
+      <h1 class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text)">Contact</h1>
     </div>
 
     <!-- Contact content -->
@@ -1037,32 +1069,43 @@
           style="background:linear-gradient(135deg,#6366f1,#a855f7);">
           <span class="text-white font-bold text-3xl">ED</span>
         </div>
-        <h2 class="text-white font-semibold text-[22px]">EDDIE</h2>
+        <h2 class="font-semibold text-[22px]" style="color:var(--ios-text)">EDDIE</h2>
 
       </div>
 
       <!-- Info cards -->
-      <div style="background:rgba(255,255,255,0.08); border-radius:12px; overflow:hidden;">
+      <div style="background:var(--ios-card-bg); border-radius:12px; overflow:hidden;">
         <div
-          style="display:flex; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.06);">
-          <span style="color:rgba(255,255,255,0.55); font-size:15px;">Website</span>
-          <span style="color:#fff; font-size:15px;">2.0</span>
+          style="display:flex; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--ios-card-border);">
+          <span style="color:var(--ios-text-secondary); font-size:15px;">Website</span>
+          <span style="color:var(--ios-text); font-size:15px;">2.0</span>
         </div>
         <div
-          style="display:flex; justify-content:space-between; padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.06);">
-          <span style="color:rgba(255,255,255,0.55); font-size:15px;">Instagram</span>
-          <span style="color:#fff; font-size:15px;">@edpz</span>
+          style="display:flex; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--ios-card-border);">
+          <span style="color:var(--ios-text-secondary); font-size:15px;">Instagram</span>
+          <span style="color:var(--ios-text); font-size:15px;">@edpz</span>
         </div>
         <div style="display:flex; justify-content:space-between; padding:14px 16px;">
-          <span style="color:rgba(255,255,255,0.55); font-size:15px;">Mail</span>
-          <span style="color:#fff; font-size:15px;">info@tomin.world</span>
+          <span style="color:var(--ios-text-secondary); font-size:15px;">Mail</span>
+          <span style="color:var(--ios-text); font-size:15px;">info@tomin.world</span>
         </div>
       </div>
 
       <!-- App Icon Picker -->
-      <div style="margin-top:32px; background:rgba(255,255,255,0.08); border-radius:12px; padding:18px 16px;">
-        <p style="color:#fff; font-size:15px; font-weight:600; margin-bottom:6px;">App Icon</p>
-        <p style="color:rgba(255,255,255,0.45); font-size:13px; line-height:1.5; margin-bottom:14px;">Wähle ein Icon
+      <!-- Theme Toggle -->
+      <div style="margin-top:32px; background:var(--ios-card-bg); border-radius:12px; padding:18px 16px;">
+        <p style="color:var(--ios-text); font-size:15px; font-weight:600; margin-bottom:10px;">Darstellung</p>
+        <div id="ios-theme-toggle" style="display:flex; gap:0; border-radius:9px; overflow:hidden; background:var(--ios-card-border);">
+          <button onclick="setIosTheme('auto')" id="ios-theme-auto" style="flex:1; padding:8px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; transition:background 0.2s, color 0.2s; -webkit-tap-highlight-color:transparent;">Auto</button>
+          <button onclick="setIosTheme('light')" id="ios-theme-light" style="flex:1; padding:8px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; transition:background 0.2s, color 0.2s; -webkit-tap-highlight-color:transparent;">Light</button>
+          <button onclick="setIosTheme('dark')" id="ios-theme-dark" style="flex:1; padding:8px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; transition:background 0.2s, color 0.2s; -webkit-tap-highlight-color:transparent;">Dark</button>
+        </div>
+      </div>
+
+      <!-- App Icon Picker -->
+      <div style="margin-top:16px; background:var(--ios-card-bg); border-radius:12px; padding:18px 16px;">
+        <p style="color:var(--ios-text); font-size:15px; font-weight:600; margin-bottom:6px;">App Icon</p>
+        <p style="color:var(--ios-text-secondary); font-size:13px; line-height:1.5; margin-bottom:14px;">Wähle ein Icon
           aus, dann speichere die Seite zum Home-Bildschirm.</p>
         <div id="icon-picker" style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:16px;">
           <div class="icon-pick-option" onclick="setAppIcon('icons/flavicon.png', this)"
@@ -1085,9 +1128,9 @@
               style="width:60px; height:60px; border-radius:14px; border:3px solid transparent;" />
           </div>
         </div>
-        <div style="display:flex; align-items:center; gap:10px; color:rgba(255,255,255,0.6); font-size:13px;">
+        <div style="display:flex; align-items:center; gap:10px; color:var(--ios-text-secondary); font-size:13px;">
           <span class="material-symbols-outlined" style="font-size:20px; color:#0a84ff;">ios_share</span>
-          <span>Tippe auf <strong style="color:#fff;">Teilen</strong> → <strong style="color:#fff;">Zum
+          <span>Tippe auf <strong style="color:var(--ios-text);">Teilen</strong> → <strong style="color:var(--ios-text);">Zum
               Home-Bildschirm</strong></span>
         </div>
       </div>
@@ -2448,17 +2491,17 @@
         });
 
         iosMagGrid.innerHTML = magazines.length === 0
-          ? '<div style="grid-column:1/-1;text-align:center;padding-top:80px;color:rgba(255,255,255,0.3);font-size:14px;">No magazines found</div>'
+          ? '<div style="grid-column:1/-1;text-align:center;padding-top:80px;color:var(--ios-text-secondary);font-size:14px;">No magazines found</div>'
           : magazines.map(mag => `
               <div onclick="iosTapMagazine('${mag.folder.replace(/'/g, "\\'")}',${mag.index})"
                 style="-webkit-tap-highlight-color:transparent;cursor:pointer;">
-                <div style="border-radius:14px;overflow:hidden;aspect-ratio:3/4;background:#1e293b;box-shadow:0 8px 24px rgba(0,0,0,0.6);">
+                <div style="border-radius:14px;overflow:hidden;aspect-ratio:3/4;background:#1e293b;box-shadow:0 4px 16px rgba(0,0,0,0.25);">
                   ${mag.cover
               ? `<img src="${mag.cover}" style="width:100%;height:100%;object-fit:cover;" />`
-              : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:12px;">${mag.name}</div>`}
+              : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--ios-text-secondary);font-size:12px;">${mag.name}</div>`}
                 </div>
-                <p style="color:#fff;font-weight:600;font-size:13px;margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${mag.name}</p>
-                <p style="color:rgba(255,255,255,0.45);font-size:11px;margin-top:1px;">Today</p>
+                <p style="color:var(--ios-text);font-weight:600;font-size:13px;margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${mag.name}</p>
+                <p style="color:var(--ios-text-secondary);font-size:11px;margin-top:1px;">Today</p>
               </div>`).join('');
 
         iosMagazinesApp.classList.remove('closing');
@@ -2649,7 +2692,7 @@
         // Update highlight
         iosEditsList.querySelectorAll('.ios-edit-row').forEach((r, i) => {
           if (i === index) {
-            r.style.background = 'rgba(255,255,255,0.08)';
+            r.style.background = 'var(--ios-list-hover)';
             r.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
           } else {
             r.style.background = 'transparent';
@@ -2663,7 +2706,7 @@
           const nameNoExt = item.name.replace(/\.[^/.]+$/, '');
           const row = document.createElement('div');
           row.className = 'ios-edit-row';
-          row.style.cssText = 'padding:14px 20px; cursor:pointer; color:#fff; font-size:15px; font-weight:400; border-bottom:1px solid rgba(255,255,255,0.06); -webkit-tap-highlight-color:transparent;';
+          row.style.cssText = 'padding:14px 20px; cursor:pointer; color:var(--ios-text); font-size:15px; font-weight:400; border-bottom:1px solid var(--ios-list-border); -webkit-tap-highlight-color:transparent;';
           row.textContent = nameNoExt;
           row.addEventListener('click', () => iosSelectEdit(i));
           iosEditsList.appendChild(row);
@@ -2702,6 +2745,60 @@
           iosEditsApp.classList.remove('closing');
         }, 350);
       };
+
+      // ---- iOS Theme ----
+      function applyIosTheme(isDark) {
+        const screen = document.getElementById('ios-screen');
+        if (isDark) {
+          screen.classList.add('ios-dark');
+        } else {
+          screen.classList.remove('ios-dark');
+        }
+        // Update theme toggle buttons
+        const autoBtn = document.getElementById('ios-theme-auto');
+        const lightBtn = document.getElementById('ios-theme-light');
+        const darkBtn = document.getElementById('ios-theme-dark');
+        const stored = localStorage.getItem('ios-theme') || 'auto';
+        [autoBtn, lightBtn, darkBtn].forEach(btn => {
+          btn.style.background = 'transparent';
+          btn.style.color = isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)';
+        });
+        const activeBtn = stored === 'auto' ? autoBtn : stored === 'light' ? lightBtn : darkBtn;
+        activeBtn.style.background = isDark ? 'rgba(255,255,255,0.15)' : '#fff';
+        activeBtn.style.color = isDark ? '#fff' : '#000';
+        activeBtn.style.borderRadius = '7px';
+        // Update meta theme-color
+        document.querySelector('meta[name="theme-color"][media="(prefers-color-scheme: light)"]').content = isDark ? '#000' : '#ffffff';
+        document.querySelector('meta[name="theme-color"][media="(prefers-color-scheme: dark)"]').content = isDark ? '#000' : '#ffffff';
+      }
+
+      function getSystemDark() {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches;
+      }
+
+      window.setIosTheme = function(mode) {
+        localStorage.setItem('ios-theme', mode);
+        if (mode === 'auto') {
+          applyIosTheme(getSystemDark());
+        } else {
+          applyIosTheme(mode === 'dark');
+        }
+      };
+
+      // Initialize theme
+      (function() {
+        const stored = localStorage.getItem('ios-theme') || 'auto';
+        if (stored === 'auto') {
+          applyIosTheme(getSystemDark());
+        } else {
+          applyIosTheme(stored === 'dark');
+        }
+        // Listen for system changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+          const stored = localStorage.getItem('ios-theme') || 'auto';
+          if (stored === 'auto') applyIosTheme(e.matches);
+        });
+      })();
 
       // ---- App Icon Picker ----
       window.setAppIcon = function (src, el) {
@@ -2789,16 +2886,16 @@
       window.iosOpenBts = function () {
         const folders = iosBtsCollectFolders();
         iosBtsFolderList.innerHTML = folders.length === 0
-          ? '<div style="text-align:center;padding-top:80px;color:rgba(255,255,255,0.3);font-size:14px;">No folders found</div>'
+          ? '<div style="text-align:center;padding-top:80px;color:var(--ios-text-secondary);font-size:14px;">No folders found</div>'
           : folders.map(f => `
             <div onclick="iosBtsTapFolder('${f.name.replace(/'/g, "\\'")}')"
-              style="display:flex; align-items:center; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.06); cursor:pointer; -webkit-tap-highlight-color:transparent;">
+              style="display:flex; align-items:center; padding:12px 0; border-bottom:1px solid var(--ios-list-border); cursor:pointer; -webkit-tap-highlight-color:transparent;">
               <img src="icons/folder.png" style="width:44px; height:44px; object-fit:contain; margin-right:12px; flex-shrink:0;" />
               <div style="flex:1; min-width:0;">
-                <p style="color:#fff; font-size:15px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${f.name}</p>
-                <p style="color:rgba(255,255,255,0.4); font-size:13px;">${f.count} items</p>
+                <p style="color:var(--ios-text); font-size:15px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${f.name}</p>
+                <p style="color:var(--ios-text-secondary); font-size:13px;">${f.count} items</p>
               </div>
-              <span class="material-symbols-outlined" style="color:rgba(255,255,255,0.2); font-size:20px;">chevron_right</span>
+              <span class="material-symbols-outlined" style="color:var(--ios-text-secondary); font-size:20px;">chevron_right</span>
             </div>
           `).join('');
 
