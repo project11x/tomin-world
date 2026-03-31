@@ -390,35 +390,43 @@
     }
 
     /* iOS Theme Variables — Light (default) */
-    #ios-screen {
+    :root {
       --ios-bg: #ffffff;
       --ios-app-bg: #f2f2f7;
-      --ios-text: #000;
-      --ios-text-secondary: rgba(0,0,0,0.5);
-      --ios-card-bg: rgba(0,0,0,0.04);
-      --ios-card-border: rgba(0,0,0,0.1);
+      --ios-text: #000000;
+      --ios-text-secondary: rgba(0,0,0,0.45);
+      --ios-card-bg: #ffffff;
+      --ios-card-border: rgba(0,0,0,0.12);
       --ios-dock-bg: rgba(232,232,232,0.72);
       --ios-dock-border: rgba(0,0,0,0.06);
-      --ios-list-border: rgba(0,0,0,0.06);
-      --ios-list-hover: rgba(0,0,0,0.04);
+      --ios-list-border: rgba(0,0,0,0.1);
+      --ios-list-hover: rgba(0,0,0,0.06);
       --ios-progress-bg: rgba(0,0,0,0.1);
       --ios-progress-fill: rgba(0,0,0,0.4);
+      --ios-segmented-bg: rgba(118,118,128,0.12);
+      --ios-segmented-active: #ffffff;
+      --ios-segmented-active-text: #000000;
+      --ios-segmented-inactive-text: rgba(0,0,0,0.4);
     }
 
     /* iOS Theme Variables — Dark */
-    #ios-screen.ios-dark {
-      --ios-bg: #000;
-      --ios-app-bg: #1a1a1a;
-      --ios-text: #fff;
-      --ios-text-secondary: rgba(255,255,255,0.55);
-      --ios-card-bg: rgba(255,255,255,0.08);
-      --ios-card-border: rgba(255,255,255,0.06);
+    body.ios-dark {
+      --ios-bg: #000000;
+      --ios-app-bg: #1c1c1e;
+      --ios-text: #ffffff;
+      --ios-text-secondary: rgba(255,255,255,0.6);
+      --ios-card-bg: rgba(255,255,255,0.1);
+      --ios-card-border: rgba(255,255,255,0.08);
       --ios-dock-bg: rgba(30,30,30,0.72);
       --ios-dock-border: rgba(255,255,255,0.08);
-      --ios-list-border: rgba(255,255,255,0.06);
-      --ios-list-hover: rgba(255,255,255,0.08);
+      --ios-list-border: rgba(255,255,255,0.08);
+      --ios-list-hover: rgba(255,255,255,0.1);
       --ios-progress-bg: rgba(255,255,255,0.15);
-      --ios-progress-fill: rgba(255,255,255,0.7);
+      --ios-progress-fill: rgba(255,255,255,0.8);
+      --ios-segmented-bg: rgba(118,118,128,0.24);
+      --ios-segmented-active: rgba(255,255,255,0.2);
+      --ios-segmented-active-text: #ffffff;
+      --ios-segmented-inactive-text: rgba(255,255,255,0.5);
     }
 
     /* iOS UI Styles */
@@ -1074,7 +1082,7 @@
       </div>
 
       <!-- Info cards -->
-      <div style="background:var(--ios-card-bg); border-radius:12px; overflow:hidden;">
+      <div style="background:var(--ios-card-bg); border-radius:12px; overflow:hidden; box-shadow:0 0 0 1px var(--ios-card-border);">
         <div
           style="display:flex; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--ios-card-border);">
           <span style="color:var(--ios-text-secondary); font-size:15px;">Website</span>
@@ -1093,17 +1101,17 @@
 
       <!-- App Icon Picker -->
       <!-- Theme Toggle -->
-      <div style="margin-top:32px; background:var(--ios-card-bg); border-radius:12px; padding:18px 16px;">
+      <div style="margin-top:32px; background:var(--ios-card-bg); border-radius:12px; padding:18px 16px; box-shadow:0 0 0 1px var(--ios-card-border);">
         <p style="color:var(--ios-text); font-size:15px; font-weight:600; margin-bottom:10px;">Darstellung</p>
-        <div id="ios-theme-toggle" style="display:flex; gap:0; border-radius:9px; overflow:hidden; background:var(--ios-card-border);">
-          <button onclick="setIosTheme('auto')" id="ios-theme-auto" style="flex:1; padding:8px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; transition:background 0.2s, color 0.2s; -webkit-tap-highlight-color:transparent;">Auto</button>
-          <button onclick="setIosTheme('light')" id="ios-theme-light" style="flex:1; padding:8px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; transition:background 0.2s, color 0.2s; -webkit-tap-highlight-color:transparent;">Light</button>
-          <button onclick="setIosTheme('dark')" id="ios-theme-dark" style="flex:1; padding:8px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; transition:background 0.2s, color 0.2s; -webkit-tap-highlight-color:transparent;">Dark</button>
+        <div id="ios-theme-toggle" style="display:flex; gap:2px; border-radius:9px; padding:2px; background:var(--ios-segmented-bg);">
+          <button onclick="setIosTheme('auto')" id="ios-theme-auto" style="flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:var(--ios-segmented-inactive-text); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Auto</button>
+          <button onclick="setIosTheme('light')" id="ios-theme-light" style="flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:var(--ios-segmented-inactive-text); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Light</button>
+          <button onclick="setIosTheme('dark')" id="ios-theme-dark" style="flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:var(--ios-segmented-inactive-text); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Dark</button>
         </div>
       </div>
 
       <!-- App Icon Picker -->
-      <div style="margin-top:16px; background:var(--ios-card-bg); border-radius:12px; padding:18px 16px;">
+      <div style="margin-top:16px; background:var(--ios-card-bg); border-radius:12px; padding:18px 16px; box-shadow:0 0 0 1px var(--ios-card-border);">
         <p style="color:var(--ios-text); font-size:15px; font-weight:600; margin-bottom:6px;">App Icon</p>
         <p style="color:var(--ios-text-secondary); font-size:13px; line-height:1.5; margin-bottom:14px;">Wähle ein Icon
           aus, dann speichere die Seite zum Home-Bildschirm.</p>
@@ -2748,28 +2756,34 @@
 
       // ---- iOS Theme ----
       function applyIosTheme(isDark) {
-        const screen = document.getElementById('ios-screen');
+        // Toggle on body so ALL elements (including app overlays) inherit the variables
         if (isDark) {
-          screen.classList.add('ios-dark');
+          document.body.classList.add('ios-dark');
         } else {
-          screen.classList.remove('ios-dark');
+          document.body.classList.remove('ios-dark');
+        }
+        // Also keep #ios-screen in sync for the dock
+        const screen = document.getElementById('ios-screen');
+        if (screen) {
+          screen.style.background = 'var(--ios-bg)';
         }
         // Update theme toggle buttons
         const autoBtn = document.getElementById('ios-theme-auto');
         const lightBtn = document.getElementById('ios-theme-light');
         const darkBtn = document.getElementById('ios-theme-dark');
+        if (!autoBtn) return;
         const stored = localStorage.getItem('ios-theme') || 'auto';
         [autoBtn, lightBtn, darkBtn].forEach(btn => {
           btn.style.background = 'transparent';
-          btn.style.color = isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)';
+          btn.style.color = 'var(--ios-segmented-inactive-text)';
+          btn.style.borderRadius = '7px';
+          btn.style.boxShadow = 'none';
         });
         const activeBtn = stored === 'auto' ? autoBtn : stored === 'light' ? lightBtn : darkBtn;
-        activeBtn.style.background = isDark ? 'rgba(255,255,255,0.15)' : '#fff';
-        activeBtn.style.color = isDark ? '#fff' : '#000';
+        activeBtn.style.background = 'var(--ios-segmented-active)';
+        activeBtn.style.color = 'var(--ios-segmented-active-text)';
         activeBtn.style.borderRadius = '7px';
-        // Update meta theme-color
-        document.querySelector('meta[name="theme-color"][media="(prefers-color-scheme: light)"]').content = isDark ? '#000' : '#ffffff';
-        document.querySelector('meta[name="theme-color"][media="(prefers-color-scheme: dark)"]').content = isDark ? '#000' : '#ffffff';
+        activeBtn.style.boxShadow = isDark ? 'none' : '0 1px 3px rgba(0,0,0,0.12)';
       }
 
       function getSystemDark() {
