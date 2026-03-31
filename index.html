@@ -969,7 +969,7 @@
     <!-- Video player -->
     <div style="background:#000; flex:0 0 auto; position:relative;">
       <video id="ios-edits-video" class="w-full" style="aspect-ratio:16/9; object-fit:contain; background:#000;"
-        autoplay loop playsinline preload="metadata"></video>
+        loop playsinline preload="none"></video>
       <!-- Media controls -->
       <div id="ios-edits-controls"
         style="position:absolute; bottom:0; left:0; right:0; padding:10px 16px 12px; background:linear-gradient(transparent, rgba(0,0,0,0.7)); display:flex; align-items:center; gap:10px;">
@@ -1212,8 +1212,8 @@
       <div
         class="flex-1 flex items-center justify-center bg-white dark:bg-[#0e0e0e] overflow-hidden relative pb-24 p-4">
         <div class="relative w-full h-full group">
-          <video id="edits-video" class="w-full h-full object-contain rounded-lg shadow-sm" autoplay loop
-            playsinline></video>
+          <video id="edits-video" class="w-full h-full object-contain rounded-lg shadow-sm" loop
+            playsinline preload="none"></video>
           <div id="edits-empty"
             class="absolute inset-0 flex items-center justify-center text-slate-200 dark:text-white/10 text-sm tracking-widest uppercase pointer-events-none">
             Select an edit</div>
@@ -1251,6 +1251,70 @@
         });
       }
     })();
+
+    // --- Video Playback Buffer Manager ---
+    // Ensures smooth video playback: waits for enough buffer before playing,
+    // auto-pauses if buffer runs low, resumes when buffered enough.
+    function safePlayVideo(video) {
+      if (!video || !video.src) return;
+      // Remove any previous listeners from this system
+      if (video._bufferCleanup) video._bufferCleanup();
+
+      let waitingTimer = null;
+      const BUFFER_RESUME = 3; // seconds of buffer needed to resume
+
+      function getBufferAhead() {
+        for (let i = 0; i < video.buffered.length; i++) {
+          if (video.buffered.start(i) <= video.currentTime && video.buffered.end(i) > video.currentTime) {
+            return video.buffered.end(i) - video.currentTime;
+          }
+        }
+        return 0;
+      }
+
+      function onWaiting() {
+        // Video stalled — wait for enough buffer then resume
+        if (waitingTimer) return;
+        waitingTimer = setInterval(() => {
+          if (getBufferAhead() >= BUFFER_RESUME) {
+            clearInterval(waitingTimer);
+            waitingTimer = null;
+            video.play().catch(() => {});
+          }
+        }, 300);
+      }
+
+      function onCanPlayThrough() {
+        if (waitingTimer) {
+          clearInterval(waitingTimer);
+          waitingTimer = null;
+        }
+      }
+
+      video.addEventListener('waiting', onWaiting);
+      video.addEventListener('canplaythrough', onCanPlayThrough);
+
+      video._bufferCleanup = () => {
+        video.removeEventListener('waiting', onWaiting);
+        video.removeEventListener('canplaythrough', onCanPlayThrough);
+        if (waitingTimer) { clearInterval(waitingTimer); waitingTimer = null; }
+      };
+
+      // Start playing — if enough data, plays immediately; otherwise browser buffers first
+      video.play().catch(() => {});
+    }
+
+    // Kill all other video downloads to free bandwidth for the active video
+    function killOtherVideos(activeVideo) {
+      document.querySelectorAll('video').forEach(v => {
+        if (v !== activeVideo && v.src && !v.closest('.mag-page-container') && !v.muted) {
+          v.pause();
+          v.removeAttribute('src');
+          v.load(); // releases network connection
+        }
+      });
+    }
+
     // --- System Bar Logic ---
     function updateClock() {
       const now = new Date();
@@ -1640,7 +1704,7 @@
               ? `<img src="${cover.src}" class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />`
               : `<div class="w-full h-full flex items-center justify-center bg-slate-200 dark:bg-slate-700"><span class="material-symbols-outlined text-slate-400 text-3xl" style="font-variation-settings:'FILL' 1;">auto_stories</span></div>`;
           } else if (item.isVideo) {
-            thumb = `<video src="${item.src}" class="w-full h-full object-cover" muted preload="metadata" onloadedmetadata="this.currentTime=0.001" style="pointer-events:none;"></video>`;
+            thumb = `<video src="${item.src}" class="w-full h-full object-cover" muted preload="none" onloadedmetadata="this.currentTime=0.001" style="pointer-events:none;"></video>`;
           } else {
             thumb = `<img src="${item.src}" class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />`;
           }
@@ -1811,7 +1875,7 @@
       const qlControls = document.getElementById('quick-look-controls');
       let contentHtml = '';
       if (item.isVideo) {
-        contentHtml = `<video class="max-w-[85vw] max-h-[75vh] object-contain block" src="${item.src}" autoplay loop playsinline></video>`;
+        contentHtml = `<video class="max-w-[85vw] max-h-[75vh] object-contain block" src="${item.src}" loop playsinline></video>`;
         qlControls.style.display = '';
       } else {
         contentHtml = `<img class="max-w-[85vw] max-h-[75vh] object-contain block" src="${item.src}" />`;
@@ -1833,6 +1897,8 @@
       if (playPauseBtn) playPauseBtn.textContent = 'pause_circle';
 
       if (videoEl) {
+        killOtherVideos(videoEl);
+        safePlayVideo(videoEl);
         // Clone elements first to remove stale listeners, then get fresh references
         const newPlay = playPauseBtn.cloneNode(true);
         playPauseBtn.parentNode.replaceChild(newPlay, playPauseBtn);
@@ -2010,7 +2076,8 @@
       // Play video, reset controls
       const item = editsItems[index];
       editsVideo.src = item.src;
-      editsVideo.play();
+      killOtherVideos(editsVideo);
+      safePlayVideo(editsVideo);
       editsProgressBar.style.width = '0%';
       editsTimeEl.innerText = '0:00';
       if (editsEmpty) editsEmpty.style.display = 'none';
@@ -2133,8 +2200,8 @@
         images.forEach((img, i) => {
           if (img.isVideo) {
             htmlSnippet += `
-              <video src="${img.src}" class="mag-page h-full w-auto object-contain shrink-0 block mx-0 pointer-events-none" 
-                data-index="${i}" style="max-height: 100vh;" autoplay loop muted playsinline></video>
+              <video data-src="${img.src}" class="mag-page h-full w-auto object-contain shrink-0 block mx-0 pointer-events-none"
+                data-index="${i}" style="max-height: 100vh;" loop muted playsinline preload="none"></video>
             `;
           } else {
             htmlSnippet += `
@@ -2146,8 +2213,9 @@
         htmlSnippet += `<div id="mag-spacer-end" class="shrink-0 h-full pointer-events-none bg-transparent" style="width: 50vw;"></div>`;
         magazineScroller.innerHTML = htmlSnippet;
 
-        // Seamless video loop
-        magazineScroller.querySelectorAll('video').forEach(v => {
+        // Seamless video loop + lazy load only visible videos
+        const magVids = magazineScroller.querySelectorAll('video');
+        magVids.forEach(v => {
           v.addEventListener('timeupdate', () => {
             if (v.duration && v.currentTime > v.duration - 0.08) {
               v.currentTime = 0;
@@ -2155,6 +2223,18 @@
             }
           });
         });
+        const magVidObserver = new IntersectionObserver((entries) => {
+          entries.forEach(e => {
+            const v = e.target;
+            if (e.isIntersecting) {
+              if (!v.src && v.dataset.src) { v.src = v.dataset.src; }
+              v.play().catch(() => {});
+            } else {
+              v.pause();
+            }
+          });
+        }, { root: magazineScroller, threshold: 0.3 });
+        magVids.forEach(v => magVidObserver.observe(v));
 
         // The slider tracks "Views" for navigation, but the total text shows actual pages
         const viewsCount = images.length + (images.length > 1 ? 1 : 0);
@@ -2569,17 +2649,18 @@
         iosMagReaderPages.innerHTML = pages.length === 0
           ? '<div style="flex:0 0 100%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:14px;">No pages found.</div>'
           : pages.map(p => p.isVideo
-            ? `<div style="${pageStyle}"><video src="${p.src}" style="width:100%;height:100%;object-fit:contain;" autoplay loop muted playsinline></video></div>`
+            ? `<div style="${pageStyle}"><video src="${p.src}" style="width:100%;height:100%;object-fit:contain;" loop muted playsinline preload="none"></video></div>`
             : `<div style="${pageStyle}"><img src="${p.src}" style="width:100%;height:auto;flex-shrink:0;" /></div>`
           ).join('');
 
         iosMagReaderPages.scrollLeft = 0;
         setTimeout(iosMagUpdatePageIndicator, 50);
 
-        // Play/pause videos based on visibility + seamless loop
+        // Play/pause videos based on visibility + seamless loop (only load visible)
         const iosMagVideos = iosMagReaderPages.querySelectorAll('video');
+        const iosMagVideoSrcs = Array.from(iosMagVideos).map(v => v.src);
         iosMagVideos.forEach(v => {
-          v.pause();
+          v.removeAttribute('src');
           v.addEventListener('timeupdate', () => {
             if (v.duration && v.currentTime > v.duration - 0.08) {
               v.currentTime = 0;
@@ -2591,13 +2672,15 @@
         function iosMagPlayVisibleVideo() {
           const w = iosMagReaderPages.clientWidth;
           const currentIndex = Math.round(iosMagReaderPages.scrollLeft / w);
-          iosMagVideos.forEach((v, i) => {
+          iosMagVideos.forEach((v, vi) => {
             const page = v.closest('div');
             const pageIndex = Array.from(iosMagReaderPages.children).indexOf(page);
             if (pageIndex === currentIndex) {
-              if (v.paused) v.play();
+              if (!v.src) { v.src = iosMagVideoSrcs[vi]; }
+              safePlayVideo(v);
             } else {
               v.pause();
+              if (v.src) { v.removeAttribute('src'); v.load(); }
             }
           });
         }
@@ -2697,7 +2780,8 @@
         iosSelectedEdit = index;
         const item = iosEditsItems[index];
         iosEditsVideo.src = item.src;
-        iosEditsVideo.play();
+        killOtherVideos(iosEditsVideo);
+        safePlayVideo(iosEditsVideo);
 
         // Update highlight
         iosEditsList.querySelectorAll('.ios-edit-row').forEach((r, i) => {
@@ -2972,7 +3056,7 @@
         iosBtsFileGrid.innerHTML = iosBtsCurrentFiles.map((f, i) =>
           f.isVideo
             ? `<div onclick="iosBtsOpenViewer(${i})" style="aspect-ratio:1;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;background:#111;">
-                <video src="${f.src}" style="width:100%;height:100%;object-fit:cover;" muted playsinline preload="metadata"></video>
+                <video src="${f.src}" style="width:100%;height:100%;object-fit:cover;" muted playsinline preload="none"></video>
               </div>`
             : `<div onclick="iosBtsOpenViewer(${i})" style="aspect-ratio:1;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;background:#111;">
                 <img src="${f.src}" style="width:100%;height:100%;object-fit:cover;" />
@@ -3004,7 +3088,7 @@
         iosBtsViewerPages.innerHTML = iosBtsCurrentFiles.map((f, i) => {
           const pageStyle = 'flex:0 0 100vw; width:100vw; min-width:100vw; height:100%; scroll-snap-align:start; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#000;';
           if (f.isVideo) {
-            return `<div style="${pageStyle}"><video src="${f.src}" style="width:100%;height:100%;object-fit:contain;" autoplay loop playsinline></video></div>`;
+            return `<div style="${pageStyle}"><video src="${f.src}" style="width:100%;height:100%;object-fit:contain;" loop playsinline preload="none"></video></div>`;
           } else {
             return `<div style="${pageStyle}"><img src="${f.src}" style="max-width:100%;max-height:100%;object-fit:contain;" /></div>`;
           }
@@ -3016,10 +3100,11 @@
           iosBtsUpdateViewerCounter();
         });
 
-        // Seamless video loop + play visible
+        // Seamless video loop + play only visible video (others unloaded)
         const vids = iosBtsViewerPages.querySelectorAll('video');
+        const vidSrcs = Array.from(vids).map(v => v.src);
         vids.forEach(v => {
-          v.pause();
+          v.removeAttribute('src');
           v.addEventListener('timeupdate', () => {
             if (v.duration && v.currentTime > v.duration - 0.08) { v.currentTime = 0; v.play(); }
           });
@@ -3027,9 +3112,15 @@
         function playVisible() {
           const w = iosBtsViewerPages.clientWidth;
           const ci = Math.round(iosBtsViewerPages.scrollLeft / w);
-          vids.forEach((v, i) => {
+          vids.forEach((v, vi) => {
             const pi = Array.from(iosBtsViewerPages.children).indexOf(v.closest('div'));
-            if (pi === ci) { if (v.paused) v.play(); } else { v.pause(); }
+            if (pi === ci) {
+              if (!v.src) { v.src = vidSrcs[vi]; }
+              safePlayVideo(v);
+            } else {
+              v.pause();
+              if (v.src) { v.removeAttribute('src'); v.load(); }
+            }
           });
         }
         iosBtsViewerPages.addEventListener('scroll', playVisible);
