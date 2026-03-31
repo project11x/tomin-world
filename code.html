@@ -2058,7 +2058,7 @@
       window.addEventListener('pointerup', onUp);
     });
 
-    const selectEdit = (index) => {
+    const selectEdit = (index, autoPlay = true) => {
       if (index < 0 || index >= editsItems.length) return;
       selectedEditIndex = index;
 
@@ -2076,8 +2076,10 @@
       // Play video, reset controls
       const item = editsItems[index];
       editsVideo.src = item.src;
-      killOtherVideos(editsVideo);
-      safePlayVideo(editsVideo);
+      if (autoPlay) {
+        killOtherVideos(editsVideo);
+        safePlayVideo(editsVideo);
+      }
       editsProgressBar.style.width = '0%';
       editsTimeEl.innerText = '0:00';
       if (editsEmpty) editsEmpty.style.display = 'none';
@@ -2112,8 +2114,8 @@
       viewer.classList.remove('-translate-x-full');
       viewer.classList.add('translate-x-0');
 
-      // Auto-select first edit
-      setTimeout(() => selectEdit(0), 100);
+      // Auto-select first edit (no autoPlay — setTimeout breaks user gesture context)
+      setTimeout(() => selectEdit(0, false), 100);
     };
 
     btnCloseEdits.addEventListener('click', () => {
@@ -2775,13 +2777,15 @@
         return results;
       }
 
-      function iosSelectEdit(index) {
+      function iosSelectEdit(index, autoPlay = true) {
         if (index < 0 || index >= iosEditsItems.length) return;
         iosSelectedEdit = index;
         const item = iosEditsItems[index];
         iosEditsVideo.src = item.src;
-        killOtherVideos(iosEditsVideo);
-        safePlayVideo(iosEditsVideo);
+        if (autoPlay) {
+          killOtherVideos(iosEditsVideo);
+          safePlayVideo(iosEditsVideo);
+        }
 
         // Update highlight
         iosEditsList.querySelectorAll('.ios-edit-row').forEach((r, i) => {
@@ -2822,8 +2826,8 @@
           iosEditsApp.style.borderRadius = '0';
         }));
 
-        // Auto-select first edit
-        setTimeout(() => iosSelectEdit(0), 100);
+        // Auto-select first edit (no autoPlay — setTimeout breaks iOS user gesture context)
+        setTimeout(() => iosSelectEdit(0, false), 100);
       };
 
       window.iosCloseEdits = function () {
