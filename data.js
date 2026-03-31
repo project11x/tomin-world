@@ -7,7 +7,7 @@ const portfolioData = {
       "type": "Video",
       "size": "915 MB",
       "date": "Jan 13, 2026",
-      "src": "5am%20in%20munic/5am%20in%20munich%20mid%20quality.mp4",
+      "src": "5am%20in%20munic/5am%20in%20munich%20mid%20quality_web.mp4",
       "isVideo": true
     },
     {
@@ -49,7 +49,7 @@ const portfolioData = {
       "type": "Video",
       "size": "232.9 MB",
       "date": "Jan 11, 2026",
-      "src": "LDN%20x%20UKG/london%20x%20ukg.mp4",
+      "src": "LDN%20x%20UKG/london%20x%20ukg_web.mp4",
       "isVideo": true
     },
     {
@@ -447,7 +447,7 @@ const portfolioData = {
       "type": "Video",
       "size": "192.2 MB",
       "date": "Jun 29, 2024",
-      "src": "birthday%20kisses/birthDayKisses.mp4",
+      "src": "birthday%20kisses/birthDayKisses_web.mp4",
       "isVideo": true
     }
   ],
@@ -457,7 +457,7 @@ const portfolioData = {
       "type": "Video",
       "size": "220.3 MB",
       "date": "Jan 14, 2026",
-      "src": "ftlotg/ftlotg.mp4",
+      "src": "ftlotg/ftlotg_web.mp4",
       "isVideo": true
     },
     {
@@ -491,7 +491,7 @@ const portfolioData = {
       "type": "Video",
       "size": "176 MB",
       "date": "Mar 6, 2026",
-      "src": "hlfatpch/late%20night%20sketches.mp4",
+      "src": "hlfatpch/late%20night%20sketches_web.mp4",
       "isVideo": true
     }
   ],
@@ -511,7 +511,7 @@ const portfolioData = {
       "type": "Video",
       "size": "27.2 MB",
       "date": "Jan 13, 2026",
-      "src": "milano/milano%20export.mp4",
+      "src": "milano/milano%20export_web.mp4",
       "isVideo": true
     }
   ],
@@ -573,7 +573,7 @@ const portfolioData = {
       "type": "Video",
       "size": "77.6 MB",
       "date": "Mar 5, 2025",
-      "src": "tipsy%20triad/tipsy%20triad.mp4",
+      "src": "tipsy%20triad/tipsy%20triad_web.mp4",
       "isVideo": true
     },
     {
