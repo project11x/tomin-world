@@ -115,7 +115,7 @@ const portfolioData = {
       "type": "Video",
       "size": "120.8 MB",
       "date": "Feb 18, 2025",
-      "src": "Lunatic/lunatic.mp4",
+      "src": "Lunatic/lunatic_web.mp4",
       "isVideo": true
     },
     {
@@ -437,7 +437,7 @@ const portfolioData = {
       "type": "Video",
       "size": "104.1 MB",
       "date": "Mar 4, 2026",
-      "src": "bents%20n%20glitches/bent%20footage%20edit%20test%20HQ.mp4",
+      "src": "bents%20n%20glitches/bent%20footage%20edit%20test%20HQ_web.mp4",
       "isVideo": true
     }
   ],
@@ -475,7 +475,7 @@ const portfolioData = {
       "type": "Video",
       "size": "95.5 MB",
       "date": "Mar 4, 2026",
-      "src": "hlfatpch/how%20life%20feels%20after%20the%20paycheck%20hits%20HQ.mp4",
+      "src": "hlfatpch/how%20life%20feels%20after%20the%20paycheck%20hits%20HQ_web.mp4",
       "isVideo": true
     },
     {
@@ -483,7 +483,7 @@ const portfolioData = {
       "type": "Video",
       "size": "92.1 MB",
       "date": "Mar 6, 2026",
-      "src": "hlfatpch/how%20mf%20start%20movin%20after%20getting%20their%20moms%20car%20keys%20HQ.mp4",
+      "src": "hlfatpch/how%20mf%20start%20movin%20after%20getting%20their%20moms%20car%20keys%20HQ_web.mp4",
       "isVideo": true
     },
     {
@@ -501,7 +501,7 @@ const portfolioData = {
       "type": "Video",
       "size": "34.3 MB",
       "date": "Jul 6, 2025",
-      "src": "lindsay%20lohan/lindsay%20lohan.mp4",
+      "src": "lindsay%20lohan/lindsay%20lohan_web.mp4",
       "isVideo": true
     }
   ],
@@ -521,7 +521,7 @@ const portfolioData = {
       "type": "Video",
       "size": "188.1 MB",
       "date": "Mar 6, 2026",
-      "src": "schimmel%20in%20schladming/schimmel%20in%20schladming%20HQ.mp4",
+      "src": "schimmel%20in%20schladming/schimmel%20in%20schladming%20HQ_web.mp4",
       "isVideo": true
     }
   ],
@@ -531,7 +531,7 @@ const portfolioData = {
       "type": "Video",
       "size": "98.8 MB",
       "date": "Dec 21, 2024",
-      "src": "stoical/new%20ideas%20120fps.mp4",
+      "src": "stoical/new%20ideas%20120fps_web.mp4",
       "isVideo": true
     },
     {
