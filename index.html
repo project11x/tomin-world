@@ -2604,11 +2604,7 @@
         if (iosIntroPlayed) return;
         iosIntroPlayed = true;
         const items = iosScreen.querySelectorAll('.ios-intro-item');
-        items.forEach((el, i) => {
-          setTimeout(() => {
-            el.classList.add('ios-intro-run');
-          }, 120 + i * 90);
-        });
+        items.forEach(el => el.classList.add('ios-intro-run'));
       }
 
       function applyScreen() {
@@ -2739,38 +2735,26 @@
         iosMagReaderPages.innerHTML = pages.length === 0
           ? '<div style="flex:0 0 100%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:14px;">No pages found.</div>'
           : pages.map(p => p.isVideo
-            ? `<div style="${pageStyle}"><video src="${p.src}" style="width:100%;height:100%;object-fit:contain;" loop muted playsinline preload="none"></video></div>`
+            ? `<div style="${pageStyle}"><video src="${p.src}" style="width:100%;height:100%;object-fit:contain;" autoplay loop muted playsinline preload="auto"></video></div>`
             : `<div style="${pageStyle}"><img src="${p.src}" style="width:100%;height:auto;flex-shrink:0;" /></div>`
           ).join('');
 
         iosMagReaderPages.scrollLeft = 0;
         setTimeout(iosMagUpdatePageIndicator, 50);
 
-        // Play/pause videos based on visibility + seamless loop (only load visible)
+        // Play only visible video, pause others
         const iosMagVideos = iosMagReaderPages.querySelectorAll('video');
-        const iosMagVideoSrcs = Array.from(iosMagVideos).map(v => v.src);
-        iosMagVideos.forEach(v => {
-          v.removeAttribute('src');
-          v.addEventListener('timeupdate', () => {
-            if (v.duration && v.currentTime > v.duration - 0.08) {
-              v.currentTime = 0;
-              v.play();
-            }
-          });
-        });
 
         function iosMagPlayVisibleVideo() {
           const w = iosMagReaderPages.clientWidth;
           const currentIndex = Math.round(iosMagReaderPages.scrollLeft / w);
-          iosMagVideos.forEach((v, vi) => {
+          iosMagVideos.forEach(v => {
             const page = v.closest('div');
             const pageIndex = Array.from(iosMagReaderPages.children).indexOf(page);
             if (pageIndex === currentIndex) {
-              if (!v.src) { v.src = iosMagVideoSrcs[vi]; }
-              safePlayVideo(v);
+              v.play().catch(() => {});
             } else {
               v.pause();
-              if (v.src) { v.removeAttribute('src'); v.load(); }
             }
           });
         }

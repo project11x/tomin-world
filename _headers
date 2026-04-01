@@ -3,3 +3,6 @@
 
 /
   Cache-Control: no-cache, no-store, must-revalidate
+
+/data.js
+  Cache-Control: no-cache, no-store, must-revalidate
