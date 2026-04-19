@@ -569,8 +569,8 @@
   </header>
   <!-- Desktop Canvas -->
   <main id="desktop-main"
-    class="desktop-bg w-full h-full pt-8 flex relative transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] transform origin-left"
-    style="background: #ffffff;">
+    class="desktop-bg w-full h-full pt-8 flex relative origin-left"
+    style="background: #ffffff; transition: transform 480ms cubic-bezier(0.25,1,0.5,1);">
 
     <!-- Dark Mode Gradient Overlay for seamless transition -->
     <div class="absolute inset-0 opacity-0 dark:opacity-100 transition-opacity duration-300 pointer-events-none z-0"
@@ -1233,31 +1233,36 @@
     </div>
   </section>
 
-  <!-- Edits Viewer -->
+  <!-- Edits Viewer: full-screen "desktop space", slides in from right -->
   <section id="edits-viewer"
-    class="fixed inset-0 z-[100] flex items-center p-8 gap-4 opacity-0 pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]"
-    style="scale: 0.97;">
+    class="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center gap-5 p-8"
+    style="background:#f5f5f7; transform: translateX(100%); transition: transform 480ms cubic-bezier(0.25,1,0.5,1);">
 
-    <!-- LEFT GLASS CARD: Edit List -->
-    <div class="edits-glass-card w-[270px] shrink-0 h-full max-h-[680px] rounded-[18px] overflow-hidden flex flex-col">
-      <!-- Header -->
-      <div class="h-12 shrink-0 flex items-center justify-between px-5 border-b border-black/[0.06] dark:border-white/5">
-        <h2 class="text-slate-800 dark:text-white/80 font-light tracking-[0.3em] text-[11px] uppercase select-none">Edits</h2>
-        <span id="btn-close-edits"
-          class="material-symbols-outlined text-slate-300 dark:text-white/30 hover:text-slate-700 dark:hover:text-white cursor-pointer transition-colors"
-          style="font-size:20px;">close</span>
-      </div>
-      <!-- List -->
-      <div id="edits-list" class="flex-1 overflow-y-auto py-2" style="scrollbar-width: none;">
-        <!-- injected by JS -->
-      </div>
-    </div>
+    <!-- Dark mode bg overlay -->
+    <div class="absolute inset-0 opacity-0 dark:opacity-100 transition-opacity duration-300 pointer-events-none"
+      style="background: linear-gradient(160deg, #06080f 0%, #0a0e20 50%, #0e0618 100%);"></div>
 
-    <!-- RIGHT GLASS CARD: Video Player -->
-    <div class="edits-glass-card flex-1 h-full max-h-[680px] rounded-[18px] overflow-hidden flex flex-col">
-      <div class="flex-1 relative overflow-hidden">
-        <div class="relative w-full h-full group p-4 pb-20">
-          <video id="edits-video" class="w-full h-full object-contain rounded-xl" loop
+    <!-- inner layout: left list + right video, relative so dark overlay is behind -->
+    <div class="relative z-10 flex items-center gap-5 w-full"
+      style="height: min(calc(100vh - 80px), 680px);">
+
+      <!-- LEFT GLASS CARD: Edit List -->
+      <div class="edits-glass-card w-[260px] shrink-0 h-full rounded-[18px] overflow-hidden flex flex-col">
+        <div class="h-12 shrink-0 flex items-center justify-between px-5 border-b border-black/[0.06] dark:border-white/5">
+          <h2 class="text-slate-800 dark:text-white/80 font-light tracking-[0.3em] text-[11px] uppercase select-none">Edits</h2>
+          <span id="btn-close-edits"
+            class="material-symbols-outlined text-slate-300 dark:text-white/30 hover:text-slate-700 dark:hover:text-white cursor-pointer transition-colors"
+            style="font-size:20px;">close</span>
+        </div>
+        <div id="edits-list" class="flex-1 overflow-y-auto py-2" style="scrollbar-width: none;"></div>
+      </div>
+
+      <!-- RIGHT GLASS CARD: Video — width driven by aspect ratio, height = parent height -->
+      <div class="flex-1 flex items-center h-full">
+        <div id="edits-right-card"
+          class="edits-glass-card rounded-[18px] overflow-hidden relative group"
+          style="height:100%; aspect-ratio:16/9; max-width:calc(100vw - 360px); min-width:280px;">
+          <video id="edits-video" class="w-full h-full" style="object-fit:fill; display:block;" loop
             playsinline preload="none"></video>
           <div id="edits-empty"
             class="absolute inset-0 flex items-center justify-center text-slate-200 dark:text-white/10 text-sm tracking-widest uppercase pointer-events-none">
@@ -1278,8 +1283,8 @@
           </div>
         </div>
       </div>
-    </div>
 
+    </div>
   </section>
 
   <script src="data.js"></script>
@@ -2168,7 +2173,18 @@
 
       // Play video, reset controls
       const item = editsItems[index];
+      const editsRightCard = document.getElementById('edits-right-card');
+      // Reset to 16:9 until metadata loads
+      if (editsRightCard) editsRightCard.style.aspectRatio = '16/9';
       editsVideo.src = item.src;
+      // Update card aspect ratio when video dimensions are known
+      editsVideo.addEventListener('loadedmetadata', function updateAspect() {
+        editsVideo.removeEventListener('loadedmetadata', updateAspect);
+        if (editsRightCard && editsVideo.videoWidth && editsVideo.videoHeight) {
+          const ratio = editsVideo.videoWidth / editsVideo.videoHeight;
+          editsRightCard.style.aspectRatio = ratio.toFixed(4);
+        }
+      });
       desktopEditsBB.hide();
       if (autoPlay) {
         desktopEditsBB.show();
@@ -2204,18 +2220,20 @@
       if (editsEmpty) editsEmpty.style.display = '';
 
       const viewer = document.getElementById('edits-viewer');
-      viewer.style.scale = '1';
-      viewer.classList.remove('opacity-0', 'pointer-events-none');
-      viewer.classList.add('opacity-100', 'pointer-events-auto');
+      viewer.classList.remove('pointer-events-none');
+      viewer.classList.add('pointer-events-auto');
+      viewer.style.transform = 'translateX(0)';
+      desktopMain.style.transform = 'translateX(-100%)';
 
       // Auto-select first edit directly (no setTimeout = stays in user gesture context)
       selectEdit(0, true);
     };
 
     btnCloseEdits.addEventListener('click', () => {
-      editsViewer.style.scale = '0.97';
-      editsViewer.classList.remove('opacity-100', 'pointer-events-auto');
-      editsViewer.classList.add('opacity-0', 'pointer-events-none');
+      editsViewer.classList.remove('pointer-events-auto');
+      editsViewer.classList.add('pointer-events-none');
+      editsViewer.style.transform = 'translateX(100%)';
+      desktopMain.style.transform = '';
       editsVideo.pause();
       editsVideo.src = '';
     });
@@ -2242,7 +2260,7 @@
 
     window.handleFinderClick = function () {
       // Check if Edits Viewer is open
-      if (editsViewer && editsViewer.classList.contains('opacity-100')) {
+      if (editsViewer && editsViewer.classList.contains('pointer-events-auto')) {
         btnCloseEdits.click();
         return;
       }
