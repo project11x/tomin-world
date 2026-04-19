@@ -453,6 +453,26 @@
       to { transform: rotate(360deg); }
     }
 
+    /* Edit list rows */
+    .edit-row {
+      border-radius: 8px;
+      margin: 0 8px;
+      padding: 6px 16px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+      color: #1e293b;
+      transition: background 0.12s ease, color 0.12s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .dark .edit-row { color: rgba(255,255,255,0.8); }
+    .edit-row:hover:not(.edit-selected) { background: rgba(0,0,0,0.05); }
+    .dark .edit-row:hover:not(.edit-selected) { background: rgba(255,255,255,0.08); }
+    .edit-selected { background: #1c7eff !important; color: white !important; }
+
     @keyframes ios-item-in {
       from {
         opacity: 0;
@@ -1191,53 +1211,54 @@
 
   <!-- Magazine Reader Workspace -->
   <section id="magazine-reader"
-    class="fixed inset-0 z-[100] pointer-events-none flex flex-col"
+    class="fixed inset-0 z-[100] pointer-events-none"
     style="background:#f5f5f7; transform: translateX(100%); transition: transform 480ms cubic-bezier(0.25,1,0.5,1);">
+
     <!-- Dark mode bg overlay -->
     <div class="absolute inset-0 opacity-0 dark:opacity-100 transition-opacity duration-300 pointer-events-none z-0"
       style="background: linear-gradient(160deg, #06080f 0%, #0a0e20 50%, #0e0618 100%);"></div>
-    <!-- Content z-layer above dark overlay -->
-    <div class="relative z-10 flex flex-col flex-1 min-h-0">
-    <!-- Topbar -->
-    <div
-      class="h-14 flex items-center justify-between px-6 bg-white/70 dark:bg-black/30 backdrop-blur-xl z-10 shrink-0 border-b border-black/[0.06] dark:border-white/5 transition-colors">
-      <div class="flex items-center space-x-4">
-        <span id="btn-close-magazine"
-          class="material-symbols-outlined text-slate-500 dark:text-white/50 hover:text-primary dark:hover:text-white cursor-pointer transition-colors text-2xl"
-          title="Go back to Desktop">arrow_back</span>
-        <h2 id="magazine-title"
-          class="text-slate-900 dark:text-white font-serif tracking-wider font-bold text-lg select-none">Magazine</h2>
-      </div>
-      <div class="flex items-center space-x-4">
-        <span id="mag-theme-toggle"
-          class="material-symbols-outlined text-slate-500 dark:text-white/50 hover:text-primary dark:hover:text-white cursor-pointer transition-colors text-[22px]"
-          title="Toggle Theme">dark_mode</span>
-        <span id="mag-fullscreen-toggle"
-          class="material-symbols-outlined text-slate-500 dark:text-white/50 hover:text-primary dark:hover:text-white cursor-pointer transition-colors text-[24px]"
-          title="Toggle Fullscreen">fullscreen</span>
+
+    <!-- Full-screen scroller (z-10, behind glass overlays) -->
+    <div id="magazine-scroller" class="absolute inset-0 flex overflow-x-auto overflow-y-hidden items-center z-10"
+      style="scrollbar-width:none; cursor:default; padding-top:80px; padding-bottom:110px;">
+    </div>
+
+    <!-- Top-left: back + title glass pill -->
+    <div class="absolute top-5 left-5 z-20">
+      <button id="btn-close-magazine"
+        class="edits-glass-card flex items-center gap-1.5 px-4 py-2.5 rounded-full cursor-pointer active:opacity-70 transition-opacity select-none"
+        style="-webkit-tap-highlight-color:transparent;">
+        <span class="material-symbols-outlined text-slate-600 dark:text-white/70"
+          style="font-size:18px;">arrow_back_ios</span>
+        <span id="magazine-title" class="text-[13px] font-medium text-slate-800 dark:text-white/80 tracking-wide">Magazine</span>
+      </button>
+    </div>
+
+    <!-- Top-right: dark mode + fullscreen glass pills -->
+    <div class="absolute top-5 right-5 z-20 flex gap-2">
+      <button id="mag-theme-toggle"
+        class="edits-glass-card w-11 h-11 rounded-full cursor-pointer flex items-center justify-center active:opacity-70 transition-opacity"
+        title="Toggle Theme">
+        <span class="material-symbols-outlined text-slate-600 dark:text-white/70" style="font-size:20px;">dark_mode</span>
+      </button>
+      <button id="mag-fullscreen-toggle"
+        class="edits-glass-card w-11 h-11 rounded-full cursor-pointer flex items-center justify-center active:opacity-70 transition-opacity"
+        title="Toggle Fullscreen">
+        <span class="material-symbols-outlined text-slate-600 dark:text-white/70" style="font-size:22px;">fullscreen</span>
+      </button>
+    </div>
+
+    <!-- Bottom: pagination glass card (above dock) -->
+    <div class="absolute left-1/2 -translate-x-1/2 z-20" style="bottom: 88px;">
+      <div class="edits-glass-card rounded-[16px] px-5 py-3 flex items-center gap-4" style="min-width:320px;">
+        <span class="text-slate-500 dark:text-white/60 font-mono text-[12px] tracking-widest whitespace-nowrap select-none">
+          <span id="magazine-current-page">1</span>&thinsp;/&thinsp;<span id="magazine-total-pages">0</span>
+        </span>
+        <input type="range" id="magazine-progress" min="1" max="1" value="1"
+          class="mag-slider flex-1 text-primary dark:text-white h-1 bg-slate-300 dark:bg-white/20 rounded-full appearance-none outline-none cursor-pointer">
       </div>
     </div>
-    <!-- Reader Container -->
-    <div id="magazine-scroller" class="flex-1 flex overflow-x-auto overflow-y-hidden items-center relative"
-      style="scrollbar-width: none; cursor: default;">
-      <!-- items injected here -->
-    </div>
-    <!-- Bottom Pagination -->
-    <div
-      class="relative bg-white/70 dark:bg-black/30 backdrop-blur-xl flex flex-col justify-center px-6 shrink-0 border-t border-black/[0.06] dark:border-white/5 select-none transition-colors pt-3 pb-36">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-3 w-1/4">
-          <span class="text-slate-500 dark:text-white/70 font-mono text-sm tracking-widest"><span
-              id="magazine-current-page">1</span> / <span id="magazine-total-pages">0</span></span>
-        </div>
-        <div class="flex-1 px-8 relative flex items-center justify-center py-2">
-          <input type="range" id="magazine-progress" min="1" max="1" value="1"
-            class="mag-slider w-full text-primary dark:text-white h-1 bg-slate-300 dark:bg-white/20 rounded-full appearance-none outline-none cursor-pointer">
-        </div>
-        <div class="w-1/4 flex justify-end"></div>
-      </div>
-    </div>
-    </div><!-- end content z-layer -->
+
   </section>
 
   <!-- Edits Viewer: full-screen "desktop space", slides in from LEFT (edits is left of desktop) -->
@@ -1378,7 +1399,7 @@
     }
 
     // Beachball loader: attach to any video element, shows while buffering
-    const BEACHBALL_SVG = `<svg width="40" height="40" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="animation:beachball-spin 1s linear infinite; transform-origin:16px 16px; transform-box:fill-box;"><g filter="url(#bb_filter)"><path d="M12.046 7.54443C12.8194 7.64041 13.5869 7.88962 14.3043 8.30383C17.1741 9.96068 18.1573 13.6302 16.5005 16.5C14.8436 13.6302 11.1741 12.647 8.3043 14.3038C7.58791 14.7174 6.98908 15.2565 6.51953 15.8772C6.74422 12.2205 8.934 9.09532 12.046 7.54443Z" fill="url(#bb_g0)"/><path d="M6.51908 15.8772C6.98862 15.2565 7.58745 14.7175 8.30385 14.3039C11.1736 12.647 14.8431 13.6303 16.5 16.5C13.1863 16.5 10.5 19.1863 10.5 22.5C10.5 23.3277 10.6676 24.1163 10.9707 24.8336C8.27601 23.0421 6.5 19.9785 6.5 16.5C6.5 16.2909 6.50642 16.0832 6.51908 15.8772Z" fill="url(#bb_g1)"/><path d="M10.9707 24.8336C10.6676 24.1163 10.5 23.3277 10.5 22.5C10.5 19.1863 13.1863 16.5 16.5 16.5C14.8431 19.3698 15.8264 23.0393 18.6962 24.6962C19.4136 25.1104 20.181 25.3596 20.9545 25.4555C19.6131 26.124 18.1005 26.5 16.5 26.5C14.4556 26.5 12.5545 25.8865 10.9707 24.8336Z" fill="url(#bb_g2)"/><path d="M20.9546 25.4555C20.1812 25.3596 19.4137 25.1104 18.6963 24.6962C15.8266 23.0393 14.8433 19.3698 16.5002 16.5C18.157 19.3698 21.8266 20.353 24.6963 18.6962C25.4127 18.2825 26.0115 17.7435 26.4811 17.1228C26.2564 20.7794 24.0666 23.9047 20.9546 25.4555Z" fill="url(#bb_g3)"/><path d="M26.4809 17.1229C26.0114 17.7436 25.4125 18.2826 24.6962 18.6962C21.8264 20.3531 18.1569 19.3698 16.5 16.5001C19.8137 16.5001 22.5 13.8138 22.5 10.5001C22.5 9.67238 22.3324 8.88383 22.0293 8.1665C24.724 9.95801 26.5 13.0216 26.5 16.5001C26.5 16.7092 26.4936 16.9169 26.4809 17.1229Z" fill="url(#bb_g4)"/><path d="M22.0306 8.16642C22.3337 8.88375 22.5013 9.6723 22.5013 10.5C22.5013 13.8137 19.8151 16.5 16.5013 16.5C18.1582 13.6302 17.1749 9.9607 14.3052 8.30385C13.5878 7.88964 12.8203 7.64043 12.0469 7.54445C13.3882 6.87599 14.9009 6.5 16.5013 6.5C18.5457 6.5 20.4469 7.11349 22.0306 8.16642Z" fill="url(#bb_g5)"/></g><defs><filter id="bb_filter" x="-2" y="-1" width="36" height="36" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset dy="1"/><feGaussianBlur stdDeviation="1"/><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.4 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/></filter><linearGradient id="bb_g0" x1="6.52" y1="7.54" x2="6.52" y2="16.5" gradientUnits="userSpaceOnUse"><stop stop-color="#FFD305"/><stop offset="1" stop-color="#FDCF01"/></linearGradient><linearGradient id="bb_g1" x1="6.5" y1="13.5" x2="6.5" y2="24.83" gradientUnits="userSpaceOnUse"><stop stop-color="#52CF30"/><stop offset="1" stop-color="#3BBD1C"/></linearGradient><linearGradient id="bb_g2" x1="10.5" y1="16.5" x2="10.5" y2="26.5" gradientUnits="userSpaceOnUse"><stop stop-color="#14ADF6"/><stop offset="1" stop-color="#1191F4"/></linearGradient><linearGradient id="bb_g3" x1="15.7" y1="16.5" x2="15.7" y2="25.46" gradientUnits="userSpaceOnUse"><stop stop-color="#CA70E1"/><stop offset="1" stop-color="#B452CB"/></linearGradient><linearGradient id="bb_g4" x1="16.5" y1="8.17" x2="16.5" y2="19.5" gradientUnits="userSpaceOnUse"><stop stop-color="#FF645D"/><stop offset="1" stop-color="#FF4332"/></linearGradient><linearGradient id="bb_g5" x1="12.05" y1="6.5" x2="12.05" y2="16.5" gradientUnits="userSpaceOnUse"><stop stop-color="#FBB114"/><stop offset="1" stop-color="#FF9508"/></linearGradient></defs></svg>`;
+    const BEACHBALL_SVG = `<svg width="40" height="40" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="animation:beachball-spin 1s linear infinite; filter:drop-shadow(0px 1.5px 2px rgba(0,0,0,0.38));"><g><path d="M12.046 7.54443C12.8194 7.64041 13.5869 7.88962 14.3043 8.30383C17.1741 9.96068 18.1573 13.6302 16.5005 16.5C14.8436 13.6302 11.1741 12.647 8.3043 14.3038C7.58791 14.7174 6.98908 15.2565 6.51953 15.8772C6.74422 12.2205 8.934 9.09532 12.046 7.54443Z" fill="url(#bb_g0)"/><path d="M6.51908 15.8772C6.98862 15.2565 7.58745 14.7175 8.30385 14.3039C11.1736 12.647 14.8431 13.6303 16.5 16.5C13.1863 16.5 10.5 19.1863 10.5 22.5C10.5 23.3277 10.6676 24.1163 10.9707 24.8336C8.27601 23.0421 6.5 19.9785 6.5 16.5C6.5 16.2909 6.50642 16.0832 6.51908 15.8772Z" fill="url(#bb_g1)"/><path d="M10.9707 24.8336C10.6676 24.1163 10.5 23.3277 10.5 22.5C10.5 19.1863 13.1863 16.5 16.5 16.5C14.8431 19.3698 15.8264 23.0393 18.6962 24.6962C19.4136 25.1104 20.181 25.3596 20.9545 25.4555C19.6131 26.124 18.1005 26.5 16.5 26.5C14.4556 26.5 12.5545 25.8865 10.9707 24.8336Z" fill="url(#bb_g2)"/><path d="M20.9546 25.4555C20.1812 25.3596 19.4137 25.1104 18.6963 24.6962C15.8266 23.0393 14.8433 19.3698 16.5002 16.5C18.157 19.3698 21.8266 20.353 24.6963 18.6962C25.4127 18.2825 26.0115 17.7435 26.4811 17.1228C26.2564 20.7794 24.0666 23.9047 20.9546 25.4555Z" fill="url(#bb_g3)"/><path d="M26.4809 17.1229C26.0114 17.7436 25.4125 18.2826 24.6962 18.6962C21.8264 20.3531 18.1569 19.3698 16.5 16.5001C19.8137 16.5001 22.5 13.8138 22.5 10.5001C22.5 9.67238 22.3324 8.88383 22.0293 8.1665C24.724 9.95801 26.5 13.0216 26.5 16.5001C26.5 16.7092 26.4936 16.9169 26.4809 17.1229Z" fill="url(#bb_g4)"/><path d="M22.0306 8.16642C22.3337 8.88375 22.5013 9.6723 22.5013 10.5C22.5013 13.8137 19.8151 16.5 16.5013 16.5C18.1582 13.6302 17.1749 9.9607 14.3052 8.30385C13.5878 7.88964 12.8203 7.64043 12.0469 7.54445C13.3882 6.87599 14.9009 6.5 16.5013 6.5C18.5457 6.5 20.4469 7.11349 22.0306 8.16642Z" fill="url(#bb_g5)"/></g><defs><linearGradient id="bb_g0" x1="6.52" y1="7.54" x2="6.52" y2="16.5" gradientUnits="userSpaceOnUse"><stop stop-color="#FFD305"/><stop offset="1" stop-color="#FDCF01"/></linearGradient><linearGradient id="bb_g1" x1="6.5" y1="13.5" x2="6.5" y2="24.83" gradientUnits="userSpaceOnUse"><stop stop-color="#52CF30"/><stop offset="1" stop-color="#3BBD1C"/></linearGradient><linearGradient id="bb_g2" x1="10.5" y1="16.5" x2="10.5" y2="26.5" gradientUnits="userSpaceOnUse"><stop stop-color="#14ADF6"/><stop offset="1" stop-color="#1191F4"/></linearGradient><linearGradient id="bb_g3" x1="15.7" y1="16.5" x2="15.7" y2="25.46" gradientUnits="userSpaceOnUse"><stop stop-color="#CA70E1"/><stop offset="1" stop-color="#B452CB"/></linearGradient><linearGradient id="bb_g4" x1="16.5" y1="8.17" x2="16.5" y2="19.5" gradientUnits="userSpaceOnUse"><stop stop-color="#FF645D"/><stop offset="1" stop-color="#FF4332"/></linearGradient><linearGradient id="bb_g5" x1="12.05" y1="6.5" x2="12.05" y2="16.5" gradientUnits="userSpaceOnUse"><stop stop-color="#FBB114"/><stop offset="1" stop-color="#FF9508"/></linearGradient></defs></svg>`;
 
     function attachBeachball(video, container) {
       // Remove existing
@@ -1585,7 +1606,7 @@
       document.getElementById('about-me-modal').classList.add('hidden');
     };
     // --- Window Dragging Logic ---
-    let highestZIndex = 200;
+    let highestZIndex = 50;
     function bringToFront(element) {
       if (!element) return;
       highestZIndex++;
@@ -2171,18 +2192,10 @@
       const rows = editsList.querySelectorAll('.edit-row');
       rows.forEach((r, i) => {
         if (i === index) {
-          r.style.background = '#1c7eff';
-          r.style.color = 'white';
-          r.style.borderRadius = '8px';
-          r.style.margin = '0 8px';
-          r.style.padding = '6px 16px';
+          r.classList.add('edit-selected');
           r.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         } else {
-          r.style.background = '';
-          r.style.color = '';
-          r.style.borderRadius = '';
-          r.style.margin = '';
-          r.style.padding = '';
+          r.classList.remove('edit-selected');
         }
       });
 
@@ -2221,7 +2234,7 @@
       editsItems.forEach((item, i) => {
         const nameNoExt = item.name.replace(/\.[^/.]+$/, '');
         const row = document.createElement('div');
-        row.className = 'edit-row px-6 py-2 cursor-pointer text-slate-800 dark:text-white/80 text-sm font-light tracking-widest transition-colors hover:bg-slate-100 dark:hover:bg-white/5';
+        row.className = 'edit-row';
         row.innerText = nameNoExt;
         row.addEventListener('click', () => selectEdit(i));
         editsList.appendChild(row);
@@ -2317,7 +2330,7 @@
       const magKey = folder + "/" + magItem.name;
       const images = portfolioData[magKey] || [];
 
-      bringToFront(magazineReader);
+      // magazine reader is full-screen overlay, no bringToFront needed
       magazineTitle.innerText = magItem.name;
       magazineScroller.innerHTML = "";
 
