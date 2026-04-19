@@ -136,8 +136,27 @@
     }
 
     .desktop-icon.selected>div {
-      filter: brightness(0.8);
-      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2), 0 0 10px rgba(0, 122, 255, 0.5);
+      filter: brightness(0.82);
+    }
+
+    .desktop-icon:focus,
+    .desktop-icon:focus-visible {
+      outline: none;
+    }
+
+    /* Glass card for edits viewer */
+    .edits-glass-card {
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .dark .edits-glass-card {
+      background: rgba(18, 18, 18, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
     }
 
     /* Custom Range Slider */
@@ -1216,28 +1235,29 @@
 
   <!-- Edits Viewer -->
   <section id="edits-viewer"
-    class="fixed inset-0 z-[100] bg-white dark:bg-[#0e0e0e] flex flex-col transform -translate-x-full transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]">
-    <!-- Topbar: title + close on the RIGHT -->
-    <div
-      class="h-14 shrink-0 flex items-center justify-end px-6 bg-white dark:bg-[#0e0e0e] border-b border-slate-100 dark:border-white/5 z-10">
-      <div class="flex items-center space-x-4">
-        <h2 class="text-slate-900 dark:text-white font-light tracking-[0.3em] text-sm uppercase select-none">Edits</h2>
+    class="fixed inset-0 z-[100] flex items-center p-8 gap-4 opacity-0 pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]"
+    style="scale: 0.97;">
+
+    <!-- LEFT GLASS CARD: Edit List -->
+    <div class="edits-glass-card w-[270px] shrink-0 h-full max-h-[680px] rounded-[18px] overflow-hidden flex flex-col">
+      <!-- Header -->
+      <div class="h-12 shrink-0 flex items-center justify-between px-5 border-b border-black/[0.06] dark:border-white/5">
+        <h2 class="text-slate-800 dark:text-white/80 font-light tracking-[0.3em] text-[11px] uppercase select-none">Edits</h2>
         <span id="btn-close-edits"
-          class="material-symbols-outlined text-slate-400 dark:text-white/40 hover:text-slate-900 dark:hover:text-white cursor-pointer transition-colors text-2xl">arrow_forward</span>
+          class="material-symbols-outlined text-slate-300 dark:text-white/30 hover:text-slate-700 dark:hover:text-white cursor-pointer transition-colors"
+          style="font-size:20px;">close</span>
       </div>
-    </div>
-    <!-- Content -->
-    <div class="flex-1 flex overflow-hidden">
-      <!-- Left: scrollable edit list -->
-      <div id="edits-list" class="w-64 shrink-0 overflow-y-auto border-r border-slate-100 dark:border-white/5 py-4"
-        style="scrollbar-width: none;">
+      <!-- List -->
+      <div id="edits-list" class="flex-1 overflow-y-auto py-2" style="scrollbar-width: none;">
         <!-- injected by JS -->
       </div>
-      <!-- Right: Video Player with bottom padding and white background -->
-      <div
-        class="flex-1 flex items-center justify-center bg-white dark:bg-[#0e0e0e] overflow-hidden relative pb-24 p-4">
-        <div class="relative w-full h-full group">
-          <video id="edits-video" class="w-full h-full object-contain rounded-lg shadow-sm" loop
+    </div>
+
+    <!-- RIGHT GLASS CARD: Video Player -->
+    <div class="edits-glass-card flex-1 h-full max-h-[680px] rounded-[18px] overflow-hidden flex flex-col">
+      <div class="flex-1 relative overflow-hidden">
+        <div class="relative w-full h-full group p-4 pb-20">
+          <video id="edits-video" class="w-full h-full object-contain rounded-xl" loop
             playsinline preload="none"></video>
           <div id="edits-empty"
             class="absolute inset-0 flex items-center justify-center text-slate-200 dark:text-white/10 text-sm tracking-widest uppercase pointer-events-none">
@@ -1259,6 +1279,7 @@
         </div>
       </div>
     </div>
+
   </section>
 
   <script src="data.js"></script>
@@ -1552,7 +1573,7 @@
       document.getElementById('about-me-modal').classList.add('hidden');
     };
     // --- Window Dragging Logic ---
-    let highestZIndex = 100;
+    let highestZIndex = 200;
     function bringToFront(element) {
       if (!element) return;
       highestZIndex++;
@@ -2183,26 +2204,25 @@
       if (editsEmpty) editsEmpty.style.display = '';
 
       const viewer = document.getElementById('edits-viewer');
-      bringToFront(viewer);
-      desktopMain.classList.add('translate-x-1/4', 'scale-95', 'opacity-50');
-      viewer.classList.remove('-translate-x-full');
-      viewer.classList.add('translate-x-0');
+      viewer.style.scale = '1';
+      viewer.classList.remove('opacity-0', 'pointer-events-none');
+      viewer.classList.add('opacity-100', 'pointer-events-auto');
 
       // Auto-select first edit directly (no setTimeout = stays in user gesture context)
       selectEdit(0, true);
     };
 
     btnCloseEdits.addEventListener('click', () => {
-      desktopMain.classList.remove('translate-x-1/4', 'scale-95', 'opacity-50');
-      editsViewer.classList.remove('translate-x-0');
-      editsViewer.classList.add('-translate-x-full');
+      editsViewer.style.scale = '0.97';
+      editsViewer.classList.remove('opacity-100', 'pointer-events-auto');
+      editsViewer.classList.add('opacity-0', 'pointer-events-none');
       editsVideo.pause();
       editsVideo.src = '';
     });
 
     // Arrow key & Space navigation in edits viewer
     document.addEventListener('keydown', (e) => {
-      if (!editsViewer.classList.contains('translate-x-0')) return;
+      if (editsViewer.classList.contains('pointer-events-none')) return;
 
       if (e.key === 'ArrowDown') {
         e.preventDefault();
@@ -2222,7 +2242,7 @@
 
     window.handleFinderClick = function () {
       // Check if Edits Viewer is open
-      if (editsViewer && editsViewer.classList.contains('translate-x-0')) {
+      if (editsViewer && editsViewer.classList.contains('opacity-100')) {
         btnCloseEdits.click();
         return;
       }
