@@ -2255,21 +2255,14 @@
       editsVideo.src = '';
       if (editsEmpty) editsEmpty.style.display = '';
 
-      const viewer = document.getElementById('edits-viewer');
-      viewer.classList.remove('pointer-events-none');
-      viewer.classList.add('pointer-events-auto');
-      viewer.style.transform = 'translateX(0)';
-      desktopMain.style.transform = 'translateX(100%)';
+      switchToSpace('edits');
 
       // Auto-select first edit directly (no setTimeout = stays in user gesture context)
       selectEdit(0, true);
     };
 
     btnCloseEdits.addEventListener('click', () => {
-      editsViewer.classList.remove('pointer-events-auto');
-      editsViewer.classList.add('pointer-events-none');
-      editsViewer.style.transform = 'translateX(-100%)';
-      desktopMain.style.transform = '';
+      switchToSpace('desktop');
       editsVideo.pause();
       editsVideo.src = '';
     });
@@ -2321,6 +2314,22 @@
     const magazineProgress = document.getElementById('magazine-progress');
     const magazineCurrentPage = document.getElementById('magazine-current-page');
     const magazineTotalPages = document.getElementById('magazine-total-pages');
+
+    // --- 3-Space tape model ---
+    // Spaces: edits (offset -1) | desktop (0) | magazine (+1)
+    // All three panels slide simultaneously so direct Edits↔Magazine
+    // travel passes through the desktop (200% distance).
+    function switchToSpace(target) {
+      const offsets = { edits: -1, desktop: 0, magazine: 1 };
+      const o = offsets[target];
+      editsViewer.style.transform    = `translateX(${(-1 - o) * 100}%)`;
+      desktopMain.style.transform    = `translateX(${( 0 - o) * 100}%)`;
+      magazineReader.style.transform = `translateX(${( 1 - o) * 100}%)`;
+      editsViewer.classList.toggle('pointer-events-auto',   target === 'edits');
+      editsViewer.classList.toggle('pointer-events-none',   target !== 'edits');
+      magazineReader.classList.toggle('pointer-events-auto',   target === 'magazine');
+      magazineReader.classList.toggle('pointer-events-none',   target !== 'magazine');
+    }
 
     let isDraggingSlider = false;
     magazineProgress.addEventListener('mousedown', () => isDraggingSlider = true);
@@ -2541,11 +2550,7 @@
         };
       }
 
-      // Desktop-switch animation: desktop slides left, magazine comes from right
-      magazineReader.classList.remove('pointer-events-none');
-      magazineReader.classList.add('pointer-events-auto');
-      magazineReader.style.transform = 'translateX(0)';
-      desktopMain.style.transform = 'translateX(-100%)';
+      switchToSpace('magazine');
 
       // Auto-align spacers so the cover centers at scrollLeft = 0
       const firstImg = magazineScroller.querySelector('.mag-page');
@@ -2605,11 +2610,7 @@
     }
 
     btnCloseMagazine.addEventListener('click', () => {
-      // Desktop-switch animation reverse
-      magazineReader.classList.remove('pointer-events-auto');
-      magazineReader.classList.add('pointer-events-none');
-      magazineReader.style.transform = 'translateX(100%)';
-      desktopMain.style.transform = '';
+      switchToSpace('desktop');
 
       setTimeout(() => {
         magazineScroller.innerHTML = "";
