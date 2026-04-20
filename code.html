@@ -1027,15 +1027,16 @@
     <!-- === Grid Screen === -->
     <div id="ios-mag-screen-grid" class="flex flex-col flex-1 min-h-0">
       <!-- Header -->
-      <div class="shrink-0 px-5 pb-4"
-        style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 12px);">
-        <button onclick="iosCloseMagazines()"
-          class="flex items-center text-[#0a84ff] mb-3 active:opacity-50 transition-opacity cursor-pointer"
-          style="-webkit-tap-highlight-color:transparent;">
-          <span class="material-symbols-outlined text-[20px]"
-            style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
-          <span class="text-[17px] font-normal ml-0.5">Back</span>
-        </button>
+      <div class="shrink-0 px-5"
+        style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 16px); padding-bottom:12px;">
+        <div class="flex items-center justify-between mb-1">
+          <div class="w-10"></div>
+          <button onclick="iosCloseMagazines()"
+            class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
+            style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
+            <span class="material-symbols-outlined" style="font-size:20px; color:var(--ios-text-secondary); font-variation-settings:'wght' 300;">chevron_right</span>
+          </button>
+        </div>
         <h1 class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text)">Magazines</h1>
       </div>
 
@@ -1092,40 +1093,42 @@
   <div id="ios-edits-app" class="ios-app-overlay fixed inset-0 z-[90] flex flex-col"
     style="display:none; background:var(--ios-app-bg); transform:scale(0.4); opacity:0; border-radius:40px;">
 
-    <!-- Header -->
-    <div class="shrink-0 flex items-center px-4"
-      style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 12px); padding-bottom:10px; min-height:calc(44px + max(54px, env(safe-area-inset-top, 54px)));">
-      <button onclick="iosCloseEdits()"
-        class="flex items-center text-[#0a84ff] active:opacity-50 transition-opacity cursor-pointer mr-3"
-        style="-webkit-tap-highlight-color:transparent;">
-        <span class="material-symbols-outlined text-[20px]"
-          style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
-        <span class="text-[17px] font-normal ml-0.5">Back</span>
-      </button>
-      <h1 class="font-semibold text-[17px] tracking-tight flex-1 text-center" style="color:var(--ios-text)">Edits</h1>
-      <div class="w-16"></div><!-- spacer to center title -->
+    <!-- Header: large-title style -->
+    <div class="shrink-0 px-5"
+      style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 16px); padding-bottom:12px;">
+      <div class="flex items-center justify-between mb-1">
+        <div class="w-10"></div><!-- left spacer -->
+        <button onclick="iosCloseEdits()"
+          class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
+          style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
+          <span class="material-symbols-outlined" style="font-size:20px; color:var(--ios-text-secondary); font-variation-settings:'wght' 300;">chevron_right</span>
+        </button>
+      </div>
+      <h1 class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text)">Edits</h1>
     </div>
 
-    <!-- Video player -->
-    <div style="background:#000; flex:0 0 auto; position:relative;">
-      <video id="ios-edits-video" class="w-full" style="aspect-ratio:16/9; object-fit:contain; background:#000;"
-        loop playsinline preload="none"></video>
-      <!-- Beachball injected by JS -->
-      <!-- Media controls -->
-      <div id="ios-edits-controls"
-        style="position:absolute; bottom:0; left:0; right:0; padding:10px 16px 12px; background:linear-gradient(transparent, rgba(0,0,0,0.7)); display:flex; align-items:center; gap:10px;">
-        <span id="ios-edits-play-pause" class="material-symbols-outlined"
-          style="color:#fff; font-size:28px; cursor:pointer; flex-shrink:0; font-variation-settings:'FILL' 1;">pause_circle</span>
-        <div id="ios-edits-progress-bg"
-          style="flex:1; height:20px; display:flex; align-items:center; cursor:pointer; touch-action:none;">
-          <div style="width:100%; height:3px; background:rgba(255,255,255,0.3); border-radius:2px; position:relative;">
-            <div id="ios-edits-progress-bar" style="height:100%; width:0%; background:#fff; border-radius:2px;"></div>
+    <!-- Video card -->
+    <div class="px-4 pb-3 shrink-0" style="background:var(--ios-app-bg);">
+      <div style="border-radius:16px; overflow:hidden; background:#000; position:relative; aspect-ratio:16/9;">
+        <video id="ios-edits-video" class="w-full h-full" style="object-fit:contain; background:#000;"
+          loop playsinline preload="none"></video>
+        <!-- Beachball injected by JS -->
+        <!-- Media controls -->
+        <div id="ios-edits-controls"
+          style="position:absolute; bottom:0; left:0; right:0; padding:10px 16px 12px; background:linear-gradient(transparent, rgba(0,0,0,0.7)); display:flex; align-items:center; gap:10px;">
+          <span id="ios-edits-play-pause" class="material-symbols-outlined"
+            style="color:#fff; font-size:28px; cursor:pointer; flex-shrink:0; font-variation-settings:'FILL' 1;">pause_circle</span>
+          <div id="ios-edits-progress-bg"
+            style="flex:1; height:20px; display:flex; align-items:center; cursor:pointer; touch-action:none;">
+            <div style="width:100%; height:3px; background:rgba(255,255,255,0.3); border-radius:2px; position:relative;">
+              <div id="ios-edits-progress-bar" style="height:100%; width:0%; background:#fff; border-radius:2px;"></div>
+            </div>
           </div>
+          <span id="ios-edits-time"
+            style="color:rgba(255,255,255,0.8); font-size:11px; font-variant-numeric:tabular-nums; flex-shrink:0; min-width:28px;">0:00</span>
+          <span id="ios-edits-fullscreen" class="material-symbols-outlined"
+            style="color:#fff; font-size:22px; cursor:pointer; flex-shrink:0;">fullscreen</span>
         </div>
-        <span id="ios-edits-time"
-          style="color:rgba(255,255,255,0.8); font-size:11px; font-variant-numeric:tabular-nums; flex-shrink:0; min-width:28px;">0:00</span>
-        <span id="ios-edits-fullscreen" class="material-symbols-outlined"
-          style="color:#fff; font-size:22px; cursor:pointer; flex-shrink:0;">fullscreen</span>
       </div>
     </div>
 
@@ -1141,17 +1144,17 @@
 
     <!-- === Folder List Screen === -->
     <div id="ios-bts-screen-folders" class="flex flex-col flex-1 min-h-0">
-      <div class="shrink-0 flex items-center px-4"
-        style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 12px); padding-bottom:10px;">
-        <button onclick="iosCloseBts()"
-          class="flex items-center text-[#0a84ff] active:opacity-50 transition-opacity cursor-pointer mr-3"
-          style="-webkit-tap-highlight-color:transparent;">
-          <span class="material-symbols-outlined text-[20px]"
-            style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
-          <span class="text-[17px] font-normal ml-0.5">Back</span>
-        </button>
-        <h1 class="font-semibold text-[17px] tracking-tight flex-1 text-center" style="color:var(--ios-text)">Behind the Scenes</h1>
-        <div class="w-16"></div>
+      <div class="shrink-0 px-5"
+        style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 16px); padding-bottom:12px;">
+        <div class="flex items-center justify-between mb-1">
+          <div class="w-10"></div>
+          <button onclick="iosCloseBts()"
+            class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
+            style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
+            <span class="material-symbols-outlined" style="font-size:20px; color:var(--ios-text-secondary); font-variation-settings:'wght' 300;">chevron_right</span>
+          </button>
+        </div>
+        <h1 class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text)">Behind the Scenes</h1>
       </div>
       <div id="ios-bts-folder-list" class="ios-scroll-fade flex-1 overflow-y-auto px-4"
         style="padding-bottom:max(24px, env(safe-area-inset-bottom, 24px));">
@@ -1224,14 +1227,15 @@
     style="display:none; background:var(--ios-app-bg); transform:scale(0.4); opacity:0; border-radius:40px;">
 
     <!-- Header -->
-    <div class="shrink-0 px-5 pb-4" style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 12px);">
-      <button onclick="iosCloseContact()"
-        class="flex items-center text-[#0a84ff] mb-3 active:opacity-50 transition-opacity cursor-pointer"
-        style="-webkit-tap-highlight-color:transparent;">
-        <span class="material-symbols-outlined text-[20px]"
-          style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
-        <span class="text-[17px] font-normal ml-0.5">Back</span>
-      </button>
+    <div class="shrink-0 px-5" style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 16px); padding-bottom:12px;">
+      <div class="flex items-center justify-between mb-1">
+        <div class="w-10"></div>
+        <button onclick="iosCloseContact()"
+          class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
+          style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
+          <span class="material-symbols-outlined" style="font-size:20px; color:var(--ios-text-secondary); font-variation-settings:'wght' 300;">chevron_right</span>
+        </button>
+      </div>
       <h1 class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text)">Contact</h1>
     </div>
 
