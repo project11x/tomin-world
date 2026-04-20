@@ -453,7 +453,7 @@
     /* iOS Theme Variables — Light (default) */
     :root {
       --ios-bg: #ffffff;
-      --ios-app-bg: #f2f2f7;
+      --ios-app-bg: #f5f5f5;
       --ios-text: #000000;
       --ios-text-secondary: rgba(0,0,0,0.45);
       --ios-card-bg: #ffffff;
@@ -493,33 +493,17 @@
     @keyframes beachball-spin {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
-
-    /* iOS scroll-fade: content fades out at bottom matching app bg */
-    .ios-scroll-fade {
-      -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
-      mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
     }
 
-    /* Magazine reader & BTS viewer: dark by default, light opt-in */
-    .ios-reader-wrap { background: #000; }
-    .ios-reader-wrap .ios-reader-header { background: #000; }
-    .ios-reader-wrap .ios-reader-title { color: #fff; }
-    .ios-reader-wrap .ios-reader-back { color: #0a84ff; }
-    .ios-reader-wrap .ios-reader-bar { background: #000; }
-    .ios-reader-wrap .ios-reader-bar-label { color: rgba(255,255,255,0.5); }
-    .ios-reader-wrap .ios-reader-bar-track { background: rgba(255,255,255,0.15); }
-    .ios-reader-wrap .ios-reader-bar-fill { background: rgba(255,255,255,0.7); }
-    .ios-reader-wrap .ios-reader-theme-btn { color: rgba(255,255,255,0.6); }
-
-    .ios-reader-wrap.ios-reader-light { background: #fff; }
-    .ios-reader-wrap.ios-reader-light .ios-reader-header { background: #fff; }
-    .ios-reader-wrap.ios-reader-light .ios-reader-title { color: #000; }
-    .ios-reader-wrap.ios-reader-light .ios-reader-back { color: #0a84ff; }
-    .ios-reader-wrap.ios-reader-light .ios-reader-bar { background: #f2f2f7; border-top: 1px solid rgba(0,0,0,0.08); }
-    .ios-reader-wrap.ios-reader-light .ios-reader-bar-label { color: rgba(0,0,0,0.45); }
-    .ios-reader-wrap.ios-reader-light .ios-reader-bar-track { background: rgba(0,0,0,0.12); }
-    .ios-reader-wrap.ios-reader-light .ios-reader-bar-fill { background: rgba(0,0,0,0.5); }
-    .ios-reader-wrap.ios-reader-light .ios-reader-theme-btn { color: rgba(0,0,0,0.5); }
+    /* iOS scroll-fade: top edge — items fade as they scroll under the player */
+    .ios-scroll-fade-top {
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 14%);
+      mask-image: linear-gradient(to bottom, transparent 0%, black 14%);
+    }
+    /* iOS scroll-fade: bottom edge — indicates more content below */
+    .ios-scroll-fade-bottom {
+      -webkit-mask-image: linear-gradient(to bottom, black 75%, transparent 100%);
+      mask-image: linear-gradient(to bottom, black 75%, transparent 100%);
     }
 
     /* Edit list rows */
@@ -1027,17 +1011,14 @@
     <!-- === Grid Screen === -->
     <div id="ios-mag-screen-grid" class="flex flex-col flex-1 min-h-0">
       <!-- Header -->
-      <div class="shrink-0 px-5"
-        style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 16px); padding-bottom:12px;">
-        <div class="flex items-center justify-between mb-1">
-          <div class="w-10"></div>
-          <button onclick="iosCloseMagazines()"
-            class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
-            style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
-            <span class="material-symbols-outlined" style="font-size:20px; color:var(--ios-text-secondary); font-variation-settings:'wght' 300;">chevron_right</span>
-          </button>
-        </div>
+      <div class="shrink-0 px-5 flex items-center justify-between"
+        style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:16px;">
         <h1 class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text)">Magazines</h1>
+        <button onclick="iosCloseMagazines()"
+          class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
+          style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
+          <span class="material-symbols-outlined" style="font-size:20px; color:var(--ios-text-secondary);">chevron_right</span>
+        </button>
       </div>
 
       <!-- Magazine grid -->
@@ -1047,25 +1028,17 @@
     </div>
 
     <!-- === Reader Screen (hidden by default) === -->
-    <div id="ios-mag-screen-reader" class="ios-reader-wrap absolute inset-0 flex flex-col" style="display:none;">
-      <!-- Reader header -->
-      <div class="ios-reader-header shrink-0 px-5 pb-3"
-        style="padding-top:max(env(safe-area-inset-top, 0px), 12px);">
-        <div class="flex items-center justify-between">
-          <button onclick="iosCloseReader()"
-            class="ios-reader-back flex items-center active:opacity-50 transition-opacity cursor-pointer"
-            style="-webkit-tap-highlight-color:transparent;">
-            <span class="material-symbols-outlined text-[20px]"
-              style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
-            <span class="text-[17px] font-normal ml-0.5">Back</span>
-          </button>
-          <button id="ios-mag-theme-btn" onclick="iosMagToggleTheme()"
-            class="ios-reader-theme-btn active:opacity-50 cursor-pointer"
-            style="-webkit-tap-highlight-color:transparent; background:none; border:none; padding:4px 8px;">
-            <span class="material-symbols-outlined" style="font-size:22px; font-variation-settings:'FILL' 0;">light_mode</span>
-          </button>
-        </div>
-        <h1 id="ios-mag-reader-title" class="ios-reader-title font-bold text-[22px] tracking-tight mt-2">Magazine</h1>
+    <div id="ios-mag-screen-reader" class="absolute inset-0 flex flex-col"
+      style="display:none; background:var(--ios-app-bg);">
+      <!-- Header: same row as button -->
+      <div class="shrink-0 px-5 flex items-center justify-between"
+        style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:16px;">
+        <h1 id="ios-mag-reader-title" class="font-bold text-[22px] tracking-tight" style="color:var(--ios-text)">Magazine</h1>
+        <button onclick="iosCloseReader()"
+          class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
+          style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
+          <span class="material-symbols-outlined" style="font-size:20px; color:var(--ios-text-secondary);">chevron_right</span>
+        </button>
       </div>
 
       <!-- Pages (horizontal swipe) -->
@@ -1074,15 +1047,13 @@
       </div>
 
       <!-- Page indicator bar -->
-      <div class="ios-reader-bar shrink-0 flex items-center gap-3 justify-center"
-        style="padding:10px 20px max(14px, env(safe-area-inset-bottom, 14px));">
+      <div class="shrink-0 flex items-center gap-3 justify-center"
+        style="padding:10px 20px max(14px, env(safe-area-inset-bottom, 14px)); background:var(--ios-app-bg); border-top:1px solid var(--ios-card-border);">
         <span id="ios-mag-page-label"
-          class="ios-reader-bar-label" style="font-size:12px; font-variant-numeric:tabular-nums;">1 / 1</span>
-        <div class="ios-reader-bar-track"
-          style="flex:1; max-width:200px; height:3px; border-radius:2px; overflow:hidden;">
+          style="color:var(--ios-text-secondary); font-size:12px; font-variant-numeric:tabular-nums; min-width:36px; text-align:center;">1 / 1</span>
+        <div style="flex:1; max-width:200px; height:3px; background:var(--ios-progress-bg); border-radius:2px; overflow:hidden;">
           <div id="ios-mag-page-progress"
-            class="ios-reader-bar-fill"
-            style="height:100%; width:0%; border-radius:2px; transition:width 0.2s ease;">
+            style="height:100%; width:0%; background:var(--ios-text); border-radius:2px; transition:width 0.2s ease;">
           </div>
         </div>
       </div>
@@ -1093,18 +1064,15 @@
   <div id="ios-edits-app" class="ios-app-overlay fixed inset-0 z-[90] flex flex-col"
     style="display:none; background:var(--ios-app-bg); transform:scale(0.4); opacity:0; border-radius:40px;">
 
-    <!-- Header: large-title style -->
-    <div class="shrink-0 px-5"
-      style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 16px); padding-bottom:12px;">
-      <div class="flex items-center justify-between mb-1">
-        <div class="w-10"></div><!-- left spacer -->
-        <button onclick="iosCloseEdits()"
-          class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
-          style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
-          <span class="material-symbols-outlined" style="font-size:20px; color:var(--ios-text-secondary); font-variation-settings:'wght' 300;">chevron_right</span>
-        </button>
-      </div>
+    <!-- Header -->
+    <div class="shrink-0 px-5 flex items-center justify-between"
+      style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:16px;">
       <h1 class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text)">Edits</h1>
+      <button onclick="iosCloseEdits()"
+        class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
+        style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
+        <span class="material-symbols-outlined" style="font-size:20px; color:var(--ios-text-secondary);">chevron_right</span>
+      </button>
     </div>
 
     <!-- Video card -->
@@ -1133,7 +1101,7 @@
     </div>
 
     <!-- Edit list -->
-    <div id="ios-edits-list" class="ios-scroll-fade flex-1 overflow-y-auto"
+    <div id="ios-edits-list" class="ios-scroll-fade-top flex-1 overflow-y-auto"
       style="padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));">
     </div>
   </div>
@@ -1144,37 +1112,30 @@
 
     <!-- === Folder List Screen === -->
     <div id="ios-bts-screen-folders" class="flex flex-col flex-1 min-h-0">
-      <div class="shrink-0 px-5"
-        style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 16px); padding-bottom:12px;">
-        <div class="flex items-center justify-between mb-1">
-          <div class="w-10"></div>
-          <button onclick="iosCloseBts()"
-            class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
-            style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
-            <span class="material-symbols-outlined" style="font-size:20px; color:var(--ios-text-secondary); font-variation-settings:'wght' 300;">chevron_right</span>
-          </button>
-        </div>
+      <div class="shrink-0 px-5 flex items-center justify-between"
+        style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:16px;">
         <h1 class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text)">Behind the Scenes</h1>
+        <button onclick="iosCloseBts()"
+          class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
+          style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
+          <span class="material-symbols-outlined" style="font-size:20px; color:var(--ios-text-secondary);">chevron_right</span>
+        </button>
       </div>
-      <div id="ios-bts-folder-list" class="ios-scroll-fade flex-1 overflow-y-auto px-4"
+      <div id="ios-bts-folder-list" class="ios-scroll-fade-bottom flex-1 overflow-y-auto px-4"
         style="padding-bottom:max(24px, env(safe-area-inset-bottom, 24px));">
       </div>
     </div>
 
     <!-- === File Grid Screen === -->
     <div id="ios-bts-screen-files" class="absolute inset-0 flex flex-col" style="display:none; background:var(--ios-app-bg);">
-      <div class="shrink-0 flex items-center px-4"
-        style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 12px); padding-bottom:10px;">
+      <div class="shrink-0 px-5 flex items-center justify-between"
+        style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:16px;">
+        <h1 id="ios-bts-folder-title" class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text)">Folder</h1>
         <button onclick="iosBtsBackToFolders()"
-          class="flex items-center text-[#0a84ff] active:opacity-50 transition-opacity cursor-pointer mr-3"
-          style="-webkit-tap-highlight-color:transparent;">
-          <span class="material-symbols-outlined text-[20px]"
-            style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
-          <span class="text-[17px] font-normal ml-0.5">Back</span>
+          class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
+          style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
+          <span class="material-symbols-outlined" style="font-size:20px; color:var(--ios-text-secondary);">chevron_left</span>
         </button>
-        <h1 id="ios-bts-folder-title" class="font-semibold text-[17px] tracking-tight flex-1 text-center" style="color:var(--ios-text)">
-          Folder</h1>
-        <div class="w-16"></div>
       </div>
       <div id="ios-bts-file-grid" class="flex-1 overflow-y-auto px-2"
         style="display:grid; grid-template-columns:repeat(3,1fr); gap:2px; align-content:start; padding-bottom:max(24px, env(safe-area-inset-bottom, 24px));">
@@ -1182,40 +1143,29 @@
     </div>
 
     <!-- === Photo/Video Viewer (magazine-style) === -->
-    <div id="ios-bts-viewer" class="ios-reader-wrap absolute inset-0 flex flex-col" style="display:none; z-index:10;">
+    <div id="ios-bts-viewer" class="absolute inset-0 flex flex-col" style="display:none; z-index:10; background:var(--ios-app-bg);">
       <!-- Header -->
-      <div class="ios-reader-header shrink-0 px-5 pb-3"
-        style="padding-top:max(env(safe-area-inset-top, 0px), 12px);">
-        <div class="flex items-center justify-between">
-          <button onclick="iosBtsCloseViewer()"
-            class="ios-reader-back flex items-center active:opacity-50 transition-opacity cursor-pointer"
-            style="-webkit-tap-highlight-color:transparent;">
-            <span class="material-symbols-outlined text-[20px]"
-              style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
-            <span class="text-[17px] font-normal ml-0.5">Back</span>
-          </button>
-          <button id="ios-bts-theme-btn" onclick="iosBtsToggleTheme()"
-            class="ios-reader-theme-btn active:opacity-50 cursor-pointer"
-            style="-webkit-tap-highlight-color:transparent; background:none; border:none; padding:4px 8px;">
-            <span class="material-symbols-outlined" style="font-size:22px; font-variation-settings:'FILL' 0;">light_mode</span>
-          </button>
-        </div>
-        <h1 id="ios-bts-viewer-title" class="ios-reader-title font-bold text-[22px] tracking-tight mt-2"></h1>
+      <div class="shrink-0 px-5 flex items-center justify-between"
+        style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:16px;">
+        <h1 id="ios-bts-viewer-title" class="font-bold text-[22px] tracking-tight" style="color:var(--ios-text)"></h1>
+        <button onclick="iosBtsCloseViewer()"
+          class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
+          style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
+          <span class="material-symbols-outlined" style="font-size:20px; color:var(--ios-text-secondary);">chevron_left</span>
+        </button>
       </div>
       <!-- Pages -->
       <div id="ios-bts-viewer-pages" class="flex-1 flex overflow-x-auto"
         style="overflow-y:hidden; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none;">
       </div>
       <!-- Bottom indicator bar -->
-      <div class="ios-reader-bar shrink-0 flex items-center gap-3 justify-center"
-        style="padding:10px 20px max(14px, env(safe-area-inset-bottom, 14px));">
+      <div class="shrink-0 flex items-center gap-3 justify-center"
+        style="padding:10px 20px max(14px, env(safe-area-inset-bottom, 14px)); background:var(--ios-app-bg); border-top:1px solid var(--ios-card-border);">
         <span id="ios-bts-viewer-counter"
-          class="ios-reader-bar-label" style="font-size:12px; font-variant-numeric:tabular-nums;">1 / 1</span>
-        <div class="ios-reader-bar-track"
-          style="flex:1; max-width:200px; height:3px; border-radius:2px; overflow:hidden;">
+          style="color:var(--ios-text-secondary); font-size:12px; font-variant-numeric:tabular-nums; min-width:36px; text-align:center;">1 / 1</span>
+        <div style="flex:1; max-width:200px; height:3px; background:var(--ios-progress-bg); border-radius:2px; overflow:hidden;">
           <div id="ios-bts-viewer-progress"
-            class="ios-reader-bar-fill"
-            style="height:100%; width:0%; border-radius:2px; transition:width 0.2s ease;">
+            style="height:100%; width:0%; background:var(--ios-text); border-radius:2px; transition:width 0.2s ease;">
           </div>
         </div>
       </div>
@@ -1227,16 +1177,14 @@
     style="display:none; background:var(--ios-app-bg); transform:scale(0.4); opacity:0; border-radius:40px;">
 
     <!-- Header -->
-    <div class="shrink-0 px-5" style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 16px); padding-bottom:12px;">
-      <div class="flex items-center justify-between mb-1">
-        <div class="w-10"></div>
-        <button onclick="iosCloseContact()"
-          class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
-          style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
-          <span class="material-symbols-outlined" style="font-size:20px; color:var(--ios-text-secondary); font-variation-settings:'wght' 300;">chevron_right</span>
-        </button>
-      </div>
+    <div class="shrink-0 px-5 flex items-center justify-between"
+      style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:16px;">
       <h1 class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text)">Contact</h1>
+      <button onclick="iosCloseContact()"
+        class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
+        style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
+        <span class="material-symbols-outlined" style="font-size:20px; color:var(--ios-text-secondary);">chevron_right</span>
+      </button>
     </div>
 
     <!-- Contact content -->
@@ -2903,7 +2851,11 @@
         const total = iosMagReaderPages.children.length;
         const current = Math.round(iosMagReaderPages.scrollLeft / w) + 1;
         iosMagPageLabel.textContent = current + ' / ' + total;
-        iosMagPageProgress.style.width = (current / total * 100) + '%';
+        if (total > 1) {
+          iosMagPageProgress.style.width = ((current - 1) / (total - 1) * 100) + '%';
+        } else {
+          iosMagPageProgress.style.width = '100%';
+        }
       }
 
       iosMagReaderPages.addEventListener('scroll', iosMagUpdatePageIndicator);
@@ -2914,9 +2866,9 @@
         const pages = portfolioData[magKey] || [];
 
         iosMagReaderTitle.textContent = magItem.name;
-        const pageStyle = 'flex:0 0 100vw; width:100vw; min-width:100vw; height:100%; scroll-snap-align:start; overflow:hidden; display:flex; align-items:center; justify-content:center; background:#000;';
+        const pageStyle = 'flex:0 0 100vw; width:100vw; min-width:100vw; height:100%; scroll-snap-align:start; overflow:hidden; display:flex; align-items:center; justify-content:center; background:transparent;';
         iosMagReaderPages.innerHTML = pages.length === 0
-          ? '<div style="flex:0 0 100%;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:14px;">No pages found.</div>'
+          ? '<div style="flex:0 0 100%;display:flex;align-items:center;justify-content:center;color:var(--ios-text-secondary);font-size:14px;">No pages found.</div>'
           : pages.map(p => p.isVideo
             ? `<div style="${pageStyle}"><video src="${p.src}" style="width:100%;height:100%;object-fit:contain;" autoplay loop muted playsinline preload="auto"></video></div>`
             : `<div style="${pageStyle}"><img src="${p.src}" style="width:100%;height:auto;flex-shrink:0;" /></div>`
@@ -3239,7 +3191,6 @@
       const iosBtsViewerCounter = document.getElementById('ios-bts-viewer-counter');
       const iosBtsViewerProgress = document.getElementById('ios-bts-viewer-progress');
       const iosBtsViewerTitle = document.getElementById('ios-bts-viewer-title');
-      const iosBtsThemeBtn = document.getElementById('ios-bts-theme-btn');
 
       let iosBtsCurrentFiles = [];
 
@@ -3355,7 +3306,7 @@
         iosBtsViewer.style.display = 'flex';
 
         iosBtsViewerPages.innerHTML = iosBtsCurrentFiles.map((f, i) => {
-          const pageStyle = 'flex:0 0 100vw; width:100vw; min-width:100vw; height:100%; scroll-snap-align:start; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#000;';
+          const pageStyle = 'flex:0 0 100vw; width:100vw; min-width:100vw; height:100%; scroll-snap-align:start; display:flex; align-items:center; justify-content:center; overflow:hidden; background:transparent;';
           if (f.isVideo) {
             return `<div style="${pageStyle}"><video src="${f.src}" style="width:100%;height:100%;object-fit:contain;" loop playsinline preload="none"></video></div>`;
           } else {
@@ -3413,19 +3364,6 @@
         iosBtsViewerPages.innerHTML = '';
       };
 
-      window.iosBtsToggleTheme = function () {
-        const isLight = iosBtsViewer.classList.toggle('ios-reader-light');
-        const icon = iosBtsThemeBtn ? iosBtsThemeBtn.querySelector('span') : null;
-        if (icon) icon.innerText = isLight ? 'dark_mode' : 'light_mode';
-      };
-
-      window.iosMagToggleTheme = function () {
-        const reader = document.getElementById('ios-mag-screen-reader');
-        const isLight = reader.classList.toggle('ios-reader-light');
-        const btn = document.getElementById('ios-mag-theme-btn');
-        const icon = btn ? btn.querySelector('span') : null;
-        if (icon) icon.innerText = isLight ? 'dark_mode' : 'light_mode';
-      };
 
     })();
 
