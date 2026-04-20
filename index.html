@@ -493,6 +493,33 @@
     @keyframes beachball-spin {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
+
+    /* iOS scroll-fade: content fades out at bottom matching app bg */
+    .ios-scroll-fade {
+      -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+      mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+    }
+
+    /* Magazine reader & BTS viewer: dark by default, light opt-in */
+    .ios-reader-wrap { background: #000; }
+    .ios-reader-wrap .ios-reader-header { background: #000; }
+    .ios-reader-wrap .ios-reader-title { color: #fff; }
+    .ios-reader-wrap .ios-reader-back { color: #0a84ff; }
+    .ios-reader-wrap .ios-reader-bar { background: #000; }
+    .ios-reader-wrap .ios-reader-bar-label { color: rgba(255,255,255,0.5); }
+    .ios-reader-wrap .ios-reader-bar-track { background: rgba(255,255,255,0.15); }
+    .ios-reader-wrap .ios-reader-bar-fill { background: rgba(255,255,255,0.7); }
+    .ios-reader-wrap .ios-reader-theme-btn { color: rgba(255,255,255,0.6); }
+
+    .ios-reader-wrap.ios-reader-light { background: #fff; }
+    .ios-reader-wrap.ios-reader-light .ios-reader-header { background: #fff; }
+    .ios-reader-wrap.ios-reader-light .ios-reader-title { color: #000; }
+    .ios-reader-wrap.ios-reader-light .ios-reader-back { color: #0a84ff; }
+    .ios-reader-wrap.ios-reader-light .ios-reader-bar { background: #f2f2f7; border-top: 1px solid rgba(0,0,0,0.08); }
+    .ios-reader-wrap.ios-reader-light .ios-reader-bar-label { color: rgba(0,0,0,0.45); }
+    .ios-reader-wrap.ios-reader-light .ios-reader-bar-track { background: rgba(0,0,0,0.12); }
+    .ios-reader-wrap.ios-reader-light .ios-reader-bar-fill { background: rgba(0,0,0,0.5); }
+    .ios-reader-wrap.ios-reader-light .ios-reader-theme-btn { color: rgba(0,0,0,0.5); }
     }
 
     /* Edit list rows */
@@ -1019,18 +1046,25 @@
     </div>
 
     <!-- === Reader Screen (hidden by default) === -->
-    <div id="ios-mag-screen-reader" class="absolute inset-0 flex flex-col" style="display:none; background:#000;">
+    <div id="ios-mag-screen-reader" class="ios-reader-wrap absolute inset-0 flex flex-col" style="display:none;">
       <!-- Reader header -->
-      <div class="shrink-0 px-5 pb-3"
-        style="background:#000; padding-top:max(env(safe-area-inset-top, 0px), 12px);">
-        <button onclick="iosCloseReader()"
-          class="flex items-center text-[#0a84ff] active:opacity-50 transition-opacity cursor-pointer"
-          style="-webkit-tap-highlight-color:transparent;">
-          <span class="material-symbols-outlined text-[20px]"
-            style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
-          <span class="text-[17px] font-normal ml-0.5">Back</span>
-        </button>
-        <h1 id="ios-mag-reader-title" class="text-white font-bold text-[22px] tracking-tight mt-2">Magazine</h1>
+      <div class="ios-reader-header shrink-0 px-5 pb-3"
+        style="padding-top:max(env(safe-area-inset-top, 0px), 12px);">
+        <div class="flex items-center justify-between">
+          <button onclick="iosCloseReader()"
+            class="ios-reader-back flex items-center active:opacity-50 transition-opacity cursor-pointer"
+            style="-webkit-tap-highlight-color:transparent;">
+            <span class="material-symbols-outlined text-[20px]"
+              style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
+            <span class="text-[17px] font-normal ml-0.5">Back</span>
+          </button>
+          <button id="ios-mag-theme-btn" onclick="iosMagToggleTheme()"
+            class="ios-reader-theme-btn active:opacity-50 cursor-pointer"
+            style="-webkit-tap-highlight-color:transparent; background:none; border:none; padding:4px 8px;">
+            <span class="material-symbols-outlined" style="font-size:22px; font-variation-settings:'FILL' 0;">light_mode</span>
+          </button>
+        </div>
+        <h1 id="ios-mag-reader-title" class="ios-reader-title font-bold text-[22px] tracking-tight mt-2">Magazine</h1>
       </div>
 
       <!-- Pages (horizontal swipe) -->
@@ -1039,14 +1073,15 @@
       </div>
 
       <!-- Page indicator bar -->
-      <div class="shrink-0 flex items-center gap-3 justify-center"
-        style="padding:10px 20px max(14px, env(safe-area-inset-bottom, 14px)); background:#000;">
+      <div class="ios-reader-bar shrink-0 flex items-center gap-3 justify-center"
+        style="padding:10px 20px max(14px, env(safe-area-inset-bottom, 14px));">
         <span id="ios-mag-page-label"
-          style="color:rgba(255,255,255,0.5); font-size:12px; font-variant-numeric:tabular-nums;">1 / 1</span>
-        <div
-          style="flex:1; max-width:200px; height:3px; background:rgba(255,255,255,0.15); border-radius:2px; overflow:hidden;">
+          class="ios-reader-bar-label" style="font-size:12px; font-variant-numeric:tabular-nums;">1 / 1</span>
+        <div class="ios-reader-bar-track"
+          style="flex:1; max-width:200px; height:3px; border-radius:2px; overflow:hidden;">
           <div id="ios-mag-page-progress"
-            style="height:100%; width:0%; background:rgba(255,255,255,0.7); border-radius:2px; transition:width 0.2s ease;">
+            class="ios-reader-bar-fill"
+            style="height:100%; width:0%; border-radius:2px; transition:width 0.2s ease;">
           </div>
         </div>
       </div>
@@ -1095,7 +1130,7 @@
     </div>
 
     <!-- Edit list -->
-    <div id="ios-edits-list" class="flex-1 overflow-y-auto"
+    <div id="ios-edits-list" class="ios-scroll-fade flex-1 overflow-y-auto"
       style="padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));">
     </div>
   </div>
@@ -1118,7 +1153,7 @@
         <h1 class="font-semibold text-[17px] tracking-tight flex-1 text-center" style="color:var(--ios-text)">Behind the Scenes</h1>
         <div class="w-16"></div>
       </div>
-      <div id="ios-bts-folder-list" class="flex-1 overflow-y-auto px-4"
+      <div id="ios-bts-folder-list" class="ios-scroll-fade flex-1 overflow-y-auto px-4"
         style="padding-bottom:max(24px, env(safe-area-inset-bottom, 24px));">
       </div>
     </div>
@@ -1143,18 +1178,43 @@
       </div>
     </div>
 
-    <!-- === Photo Viewer === -->
-    <div id="ios-bts-viewer" class="absolute inset-0 flex flex-col" style="display:none; background:#000; z-index:10;">
-      <div class="shrink-0 flex items-center justify-between px-4"
-        style="padding-top:max(env(safe-area-inset-top, 0px), 12px); padding-bottom:8px; background:rgba(0,0,0,0.6); z-index:2;">
-        <button onclick="iosBtsCloseViewer()" class="text-[#0a84ff] text-[17px] active:opacity-50 cursor-pointer"
-          style="-webkit-tap-highlight-color:transparent;">Done</button>
-        <span id="ios-bts-viewer-counter"
-          style="color:rgba(255,255,255,0.6); font-size:13px; font-variant-numeric:tabular-nums;">1 / 1</span>
-        <div class="w-12"></div>
+    <!-- === Photo/Video Viewer (magazine-style) === -->
+    <div id="ios-bts-viewer" class="ios-reader-wrap absolute inset-0 flex flex-col" style="display:none; z-index:10;">
+      <!-- Header -->
+      <div class="ios-reader-header shrink-0 px-5 pb-3"
+        style="padding-top:max(env(safe-area-inset-top, 0px), 12px);">
+        <div class="flex items-center justify-between">
+          <button onclick="iosBtsCloseViewer()"
+            class="ios-reader-back flex items-center active:opacity-50 transition-opacity cursor-pointer"
+            style="-webkit-tap-highlight-color:transparent;">
+            <span class="material-symbols-outlined text-[20px]"
+              style="font-variation-settings:'FILL' 0;">arrow_back_ios</span>
+            <span class="text-[17px] font-normal ml-0.5">Back</span>
+          </button>
+          <button id="ios-bts-theme-btn" onclick="iosBtsToggleTheme()"
+            class="ios-reader-theme-btn active:opacity-50 cursor-pointer"
+            style="-webkit-tap-highlight-color:transparent; background:none; border:none; padding:4px 8px;">
+            <span class="material-symbols-outlined" style="font-size:22px; font-variation-settings:'FILL' 0;">light_mode</span>
+          </button>
+        </div>
+        <h1 id="ios-bts-viewer-title" class="ios-reader-title font-bold text-[22px] tracking-tight mt-2"></h1>
       </div>
+      <!-- Pages -->
       <div id="ios-bts-viewer-pages" class="flex-1 flex overflow-x-auto"
         style="overflow-y:hidden; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none;">
+      </div>
+      <!-- Bottom indicator bar -->
+      <div class="ios-reader-bar shrink-0 flex items-center gap-3 justify-center"
+        style="padding:10px 20px max(14px, env(safe-area-inset-bottom, 14px));">
+        <span id="ios-bts-viewer-counter"
+          class="ios-reader-bar-label" style="font-size:12px; font-variant-numeric:tabular-nums;">1 / 1</span>
+        <div class="ios-reader-bar-track"
+          style="flex:1; max-width:200px; height:3px; border-radius:2px; overflow:hidden;">
+          <div id="ios-bts-viewer-progress"
+            class="ios-reader-bar-fill"
+            style="height:100%; width:0%; border-radius:2px; transition:width 0.2s ease;">
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -3173,6 +3233,9 @@
       const iosBtsViewer = document.getElementById('ios-bts-viewer');
       const iosBtsViewerPages = document.getElementById('ios-bts-viewer-pages');
       const iosBtsViewerCounter = document.getElementById('ios-bts-viewer-counter');
+      const iosBtsViewerProgress = document.getElementById('ios-bts-viewer-progress');
+      const iosBtsViewerTitle = document.getElementById('ios-bts-viewer-title');
+      const iosBtsThemeBtn = document.getElementById('ios-bts-theme-btn');
 
       let iosBtsCurrentFiles = [];
 
@@ -3253,6 +3316,7 @@
       window.iosBtsTapFolder = function (folderName) {
         iosBtsCurrentFiles = iosBtsCollectFiles(folderName);
         iosBtsFolderTitle.textContent = folderName;
+        if (iosBtsViewerTitle) iosBtsViewerTitle.textContent = folderName;
 
         iosBtsFileGrid.innerHTML = iosBtsCurrentFiles.map((f, i) =>
           f.isVideo
@@ -3334,12 +3398,29 @@
         const total = iosBtsCurrentFiles.length;
         const current = Math.round(iosBtsViewerPages.scrollLeft / w) + 1;
         iosBtsViewerCounter.textContent = current + ' / ' + total;
+        if (iosBtsViewerProgress && total > 1) {
+          iosBtsViewerProgress.style.width = ((current - 1) / (total - 1) * 100) + '%';
+        }
       }
       iosBtsViewerPages.addEventListener('scroll', iosBtsUpdateViewerCounter);
 
       window.iosBtsCloseViewer = function () {
         iosBtsViewer.style.display = 'none';
         iosBtsViewerPages.innerHTML = '';
+      };
+
+      window.iosBtsToggleTheme = function () {
+        const isLight = iosBtsViewer.classList.toggle('ios-reader-light');
+        const icon = iosBtsThemeBtn ? iosBtsThemeBtn.querySelector('span') : null;
+        if (icon) icon.innerText = isLight ? 'dark_mode' : 'light_mode';
+      };
+
+      window.iosMagToggleTheme = function () {
+        const reader = document.getElementById('ios-mag-screen-reader');
+        const isLight = reader.classList.toggle('ios-reader-light');
+        const btn = document.getElementById('ios-mag-theme-btn');
+        const icon = btn ? btn.querySelector('span') : null;
+        if (icon) icon.innerText = isLight ? 'dark_mode' : 'light_mode';
       };
 
     })();
