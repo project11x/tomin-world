@@ -524,8 +524,37 @@
       60%  { filter: blur(2px); opacity: 0.75; }
       100% { filter: blur(0);   opacity: 1;    }
     }
-    .ila-blur-swap {
+    .ila-blur-swap,
+    .sys-blur-swap {
       animation: ilaTextSwap 0.55s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    /* System Pulse widget — live dot pulse */
+    @keyframes sysPulse {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+        box-shadow: 0 0 6px rgba(48,209,88,0.7), 0 0 12px rgba(48,209,88,0.35);
+      }
+      50% {
+        opacity: 0.55;
+        transform: scale(1.35);
+        box-shadow: 0 0 10px rgba(48,209,88,1), 0 0 18px rgba(48,209,88,0.5);
+      }
+    }
+    /* Subtle pulse on the comet head too, so the rail feels alive even when
+       the position doesn't change. */
+    @keyframes sysCometPulse {
+      0%, 100% { box-shadow: 0 0 5px rgba(48,209,88,0.9), 0 0 10px rgba(48,209,88,0.45); }
+      50%      { box-shadow: 0 0 9px rgba(48,209,88,1),   0 0 16px rgba(48,209,88,0.65); }
+    }
+    /* Faint scanline sweep across the rail so the widget reads as "live" even
+       while we're waiting for new commits. */
+    @keyframes sysScan {
+      0%   { transform: translateX(-30%); opacity: 0; }
+      25%  { opacity: 0.6; }
+      80%  { opacity: 0.1; }
+      100% { transform: translateX(130%); opacity: 0; }
     }
     /* Smart Stack page dots — adapt to iOS light/dark theme (body.ios-dark) */
     :root {
@@ -1045,8 +1074,8 @@
           <div id="iww-moon-html"     style="position:absolute; transform:translate(-50%,-50%); font-size:15px; line-height:1; pointer-events:none; display:none; z-index:2;">🌙</div>
           <div style="position:relative; z-index:3; padding:13px 16px 14px; display:flex; flex-direction:column; height:100%; box-sizing:border-box;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span style="color:rgba(255,255,255,0.38); font-size:10px; letter-spacing:0.13em; font-weight:600; text-transform:uppercase; user-select:none;">Time & Weather</span>
-              <span style="color:rgba(255,255,255,0.28); font-size:9px; letter-spacing:0.1em; text-transform:uppercase; user-select:none;">Berlin</span>
+              <span style="color:rgba(255,255,255,0.38); font-size:10px; letter-spacing:0.13em; font-weight:600; text-transform:uppercase; user-select:none;">Berlin</span>
+              <span style="color:rgba(255,255,255,0.28); font-size:9px; letter-spacing:0.1em; text-transform:uppercase; user-select:none;">Time & Weather</span>
             </div>
             <div style="flex:1;"></div>
             <div style="display:flex; justify-content:space-between; align-items:flex-end;">
@@ -1112,6 +1141,70 @@
           </div>
         </div>
 
+        <!-- Card 2: System Pulse — live feed of recent commits from the GitHub
+             repo. Terminal-inspired dark look; a comet on the rail shows how
+             fresh the latest push is (right = just now, left = stale). -->
+        <div id="ios-system-pulse" class="sstack-card"
+          style="position:absolute; top:0; left:0; width:100%; height:100%;
+                 background:linear-gradient(135deg,#0a1820 0%,#0d0f14 55%,#0a0c10 100%);
+                 display:flex; flex-direction:column; padding:13px 16px 14px; box-sizing:border-box; will-change:transform,opacity;
+                 overflow:hidden;">
+
+          <!-- Top row: live status dot + eyebrow label -->
+          <div style="display:flex; justify-content:space-between; align-items:center; position:relative; z-index:2;">
+            <div style="display:flex; align-items:center; gap:7px;">
+              <div id="sys-live-dot"
+                style="width:7px; height:7px; border-radius:50%; background:#30d158;
+                       animation:sysPulse 1.8s ease-in-out infinite;"></div>
+              <span style="color:rgba(255,255,255,0.88); font-size:10px; letter-spacing:0.12em; font-weight:800; text-transform:uppercase; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;">LIVE</span>
+            </div>
+            <span style="color:rgba(255,255,255,0.38); font-size:10px; letter-spacing:0.13em; font-weight:600; text-transform:uppercase; user-select:none;">Changelog</span>
+          </div>
+
+          <!-- Title block -->
+          <div style="margin-top:9px; position:relative; z-index:2;">
+            <p id="sys-headline"
+              style="color:#fff; font-size:15px; font-weight:600; line-height:1.2; letter-spacing:-0.01em; margin:0;">Latest commit</p>
+            <p id="sys-message"
+              style="color:rgba(255,255,255,0.55); font-size:11px; margin:2px 0 0 0; font-weight:500; line-height:1.35;
+                     overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">Connecting to origin…</p>
+          </div>
+
+          <!-- Spacer pushes the rail to the bottom -->
+          <div style="flex:1; min-height:4px;"></div>
+
+          <!-- "Activity-Pulse" rail: comet's left-position encodes freshness of the last commit -->
+          <div id="sys-rail"
+            style="position:relative; height:3px; border-radius:2px;
+                   background:linear-gradient(to right, rgba(255,255,255,0.04), rgba(255,255,255,0.12));
+                   margin:0 0 8px 0; overflow:hidden;">
+            <!-- Faint sweeping scanline behind the comet -->
+            <div style="position:absolute; top:0; left:0; width:30%; height:100%;
+                        background:linear-gradient(to right, transparent, rgba(48,209,88,0.35), transparent);
+                        animation:sysScan 3.2s ease-in-out infinite;"></div>
+            <!-- Comet trail (fading gradient leading up to the head) -->
+            <div id="sys-comet-trail"
+              style="position:absolute; top:50%; left:0%; width:38px; height:100%;
+                     background:linear-gradient(to right, transparent, rgba(48,209,88,0.9));
+                     transform:translate(-100%, -50%); border-radius:2px;
+                     transition:left 1.2s cubic-bezier(0.2,0.7,0.2,1);"></div>
+            <!-- Comet head -->
+            <div id="sys-comet-dot"
+              style="position:absolute; top:50%; left:0%; width:7px; height:7px; border-radius:50%;
+                     background:#30d158; transform:translate(-50%, -50%);
+                     animation:sysCometPulse 1.8s ease-in-out infinite;
+                     transition:left 1.2s cubic-bezier(0.2,0.7,0.2,1);"></div>
+          </div>
+
+          <!-- Footer: commit hash + relative time -->
+          <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:4px; position:relative; z-index:2;">
+            <code id="sys-hash"
+              style="color:#5ac8fa; font-size:10.5px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-weight:600; letter-spacing:0.02em;">—</code>
+            <span id="sys-time"
+              style="color:rgba(255,255,255,0.44); font-size:10.5px; font-weight:500;">—</span>
+          </div>
+        </div>
+
       </div><!-- /sstack-frame -->
 
       <!-- Page indicator dots — close to but not touching the widget frame -->
@@ -1119,6 +1212,7 @@
         style="position:absolute; right:-11px; top:50%; transform:translateY(-50%);
                display:flex; flex-direction:column; gap:5px; z-index:20;
                opacity:0; transition:opacity 0.22s ease; pointer-events:none;">
+        <div class="sstack-dot"></div>
         <div class="sstack-dot is-active"></div>
         <div class="sstack-dot"></div>
       </div>
@@ -4190,6 +4284,149 @@
       // Initial render — no animation on first paint.
       renderBadge(); renderTitle(); renderSlots(); renderSegs([]);
       firstRender = false;
+    })();
+
+    </script>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         System Pulse commit feed — regenerate with:
+           git log -5 --pretty=format:'%H%x1f%s%x1f%aI'
+         then re-render into this block as JSON. The repo is private so we
+         can't hit the GitHub API at runtime; baking the feed keeps the
+         widget fully offline-capable and lightning-fast.
+         ═══════════════════════════════════════════════════════════════════ -->
+    <script id="sys-commits-data" type="application/json">
+[
+  {"sha":"2b123b0d3b24b5f2c82dcdcdba9ce840446216f7","msg":"iOS homescreen: Smart Stack UI polish + Explore widget enhancements","date":"2026-04-21T09:33:15+02:00"},
+  {"sha":"a6834cb41021acde223c497eebdbf57d113e8be8","msg":"Fix iOS app headers, BTS viewer rewrite, progress bar formula","date":"2026-04-20T10:04:43+02:00"},
+  {"sha":"1c6f5efee77f041143b17c9c4ac0dc8eadbc1828","msg":"iOS apps: large-title header + circle close button across all apps","date":"2026-04-20T09:44:01+02:00"},
+  {"sha":"3c7b2ab41a588def295ac5adf2edce84c2b42d4a","msg":"iOS redesign: scroll fade, magazine light mode, BTS magazine-style viewer","date":"2026-04-20T09:38:52+02:00"},
+  {"sha":"2c45248b9209f2d09859a741626ea1df54eeeba5","msg":"Add screen.png OG link preview image (1200x630)","date":"2026-04-20T08:57:27+02:00"}
+]
+    </script>
+
+    <script>
+    // ═════════════════════════════════════════════════════════════════════
+    // Changelog widget — live feed of the repo's recent commits
+    // ─────────────────────────────────────────────────────────────────────
+    // Primary data source: GitHub REST API (repo is public, 60 req/hr per IP
+    // unauthenticated — we use at most 1 on load + 1 every 5 min). The baked
+    // <script id="sys-commits-data"> JSON block is a zero-latency fallback
+    // for the first paint and for offline / rate-limited visitors.
+    //
+    // Timestamps re-render every 30 s so "2m ago" rolls forward and the
+    // comet drifts leftward as the commit ages — feels alive even between
+    // fetches. Text swaps use the blur→sharp animation from the Explore
+    // widget, so any refreshed commit visibly pulses in.
+    // ═════════════════════════════════════════════════════════════════════
+    (function () {
+      const headline = document.getElementById('sys-headline');
+      const message  = document.getElementById('sys-message');
+      const hashEl   = document.getElementById('sys-hash');
+      const timeEl   = document.getElementById('sys-time');
+      const trail    = document.getElementById('sys-comet-trail');
+      const cometDot = document.getElementById('sys-comet-dot');
+      const dataEl   = document.getElementById('sys-commits-data');
+      if (!headline || !message || !hashEl || !timeEl) return;
+
+      const REPO   = 'project11x/tomin-world';
+      const API    = 'https://api.github.com/repos/' + REPO + '/commits?per_page=5';
+      // Shared normalised commit shape: { sha, msg, date }.
+      let commits  = [];
+
+      // Seed with baked data so the first paint is instant — no spinner, no
+      // "Connecting to origin…" flash even on slow networks.
+      try {
+        if (dataEl) commits = JSON.parse(dataEl.textContent.trim()) || [];
+      } catch (e) { commits = []; }
+      let firstPaintDone = false;
+
+      // Convert a Date into a short relative-time label.
+      function fmtAgo(date) {
+        const diff = Math.max(0, Date.now() - date.getTime());
+        const m = Math.floor(diff / 60000);
+        const h = Math.floor(diff / 3600000);
+        const d = Math.floor(diff / 86400000);
+        if (diff < 45000) return 'just now';
+        if (m < 60)       return m + 'm ago';
+        if (h < 24)       return h + 'h ago';
+        if (d < 7)        return d + 'd ago';
+        return Math.floor(d / 7) + 'w ago';
+      }
+
+      // Map time-since-commit to a comet position on the rail: right = fresh,
+      // left = stale. Log scale so a 2 min-old commit sits near the right edge
+      // and a week-old commit is near the left.
+      function cometPct(date) {
+        const diffMin = Math.max(0.5, (Date.now() - date.getTime()) / 60000);
+        const WEEK_MIN = 10080;
+        const v = 1 - Math.min(1, Math.log(diffMin + 1) / Math.log(WEEK_MIN + 1));
+        return Math.max(5, Math.min(98, v * 100));   // keep comet on-rail
+      }
+
+      function setTextAnim(el, newText) {
+        if (!el) return;
+        if (el.textContent === newText) return;
+        el.textContent = newText;
+        if (!firstPaintDone) return;
+        el.classList.remove('sys-blur-swap');
+        void el.offsetWidth;
+        el.classList.add('sys-blur-swap');
+      }
+
+      function render() {
+        if (!commits.length) {
+          setTextAnim(message, 'No recent updates');
+          setTextAnim(hashEl,  '—');
+          setTextAnim(timeEl,  '—');
+          if (trail)    trail.style.left    = '50%';
+          if (cometDot) cometDot.style.left = '50%';
+          return;
+        }
+        const c    = commits[0];
+        const date = new Date(c.date);
+        const sha  = (c.sha || '').slice(0, 7);
+        const subj = (c.msg || '').split('\n')[0];
+        setTextAnim(message, subj);
+        setTextAnim(hashEl,  sha);
+        setTextAnim(timeEl,  fmtAgo(date));
+        const pct = cometPct(date);
+        if (trail)    trail.style.left    = pct + '%';
+        if (cometDot) cometDot.style.left = pct + '%';
+      }
+
+      // Fetch live commits from the GitHub API. Silent-fail on network error
+      // or rate-limit — the baked data stays on screen in that case.
+      async function fetchLive() {
+        try {
+          const r = await fetch(API, { headers: { Accept: 'application/vnd.github+json' } });
+          if (!r.ok) return;
+          const data = await r.json();
+          if (!Array.isArray(data) || !data.length) return;
+          commits = data.map(c => ({
+            sha:  c.sha,
+            msg:  (c.commit && c.commit.message) || '',
+            date: (c.commit && c.commit.author && c.commit.author.date) || c.commit?.committer?.date
+          }));
+          render();
+        } catch (e) { /* offline / blocked — silent */ }
+      }
+
+      // Initial paint uses baked data (instant). firstPaintDone flips after
+      // so any subsequent change (from fetchLive or a time-tick rollover)
+      // plays the blur-swap animation.
+      render();
+      firstPaintDone = true;
+
+      // Now hit the live API — when it resolves, any text that changed will
+      // blur-swap in.
+      fetchLive();
+
+      // Tick timestamps & comet every 30 s so time visibly passes.
+      setInterval(render, 30000);
+      // Re-poll the API every 5 min. 12 req/hr per IP fits the 60/hr limit
+      // comfortably.
+      setInterval(fetchLive, 5 * 60 * 1000);
     })();
 
   </script>
