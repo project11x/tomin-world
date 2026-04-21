@@ -1183,10 +1183,18 @@
             style="position:relative; height:3px; border-radius:2px;
                    background:linear-gradient(to right, rgba(255,255,255,0.04), rgba(255,255,255,0.12));
                    margin:0 0 8px 0; overflow:hidden;">
-            <!-- Bright sweeping scanline behind the comet -->
-            <div style="position:absolute; top:0; left:0; width:30%; height:100%;
-                        background:linear-gradient(to right, transparent, rgba(48,209,88,0.75), transparent);
-                        animation:sysScan 3.2s ease-in-out infinite;"></div>
+            <!-- Bounded region the scanline can sweep through. Its width is
+                 set by JS to match the comet's position (freshness %), so the
+                 sweep always runs up to — and stops at — the green head. -->
+            <div id="sys-scan-bounds"
+              style="position:absolute; top:0; left:0; height:100%; width:5%;
+                     overflow:hidden; border-radius:inherit;
+                     transition:width 1.2s cubic-bezier(0.2,0.7,0.2,1);">
+              <!-- Bright sweeping scanline, bounded by the parent above. -->
+              <div style="position:absolute; top:0; left:0; width:45%; height:100%;
+                          background:linear-gradient(to right, transparent, rgba(48,209,88,0.85), transparent);
+                          animation:sysScan 3.2s ease-in-out infinite;"></div>
+            </div>
             <!-- Comet trail (fading gradient leading up to the head) -->
             <div id="sys-comet-trail"
               style="position:absolute; top:50%; left:0%; width:38px; height:100%;
@@ -3667,46 +3675,115 @@
       }
 
       let sunriseMs = null, sunsetMs = null;
+      // Gate for the first-reveal intro: the arc stays blank (no sun/moon,
+      // no progress line) until the weather card is brought into view. The
+      // first time it shows up we run playArcIntro() to trace the path from
+      // the left edge to the target position. Everything after is handled
+      // by the normal updateArc() instant-path.
+      let introPlayed = false;
+      let introRAF    = null;
 
       function tickClock() {
         const now = new Date();
         const h = String(now.getHours()).padStart(2,'0');
         const m = String(now.getMinutes()).padStart(2,'0');
         if (timeEl) timeEl.textContent = h + ':' + m;
-        updateArc(now);
+        if (introPlayed) updateArc(now);
       }
 
-      function updateArc(now) {
-        if (!arcBg || !arcProg) return;
+      // Compute the arc target (progLen + isDay) for the current moment.
+      function currentTarget(now) {
+        if (!arcBg) return null;
         const totalLen = arcBg.getTotalLength ? arcBg.getTotalLength() : 220;
         const nowMs = now.getTime();
         const isDay = sunriseMs && sunsetMs && nowMs > sunriseMs && nowMs < sunsetMs;
-
+        let t;
         if (isDay) {
-          const t = Math.max(0, Math.min(1, (nowMs - sunriseMs) / (sunsetMs - sunriseMs)));
-          const progLen = totalLen * t;
-          arcProg.setAttribute('stroke-dasharray', progLen + ' ' + (totalLen + 10));
+          t = Math.max(0, Math.min(1, (nowMs - sunriseMs) / (sunsetMs - sunriseMs)));
+        } else {
+          // Moon sits at the arc midpoint when we're outside daytime.
+          t = 0.5;
+        }
+        return { totalLen, isDay, progLen: totalLen * t };
+      }
 
-          // Position sun as HTML element (no SVG distortion)
-          const pt  = arcBg.getPointAtLength(progLen);
-          const pos = svgToPx(pt.x, pt.y);
+      // Place the sun (day) or moon (night) at an arbitrary point on the
+      // arc. Used by both the intro tween and the instant updater below.
+      function placeAt(progLen, isDay, totalLen) {
+        if (!arcBg || !arcBg.getPointAtLength) return;
+        const pt  = arcBg.getPointAtLength(progLen);
+        const pos = svgToPx(pt.x, pt.y);
+        if (isDay) {
+          if (arcProg) arcProg.setAttribute('stroke-dasharray', progLen + ' ' + (totalLen + 10));
           if (sunDotHtml)  { sunDotHtml.style.left  = pos.x + 'px'; sunDotHtml.style.top  = pos.y + 'px'; sunDotHtml.style.display = ''; }
           if (sunGlowHtml) { sunGlowHtml.style.left = pos.x + 'px'; sunGlowHtml.style.top = pos.y + 'px'; sunGlowHtml.style.display = ''; }
           if (moonHtml) moonHtml.style.display = 'none';
         } else {
-          arcProg.setAttribute('stroke-dasharray', '0 ' + (totalLen + 10));
+          if (arcProg) arcProg.setAttribute('stroke-dasharray', '0 ' + (totalLen + 10));
           if (sunDotHtml)  sunDotHtml.style.display  = 'none';
           if (sunGlowHtml) sunGlowHtml.style.display = 'none';
-          // Moon at arc midpoint — on the line, perfectly round (HTML, not SVG)
-          if (moonHtml && arcBg.getPointAtLength) {
-            const midPt = arcBg.getPointAtLength(totalLen / 2);
-            const pos   = svgToPx(midPt.x, midPt.y);
-            moonHtml.style.left = pos.x + 'px';
-            moonHtml.style.top  = pos.y + 'px';
-            moonHtml.style.display = '';
-          }
+          if (moonHtml)    { moonHtml.style.left = pos.x + 'px'; moonHtml.style.top  = pos.y + 'px'; moonHtml.style.display = ''; }
         }
       }
+
+      function updateArc(now) {
+        const tgt = currentTarget(now);
+        if (!tgt) return;
+        placeAt(tgt.progLen, tgt.isDay, tgt.totalLen);
+      }
+
+      // Ease-out cubic: fast start, gentle stop — lets the sun/moon glide
+      // along the arc and settle softly at its final spot.
+      function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
+
+      // First-reveal animation. Tweens progLen from 0 → target over ~1.8 s
+      // and updates the sun/moon position every frame along the arc.
+      function playArcIntro() {
+        if (introPlayed) return;
+        const tgt = currentTarget(new Date());
+        if (!tgt || tgt.progLen <= 0) {
+          // Nothing to animate yet (e.g. sunrise/sunset not fetched) — try
+          // again on the next tick/card-reveal.
+          return;
+        }
+        introPlayed = true;
+        if (introRAF) cancelAnimationFrame(introRAF);
+
+        const DUR   = 1800;
+        const start = performance.now();
+        const { totalLen, isDay, progLen: target } = tgt;
+
+        function frame(ts) {
+          const raw   = Math.min(1, (ts - start) / DUR);
+          const eased = easeOutCubic(raw);
+          placeAt(target * eased, isDay, totalLen);
+          if (raw < 1) {
+            introRAF = requestAnimationFrame(frame);
+          } else {
+            introRAF = null;
+          }
+        }
+        introRAF = requestAnimationFrame(frame);
+      }
+
+      // Subscribe to card-change events so we can trigger the intro the
+      // first time the weather card becomes the front card. The Smart Stack
+      // carousel fans events out to window.sstackCardHandlers.
+      window.sstackCardHandlers = window.sstackCardHandlers || [];
+      window.sstackCardHandlers.push(function (idx) {
+        if (idx !== 0 || introPlayed) return;
+        // Data might still be in-flight on first reveal — retry briefly.
+        if (sunriseMs && sunsetMs) {
+          playArcIntro();
+        } else {
+          let tries = 0;
+          const iv = setInterval(() => {
+            tries++;
+            if (introPlayed || tries > 30) { clearInterval(iv); return; }
+            if (sunriseMs && sunsetMs) { clearInterval(iv); playArcIntro(); }
+          }, 120);
+        }
+      });
 
       async function fetchWeather() {
         try {
@@ -3727,7 +3804,10 @@
           if (daily && daily.sunrise && daily.sunset) {
             sunriseMs = new Date(daily.sunrise[0]).getTime();
             sunsetMs  = new Date(daily.sunset[0]).getTime();
-            updateArc(new Date());
+            // Only paint the arc instantly if we've already done the intro.
+            // Otherwise hold the blank starting state — the intro will tween
+            // to this target the moment the weather card is first revealed.
+            if (introPlayed) updateArc(new Date());
           }
         } catch (e) {
           if (descEl) descEl.textContent = 'Berlin';
@@ -3877,8 +3957,20 @@
         }
         flashDots();
         // Let other components know which card is now in front.
-        if (cardChanged && typeof window.sstackOnCardChange === 'function') {
-          window.sstackOnCardChange(activeIdx);
+        if (cardChanged) notifyCardChange(activeIdx);
+      }
+
+      // Fan-out card-change events to every subscriber. Widget IIFEs push a
+      // listener onto window.sstackCardHandlers; the legacy single-handler
+      // window.sstackOnCardChange is still supported for back-compat.
+      function notifyCardChange(idx) {
+        if (Array.isArray(window.sstackCardHandlers)) {
+          for (const fn of window.sstackCardHandlers) {
+            try { fn(idx); } catch (e) {}
+          }
+        }
+        if (typeof window.sstackOnCardChange === 'function') {
+          try { window.sstackOnCardChange(idx); } catch (e) {}
         }
       }
 
@@ -3896,9 +3988,7 @@
         dragY     = 0;
         render(true, slow);
         flashDots();
-        if (typeof window.sstackOnCardChange === 'function') {
-          window.sstackOnCardChange(activeIdx);
-        }
+        notifyCardChange(activeIdx);
       };
       frame.addEventListener('pointerup',     endDrag);
       frame.addEventListener('pointercancel', endDrag);
@@ -4331,6 +4421,7 @@
       const timeEl   = document.getElementById('sys-time');
       const trail    = document.getElementById('sys-comet-trail');
       const cometDot = document.getElementById('sys-comet-dot');
+      const scanBox  = document.getElementById('sys-scan-bounds');
       const dataEl   = document.getElementById('sys-commits-data');
       if (!headline || !message || !hashEl || !timeEl) return;
 
@@ -4384,8 +4475,9 @@
           setTextAnim(message, 'No recent updates');
           setTextAnim(hashEl,  '—');
           setTextAnim(timeEl,  '—');
-          if (trail)    trail.style.left    = '50%';
+          if (trail)    trail.style.left  = '50%';
           if (cometDot) cometDot.style.left = '50%';
+          if (scanBox)  scanBox.style.width = '50%';
           return;
         }
         const c    = commits[0];
@@ -4396,8 +4488,11 @@
         setTextAnim(hashEl,  sha);
         setTextAnim(timeEl,  fmtAgo(date));
         const pct = cometPct(date);
-        if (trail)    trail.style.left    = pct + '%';
+        if (trail)    trail.style.left  = pct + '%';
         if (cometDot) cometDot.style.left = pct + '%';
+        // Bound the scanline to the comet position — the bright sweep fills
+        // only the "active" section of the rail, right up to the green head.
+        if (scanBox)  scanBox.style.width = pct + '%';
       }
 
       // Fetch live commits from the GitHub API. Silent-fail on network error
