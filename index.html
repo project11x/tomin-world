@@ -494,6 +494,56 @@
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
+    @keyframes iww-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(74,222,128,0.7); }
+      50% { box-shadow: 0 0 0 5px rgba(74,222,128,0); }
+    }
+    #iww-live-dot { animation: iww-pulse 2.2s ease-in-out infinite; }
+    #ios-smart-stack:hover #sstack-dots { opacity: 1; }
+    #sstack-frame .sstack-card {
+      backface-visibility: hidden;
+      border-radius: 20px;          /* each widget has its own rounded corners */
+      overflow: hidden;
+    }
+    /* Subtle outline around the whole smart-stack frame while dragging.
+       Same show/hide behaviour (and fade timing) as the page dots.
+       Theme-adaptive via CSS vars (mirrors the dot vars logic). */
+    :root       { --sstack-outline: rgba(0,0,0,0.14); }
+    body.ios-dark { --sstack-outline: rgba(255,255,255,0.22); }
+    #sstack-frame {
+      box-shadow: 0 0 0 1px transparent;
+      transition: box-shadow 0.22s ease;
+    }
+    #sstack-frame.is-dragging {
+      box-shadow: 0 0 0 1px var(--sstack-outline);
+    }
+    /* Explore widget — text elements animate blur→sharp whenever their content
+       changes (badge, "Up next: …", "N of 4 explored"). */
+    @keyframes ilaTextSwap {
+      0%   { filter: blur(6px); opacity: 0.25; }
+      60%  { filter: blur(2px); opacity: 0.75; }
+      100% { filter: blur(0);   opacity: 1;    }
+    }
+    .ila-blur-swap {
+      animation: ilaTextSwap 0.55s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    /* Smart Stack page dots — adapt to iOS light/dark theme (body.ios-dark) */
+    :root {
+      --sstack-dot-active:   rgba(20,20,28,0.95);
+      --sstack-dot-inactive: rgba(20,20,28,0.35);
+      --sstack-dot-ring:     rgba(255,255,255,0.7);
+    }
+    body.ios-dark {
+      --sstack-dot-active:   rgba(255,255,255,0.95);
+      --sstack-dot-inactive: rgba(255,255,255,0.4);
+      --sstack-dot-ring:     rgba(0,0,0,0.35);
+    }
+    .sstack-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background-color: var(--sstack-dot-inactive);
+      box-shadow: 0 0 0 1px var(--sstack-dot-ring);
+    }
+    .sstack-dot.is-active { background-color: var(--sstack-dot-active); }
 
     /* iOS scroll-fade: top edge — items fade as they scroll under the player */
     .ios-scroll-fade-top {
@@ -874,7 +924,7 @@
           <span>@edpz</span>
         </div>
         <div class="flex justify-between"><span class="font-semibold text-slate-700 dark:text-slate-200">Mail</span>
-          <span>info@tomin.world</span>
+          <span>eddie@shouli.de</span>
         </div>
       </div>
     </div>
@@ -966,6 +1016,114 @@
     <!-- Empty homescreen wallpaper area -->
     <div class="flex-1"></div>
 
+    <!-- iOS Smart Stack wrapper (dots live here, outside the clip frame) -->
+    <div id="ios-smart-stack" class="ios-intro-item mx-4 mb-3" style="position:relative;">
+
+      <!-- The clipped widget frame (gesture carousel, infinite loop) -->
+      <div id="sstack-frame" style="position:relative; height:168px; border-radius:20px; overflow:hidden; touch-action:none; cursor:grab; user-select:none;">
+
+        <!-- Card 0: Time & Weather -->
+        <div id="ios-weather-widget" class="sstack-card"
+          style="position:absolute; top:0; left:0; width:100%; height:100%; background:#16213e; overflow:hidden; will-change:transform,opacity;">
+          <svg id="iww-arc-svg" viewBox="-5 0 115 50" preserveAspectRatio="none"
+            style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;
+                   -webkit-mask-image:linear-gradient(to right,transparent 0%,black 11%,black 89%,transparent 100%);
+                   mask-image:linear-gradient(to right,transparent 0%,black 11%,black 89%,transparent 100%);">
+            <defs>
+              <radialGradient id="iww-sun-glow-grad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%"   stop-color="rgba(251,191,36,0.5)"/>
+                <stop offset="45%"  stop-color="rgba(251,191,36,0.18)"/>
+                <stop offset="100%" stop-color="rgba(251,191,36,0)"/>
+              </radialGradient>
+            </defs>
+            <path id="iww-arc-bg"   d="M -5,48 Q 52,-18 110,48" fill="none" stroke="rgba(255,255,255,0.1)"  stroke-width="0.36" stroke-linecap="round"/>
+            <path id="iww-arc-prog" d="M -5,48 Q 52,-18 110,48" fill="none" stroke="rgba(255,215,75,0.6)"   stroke-width="0.38" stroke-linecap="round" stroke-dasharray="0 300"/>
+          </svg>
+          <!-- Sun & moon as HTML divs — no SVG distortion -->
+          <div id="iww-sun-glow-html" style="position:absolute; border-radius:50%; width:22px; height:22px; transform:translate(-50%,-50%); pointer-events:none; display:none; z-index:1; background:radial-gradient(circle,rgba(251,191,36,0.45) 0%,rgba(251,191,36,0.15) 50%,transparent 100%);"></div>
+          <div id="iww-sun-dot-html"  style="position:absolute; border-radius:50%; background:#fbbf24; width:7px; height:7px; transform:translate(-50%,-50%); pointer-events:none; display:none; z-index:2; box-shadow:0 0 5px rgba(251,191,36,0.8);"></div>
+          <div id="iww-moon-html"     style="position:absolute; transform:translate(-50%,-50%); font-size:15px; line-height:1; pointer-events:none; display:none; z-index:2;">🌙</div>
+          <div style="position:relative; z-index:3; padding:13px 16px 14px; display:flex; flex-direction:column; height:100%; box-sizing:border-box;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="color:rgba(255,255,255,0.38); font-size:10px; letter-spacing:0.13em; font-weight:600; text-transform:uppercase; user-select:none;">Time & Weather</span>
+              <span style="color:rgba(255,255,255,0.28); font-size:9px; letter-spacing:0.1em; text-transform:uppercase; user-select:none;">Berlin</span>
+            </div>
+            <div style="flex:1;"></div>
+            <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+              <div>
+                <div id="iww-time" style="color:#fff; font-size:30px; font-weight:200; letter-spacing:-1px; line-height:1; font-variant-numeric:tabular-nums;">00:00</div>
+                <div id="iww-desc" style="color:rgba(255,255,255,0.38); font-size:10px; font-weight:500; letter-spacing:0.05em; margin-top:4px;">–</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="display:flex; align-items:center; gap:5px; justify-content:flex-end; margin-bottom:2px;">
+                  <span id="iww-icon" style="font-size:18px; line-height:1;">–</span>
+                  <span id="iww-temp" style="color:#fff; font-size:17px; font-weight:300; line-height:1;">–°C</span>
+                </div>
+                <div id="iww-wind" style="color:rgba(255,255,255,0.42); font-size:10px; margin-bottom:6px;">💨 – km/h</div>
+                <div style="display:flex; align-items:center; gap:6px; justify-content:flex-end;">
+                  <span style="color:rgba(255,255,255,0.55); font-size:10px; letter-spacing:0.03em;">✂️ Cutting</span>
+                  <div id="iww-live-dot" style="width:6px; height:6px; border-radius:50%; background:#4ade80; flex-shrink:0;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 1: Portfolio Exploration (transit-style, slot-based for smart reordering) -->
+        <div id="ios-live-activity" class="sstack-card"
+          style="position:absolute; top:0; left:0; width:100%; height:100%;
+                 background:linear-gradient(135deg,#2a1420 0%,#1a1018 100%);
+                 display:flex; flex-direction:column; padding:13px 16px 14px; box-sizing:border-box; will-change:transform,opacity;">
+
+          <!-- Top row: current-section badge + eyebrow label -->
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div id="ila-badge"
+              style="padding:3px 9px; border-radius:6px; font-size:10px; font-weight:800; letter-spacing:0.08em;
+                     color:#1a1a1a; background:#e0e0e0; text-transform:uppercase; line-height:1.4; user-select:none;">HOME</div>
+            <span style="color:rgba(255,255,255,0.38); font-size:10px; letter-spacing:0.13em; font-weight:600; text-transform:uppercase; user-select:none;">Portfolio</span>
+          </div>
+
+          <!-- Title block -->
+          <div style="margin-top:9px;">
+            <p id="ila-title"
+              style="color:#fff; font-size:17px; font-weight:600; line-height:1.18; letter-spacing:-0.01em; margin:0;">Up next: Edits</p>
+            <p id="ila-sub"
+              style="color:rgba(255,255,255,0.44); font-size:11px; margin:2px 0 0 0; font-weight:500;">1 of 4 explored</p>
+          </div>
+
+          <!-- Spacer pushes timeline to bottom -->
+          <div style="flex:1; min-height:4px;"></div>
+
+          <!-- Slot-based timeline (JS fills dots + labels + segment fills by visit order) -->
+          <div style="display:flex; align-items:center; gap:2px; padding-bottom:22px;">
+            <div class="ila-slot" data-slot="1" style="position:relative; flex-shrink:0; display:flex; align-items:center; justify-content:center; width:20px; height:20px; z-index:2;"></div>
+            <div class="ila-seg"  data-seg="1"  style="position:relative; flex:1; height:10px; border-radius:5px; overflow:hidden;">
+              <div class="ila-seg-fill" style="position:absolute; top:0; left:0; height:100%; width:0; border-radius:5px; transform-origin:left center; transition:width 0.9s cubic-bezier(0.2,0.7,0.2,1);"></div>
+            </div>
+            <div class="ila-slot" data-slot="2" style="position:relative; flex-shrink:0; display:flex; align-items:center; justify-content:center; width:20px; height:20px; z-index:2;"></div>
+            <div class="ila-seg"  data-seg="2"  style="position:relative; flex:1; height:10px; border-radius:5px; overflow:hidden;">
+              <div class="ila-seg-fill" style="position:absolute; top:0; left:0; height:100%; width:0; border-radius:5px; transform-origin:left center; transition:width 0.9s cubic-bezier(0.2,0.7,0.2,1);"></div>
+            </div>
+            <div class="ila-slot" data-slot="3" style="position:relative; flex-shrink:0; display:flex; align-items:center; justify-content:center; width:20px; height:20px; z-index:2;"></div>
+            <div class="ila-seg"  data-seg="3"  style="position:relative; flex:1; height:10px; border-radius:5px; overflow:hidden;">
+              <div class="ila-seg-fill" style="position:absolute; top:0; left:0; height:100%; width:0; border-radius:5px; transform-origin:left center; transition:width 0.9s cubic-bezier(0.2,0.7,0.2,1);"></div>
+            </div>
+            <div class="ila-slot" data-slot="4" style="position:relative; flex-shrink:0; display:flex; align-items:center; justify-content:center; width:20px; height:20px; z-index:2;"></div>
+          </div>
+        </div>
+
+      </div><!-- /sstack-frame -->
+
+      <!-- Page indicator dots — close to but not touching the widget frame -->
+      <div id="sstack-dots"
+        style="position:absolute; right:-11px; top:50%; transform:translateY(-50%);
+               display:flex; flex-direction:column; gap:5px; z-index:20;
+               opacity:0; transition:opacity 0.22s ease; pointer-events:none;">
+        <div class="sstack-dot is-active"></div>
+        <div class="sstack-dot"></div>
+      </div>
+
+    </div><!-- /ios-smart-stack wrapper -->
 
     <!-- iOS Dock -->
     <div class="flex justify-center px-4" style="padding-bottom: max(28px, env(safe-area-inset-bottom, 28px));">
@@ -1191,10 +1349,6 @@
     <div class="flex-1 overflow-y-auto px-5" style="padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));">
       <!-- Avatar -->
       <div class="flex flex-col items-center pt-6 pb-8">
-        <div class="w-24 h-24 rounded-full flex items-center justify-center shadow-lg mb-4"
-          style="background:linear-gradient(135deg,#6366f1,#a855f7);">
-          <span class="text-white font-bold text-3xl">ED</span>
-        </div>
         <h2 class="font-semibold text-[22px]" style="color:var(--ios-text)">EDDIE</h2>
 
       </div>
@@ -1213,7 +1367,7 @@
         </div>
         <div style="display:flex; justify-content:space-between; padding:14px 16px;">
           <span style="color:var(--ios-text-secondary); font-size:15px;">Mail</span>
-          <span style="color:var(--ios-text); font-size:15px;">info@tomin.world</span>
+          <span style="color:var(--ios-text); font-size:15px;">eddie@shouli.de</span>
         </div>
       </div>
 
@@ -2835,6 +2989,8 @@
           iosMagScreenGrid.style.transform = '';
           iosMagScreenGrid.style.opacity = '';
           iosMagReaderPages.innerHTML = '';
+          // Animate the portfolio route only once the user is actually back on home.
+          if (window.ilaVisit) window.ilaVisit('magazin');
         }, 350);
       };
 
@@ -3056,6 +3212,8 @@
         setTimeout(() => {
           iosEditsApp.style.display = 'none';
           iosEditsApp.classList.remove('closing');
+          // Animate the portfolio route only once the user is actually back on home.
+          if (window.ilaVisit) window.ilaVisit('edits');
         }, 350);
       };
 
@@ -3265,6 +3423,8 @@
           iosBtsApp.classList.remove('closing');
           iosBtsScreenFiles.style.display = 'none';
           iosBtsViewer.style.display = 'none';
+          // Animate the portfolio route only once the user is actually back on home.
+          if (window.ilaVisit) window.ilaVisit('bts');
         }, 350);
       };
 
@@ -3365,6 +3525,671 @@
       };
 
 
+    })();
+
+    // ── iOS Live Activity: Time & Weather Berlin ─────────────────────────────
+    (function () {
+      // Arc bezier: P0=(-5,48) P1=(52,-18) P2=(110,48) in viewBox "-5 0 115 50"
+      // viewBox aspect 115:50=2.3:1 ≈ widget 343×148 → uniform scale → circles stay round
+      const P0 = {x:-5, y:48}, P1 = {x:52, y:-18}, P2 = {x:110, y:48};
+
+      const WMO = {
+        0: ['☀️','Clear'], 1: ['🌤️','Mostly clear'], 2: ['⛅','Partly cloudy'], 3: ['☁️','Overcast'],
+        45: ['🌫️','Foggy'], 48: ['🌫️','Icy fog'],
+        51: ['🌦️','Light drizzle'], 53: ['🌦️','Drizzle'], 55: ['🌧️','Heavy drizzle'],
+        61: ['🌧️','Light rain'], 63: ['🌧️','Rain'], 65: ['🌧️','Heavy rain'],
+        71: ['❄️','Light snow'], 73: ['❄️','Snow'], 75: ['❄️','Heavy snow'],
+        80: ['🌧️','Showers'], 81: ['🌧️','Showers'], 82: ['⛈️','Heavy showers'],
+        95: ['⛈️','Thunderstorm'], 96: ['⛈️','Thunderstorm'], 99: ['⛈️','Thunderstorm'],
+      };
+      function wmo(code) {
+        const c = Object.keys(WMO).map(Number).sort((a,b)=>b-a).find(k => code >= k);
+        return WMO[c] || ['🌡️','Unknown'];
+      }
+
+      const timeEl      = document.getElementById('iww-time');
+      const iconEl      = document.getElementById('iww-icon');
+      const tempEl      = document.getElementById('iww-temp');
+      const windEl      = document.getElementById('iww-wind');
+      const descEl      = document.getElementById('iww-desc');
+      const arcProg     = document.getElementById('iww-arc-prog');
+      const arcBg       = document.getElementById('iww-arc-bg');
+      const sunDotHtml  = document.getElementById('iww-sun-dot-html');
+      const sunGlowHtml = document.getElementById('iww-sun-glow-html');
+      const moonHtml    = document.getElementById('iww-moon-html');
+      const weatherWgt  = document.getElementById('ios-weather-widget');
+
+      // Convert SVG viewBox coords to pixel coords within the weather widget
+      // viewBox "-5 0 115 50": x range [-5,110] w=115, y range [0,50] h=50
+      function svgToPx(svgX, svgY) {
+        const w = weatherWgt ? weatherWgt.offsetWidth  : 343;
+        const h = weatherWgt ? weatherWgt.offsetHeight : 148;
+        return { x: (svgX + 5) / 115 * w, y: svgY / 50 * h };
+      }
+
+      let sunriseMs = null, sunsetMs = null;
+
+      function tickClock() {
+        const now = new Date();
+        const h = String(now.getHours()).padStart(2,'0');
+        const m = String(now.getMinutes()).padStart(2,'0');
+        if (timeEl) timeEl.textContent = h + ':' + m;
+        updateArc(now);
+      }
+
+      function updateArc(now) {
+        if (!arcBg || !arcProg) return;
+        const totalLen = arcBg.getTotalLength ? arcBg.getTotalLength() : 220;
+        const nowMs = now.getTime();
+        const isDay = sunriseMs && sunsetMs && nowMs > sunriseMs && nowMs < sunsetMs;
+
+        if (isDay) {
+          const t = Math.max(0, Math.min(1, (nowMs - sunriseMs) / (sunsetMs - sunriseMs)));
+          const progLen = totalLen * t;
+          arcProg.setAttribute('stroke-dasharray', progLen + ' ' + (totalLen + 10));
+
+          // Position sun as HTML element (no SVG distortion)
+          const pt  = arcBg.getPointAtLength(progLen);
+          const pos = svgToPx(pt.x, pt.y);
+          if (sunDotHtml)  { sunDotHtml.style.left  = pos.x + 'px'; sunDotHtml.style.top  = pos.y + 'px'; sunDotHtml.style.display = ''; }
+          if (sunGlowHtml) { sunGlowHtml.style.left = pos.x + 'px'; sunGlowHtml.style.top = pos.y + 'px'; sunGlowHtml.style.display = ''; }
+          if (moonHtml) moonHtml.style.display = 'none';
+        } else {
+          arcProg.setAttribute('stroke-dasharray', '0 ' + (totalLen + 10));
+          if (sunDotHtml)  sunDotHtml.style.display  = 'none';
+          if (sunGlowHtml) sunGlowHtml.style.display = 'none';
+          // Moon at arc midpoint — on the line, perfectly round (HTML, not SVG)
+          if (moonHtml && arcBg.getPointAtLength) {
+            const midPt = arcBg.getPointAtLength(totalLen / 2);
+            const pos   = svgToPx(midPt.x, midPt.y);
+            moonHtml.style.left = pos.x + 'px';
+            moonHtml.style.top  = pos.y + 'px';
+            moonHtml.style.display = '';
+          }
+        }
+      }
+
+      async function fetchWeather() {
+        try {
+          const url = 'https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41' +
+            '&current=temperature_2m,wind_speed_10m,weather_code' +
+            '&daily=sunrise,sunset&timezone=Europe%2FBerlin&forecast_days=1';
+          const res = await fetch(url);
+          const data = await res.json();
+          const cur = data.current;
+          const daily = data.daily;
+          if (iconEl && tempEl && windEl && descEl) {
+            const [icon, desc] = wmo(cur.weather_code);
+            iconEl.textContent = icon;
+            tempEl.textContent = Math.round(cur.temperature_2m) + '°C';
+            windEl.textContent = '💨 ' + Math.round(cur.wind_speed_10m) + ' km/h';
+            descEl.textContent = desc;
+          }
+          if (daily && daily.sunrise && daily.sunset) {
+            sunriseMs = new Date(daily.sunrise[0]).getTime();
+            sunsetMs  = new Date(daily.sunset[0]).getTime();
+            updateArc(new Date());
+          }
+        } catch (e) {
+          if (descEl) descEl.textContent = 'Berlin';
+        }
+      }
+
+      tickClock();
+      setInterval(tickClock, 30000);
+      fetchWeather();
+      setInterval(fetchWeather, 10 * 60 * 1000);
+    })();
+
+    // ── iOS Smart Stack (gesture carousel, infinite loop) ─────────────────────
+    (function () {
+      const frame    = document.getElementById('sstack-frame');
+      const cards    = frame ? Array.from(frame.querySelectorAll('.sstack-card')) : [];
+      const dotsWrap = document.getElementById('sstack-dots');
+      const dotEls   = dotsWrap ? Array.from(dotsWrap.querySelectorAll('.sstack-dot')) : [];
+      if (!frame || cards.length < 2) return;
+
+      const N          = cards.length;
+      const EASE       = 'cubic-bezier(0.32, 0.72, 0, 1)';
+      const DUR        = 420;            // ms for snap
+      const THRESHOLD  = 38;             // px to switch card
+      let   H          = frame.offsetHeight || 148;
+
+      let activeIdx = 1;                 // which card is the front one — start with Explore on top
+      let dragY     = 0;                 // current drag offset in px (front card's translateY)
+      let dragDir   = -1;                // -1 = advance (up), +1 = go back (down)
+      let dragging  = false;
+      let startY    = 0;
+      let pointerId = null;
+      let hideTimer = null;
+
+      // Slower, gentler snap for programmatic transitions like the auto-advance
+      // after "all explored" — the user isn't actively swiping, so we let the
+      // card glide up with more drama.
+      const SLOW_DUR  = 1100;
+      const SLOW_EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+
+      // Render all cards at their positions. At rest (dragY=0) only slot 0 is in
+      // view; the slot -1 and slot +1 cards sit off-screen above/below the frame
+      // and are naturally clipped by overflow:hidden. During drag the front card
+      // moves and the neighbour slides in from the opposite side. Transitions
+      // handle the snap-home animation automatically when activeIdx changes.
+      function render(animated, slow) {
+        const dur  = slow ? SLOW_DUR  : DUR;
+        const ease = slow ? SLOW_EASE : EASE;
+        cards.forEach((card, i) => {
+          const offset = (i - activeIdx + N) % N;
+          let slot;
+          if (offset === 0)            slot = 0;
+          else if (N === 2)            slot = dragDir < 0 ? +1 : -1;  // only one "other" card
+          else if (offset === 1)       slot = +1;
+          else if (offset === N - 1)   slot = -1;
+          else                         slot = null;
+
+          if (slot === null) {
+            // This card isn't adjacent — park it off-screen, invisible.
+            card.style.transition = 'none';
+            card.style.transform  = `translateY(${2 * H}px)`;
+            card.style.opacity    = '0';
+            card.style.pointerEvents = 'none';
+            return;
+          }
+
+          const ty = slot * H + dragY;
+          // Gentle scale-down as a card moves away from the center.
+          const dist  = Math.min(1, Math.abs(ty) / H);
+          const scale = 1 - dist * 0.06;
+
+          card.style.transition = animated
+            ? `transform ${dur}ms ${ease}, opacity ${dur}ms ${ease}`
+            : 'none';
+          card.style.transform  = `translateY(${ty}px) scale(${scale})`;
+          card.style.opacity    = '1';
+          card.style.zIndex     = slot === 0 ? '100' : '99';
+          card.style.pointerEvents = slot === 0 ? 'auto' : 'none';
+        });
+
+        updateDots();
+      }
+
+      function updateDots() {
+        if (!dotEls.length) return;
+        dotEls.forEach((d, i) => {
+          d.classList.toggle('is-active', i === activeIdx);
+        });
+      }
+
+      function flashDots() {
+        if (!dotsWrap) return;
+        dotsWrap.style.opacity = '1';
+        frame.classList.add('is-dragging');         // outline tracks dots
+        if (hideTimer) clearTimeout(hideTimer);
+        if (dragging) return;                       // keep both visible while dragging
+        hideTimer = setTimeout(() => {
+          dotsWrap.style.opacity = '0';
+          frame.classList.remove('is-dragging');    // outline fades together with dots
+        }, 1500);
+      }
+
+      // Pointer handlers
+      frame.addEventListener('pointerdown', (e) => {
+        // Don't hijack clicks on interactive children
+        if (e.target.closest('a, button')) return;
+        dragging  = true;
+        startY    = e.clientY;
+        dragY     = 0;
+        pointerId = e.pointerId;
+        H         = frame.offsetHeight || 148;
+        try { frame.setPointerCapture(pointerId); } catch (_) {}
+        frame.style.cursor = 'grabbing';
+        flashDots();   // shows outline + dots, no hide-timer while dragging
+      });
+
+      frame.addEventListener('pointermove', (e) => {
+        if (!dragging) return;
+        let dy = e.clientY - startY;
+        // Rubber-band a little past the card
+        if (Math.abs(dy) > H) dy = Math.sign(dy) * (H + (Math.abs(dy) - H) * 0.35);
+        dragY = dy;
+        if (Math.abs(dy) > 2) dragDir = Math.sign(dy);
+        render(false);
+      });
+
+      function endDrag(e) {
+        if (!dragging) return;
+        dragging = false;
+        frame.style.cursor = 'grab';
+        // outline stays on; flashDots() below starts the shared hide-timer
+        try { frame.releasePointerCapture(pointerId); } catch (_) {}
+
+        // Decide: snap back or advance
+        let cardChanged = false;
+        if (dragY <= -THRESHOLD) {
+          activeIdx = (activeIdx + 1) % N;
+          dragY = 0; dragDir = +1; cardChanged = true;
+          render(true);
+        } else if (dragY >= THRESHOLD) {
+          activeIdx = (activeIdx - 1 + N) % N;
+          dragY = 0; dragDir = -1; cardChanged = true;
+          render(true);
+        } else {
+          dragY = 0;
+          render(true);
+        }
+        flashDots();
+        // Let other components know which card is now in front.
+        if (cardChanged && typeof window.sstackOnCardChange === 'function') {
+          window.sstackOnCardChange(activeIdx);
+        }
+      }
+
+      // Expose current active card for querying (e.g. portfolio IIFE).
+      window.sstackGetActiveIdx = () => activeIdx;
+      // Programmatic "swipe up" — advance to the next card. Used e.g. to
+      // auto-reveal the next widget after the user has finished exploring the
+      // whole portfolio route. Uses the slow/gentle easing by default so the
+      // unprompted switch reads as a graceful reveal, not a snap.
+      window.sstackNext = function (opts) {
+        if (N < 2) return;
+        const slow = !opts || opts.slow !== false;   // default: slow
+        dragDir   = -1;           // advance direction
+        activeIdx = (activeIdx + 1) % N;
+        dragY     = 0;
+        render(true, slow);
+        flashDots();
+        if (typeof window.sstackOnCardChange === 'function') {
+          window.sstackOnCardChange(activeIdx);
+        }
+      };
+      frame.addEventListener('pointerup',     endDrag);
+      frame.addEventListener('pointercancel', endDrag);
+      frame.addEventListener('pointerleave',  endDrag);
+
+      // Handle resize (orientation change etc.)
+      window.addEventListener('resize', () => {
+        H = frame.offsetHeight || 148;
+        if (!dragging) render(false);
+      });
+
+      // Init — briefly reveal the outline + dots so the user sees it's a stack
+      requestAnimationFrame(() => {
+        H = frame.offsetHeight || 148;
+        render(false);
+        // Wait until the iOS intro-blur animation has mostly settled before hinting.
+        setTimeout(() => {
+          flashDots();  // flashDots fades outline + dots together via the shared timer
+        }, 900);
+      });
+    })();
+
+    // ── iOS Edge-Swipe Back Gesture ───────────────────────────────────────────
+    // Drag from the left or right edge toward the center → equivalent to
+    // pressing the back arrow in the current iOS app / screen.
+    (function () {
+      // Priority-ordered back hierarchy: innermost screen first.
+      const HIERARCHY = [
+        { // BTS photo/video viewer (deepest BTS level)
+          match: () => isShown('ios-bts-app') && isShown('ios-bts-viewer'),
+          back:  () => window.iosBtsCloseViewer && window.iosBtsCloseViewer(),
+        },
+        { // BTS file grid
+          match: () => isShown('ios-bts-app') && isShown('ios-bts-screen-files'),
+          back:  () => window.iosBtsBackToFolders && window.iosBtsBackToFolders(),
+        },
+        { // BTS app root
+          match: () => isShown('ios-bts-app'),
+          back:  () => window.iosCloseBts && window.iosCloseBts(),
+        },
+        { // Magazine reader (inside Magazines app)
+          match: () => isShown('ios-magazines-app') && isShown('ios-mag-screen-reader'),
+          back:  () => window.iosCloseReader && window.iosCloseReader(),
+        },
+        { // Magazines app root
+          match: () => isShown('ios-magazines-app'),
+          back:  () => window.iosCloseMagazines && window.iosCloseMagazines(),
+        },
+        { // Edits app
+          match: () => isShown('ios-edits-app'),
+          back:  () => window.iosCloseEdits && window.iosCloseEdits(),
+        },
+        { // Contact app
+          match: () => isShown('ios-contact-app'),
+          back:  () => window.iosCloseContact && window.iosCloseContact(),
+        },
+      ];
+
+      function isShown(id) {
+        const el = document.getElementById(id);
+        if (!el) return false;
+        const cs = getComputedStyle(el);
+        return cs.display !== 'none' && cs.visibility !== 'hidden';
+      }
+
+      window.iosGoBack = function () {
+        for (const entry of HIERARCHY) {
+          if (entry.match()) { entry.back(); return true; }
+        }
+        return false;
+      };
+
+      // ── Edge-swipe detection ────────────────────────────────────────────────
+      const EDGE_ZONE = 24;   // px from edge where a drag must start
+      const MIN_DX    = 55;   // inward distance to trigger back
+      const MAX_DY    = 60;   // max vertical deviation before cancelling
+
+      let startX = 0, startY = 0, fromEdge = null, tracking = false, fired = false;
+
+      function onDown(e) {
+        if (!e.isPrimary && e.pointerType === 'touch') return;
+        // Only activate when some iOS overlay is open (respects back hierarchy)
+        if (!HIERARCHY.some(h => h.match())) return;
+        const vw = window.innerWidth;
+        if      (e.clientX <= EDGE_ZONE)        fromEdge = 'left';
+        else if (e.clientX >= vw - EDGE_ZONE)   fromEdge = 'right';
+        else { fromEdge = null; return; }
+        startX   = e.clientX;
+        startY   = e.clientY;
+        tracking = true;
+        fired    = false;
+      }
+
+      function onMove(e) {
+        if (!tracking || fired) return;
+        const dx = e.clientX - startX;
+        const dy = Math.abs(e.clientY - startY);
+        if (dy > MAX_DY) { tracking = false; return; }
+        const inward = fromEdge === 'left' ? dx : -dx;
+        if (inward >= MIN_DX) {
+          if (window.iosGoBack()) {
+            fired    = true;
+            tracking = false;
+          }
+        }
+      }
+
+      function onEnd() { tracking = false; fromEdge = null; }
+
+      window.addEventListener('pointerdown',   onDown, { passive: true });
+      window.addEventListener('pointermove',   onMove, { passive: true });
+      window.addEventListener('pointerup',     onEnd,  { passive: true });
+      window.addEventListener('pointercancel', onEnd,  { passive: true });
+    })();
+
+    // ── iOS Live Activity: Portfolio Exploration ──────────────────────────────
+    // Slot-based, visit-order-aware Smart Stack widget.
+    //
+    // Animation rules:
+    //   • Only the NEWLY filled segment animates (0 → 100%). Pre-existing fills
+    //     stay at 100% instantly — no redundant replay.
+    //   • If the portfolio card is NOT currently showing when ilaVisit() fires,
+    //     we render silently (instant) and set pendingAnim=true. When the user
+    //     swipes to reveal the card, ALL filled segments animate together once.
+    (function () {
+      const SECTIONS = ['home', 'edits', 'magazin', 'bts'];
+      const LABELS   = { home: 'Home',  edits: 'Edits',  magazin: 'Magazin', bts: 'BTS' };
+      const COLORS   = { home: '#e0e0e0', edits: '#7c3aed', magazin: '#dc2626', bts: '#b91c1c' };
+      // Rounded-pill dashes for empty segments (SVG data URI so individual dashes
+      // have properly rounded ends, not the flat ends of a linear-gradient).
+      const SEG_EMPTY = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='10'%3E%3Crect x='0' y='2' width='9' height='6' rx='3' fill='%23ffffff' fill-opacity='0.2'/%3E%3C/svg%3E\") repeat-x left center";
+
+      const visited = ['home'];      // ordered by first-visit; 'home' always first
+      let   current = 'home';
+      let   pendingAnim = false;     // true when visits happened off-screen
+      let   autoAdvanceDone = false; // only ever auto-switch once, after first full exploration
+      let   autoAdvanceTimer = null;
+
+      // Schedule an auto-advance to the next Smart Stack widget once the route
+      // animation has had time to finish + the user has had a few seconds to
+      // admire the completed line.
+      function scheduleAutoAdvance(afterMs) {
+        if (autoAdvanceDone) return;
+        if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
+        autoAdvanceTimer = setTimeout(() => {
+          autoAdvanceTimer = null;
+          // Only advance if the user hasn't already swiped away from the
+          // portfolio card themselves.
+          if (typeof window.sstackGetActiveIdx === 'function'
+              && window.sstackGetActiveIdx() === 1
+              && visited.length === SECTIONS.length
+              && typeof window.sstackNext === 'function') {
+            autoAdvanceDone = true;
+            window.sstackNext();
+          }
+        }, afterMs);
+      }
+
+      function displayOrder() {
+        const unvisited = SECTIONS.filter(s => !visited.includes(s));
+        return [...visited, ...unvisited];
+      }
+
+      // Returns boolean[3] — which of the 3 segments are currently filled.
+      function getFilledState() {
+        const o = displayOrder();
+        return [0,1,2].map(i => visited.includes(o[i]) && visited.includes(o[i+1]));
+      }
+
+      function textColorForBg(section) {
+        return section === 'home' ? '#1a1a1a' : '#ffffff';
+      }
+
+      // Track whether this is the very first render pass — we don't want the
+      // blur-swap to play on initial paint, only when a value actually changes
+      // later (e.g. after a visit).
+      let firstRender = true;
+
+      // Restart the blur→sharp swap animation on the element. Used whenever the
+      // text (or badge color) actually changes — skipped when nothing changed so
+      // we don't re-animate on every render pass.
+      function playBlurSwap(el) {
+        if (!el || firstRender) return;
+        el.classList.remove('ila-blur-swap');
+        // Force a reflow so removing + re-adding the class restarts the animation.
+        void el.offsetWidth;
+        el.classList.add('ila-blur-swap');
+      }
+
+      function renderBadge() {
+        const badge = document.getElementById('ila-badge');
+        if (!badge) return;
+        const txt = LABELS[current].toUpperCase();
+        const bg  = COLORS[current];
+        const col = textColorForBg(current);
+        const changed = badge.textContent !== txt
+          || badge.dataset.bg !== bg
+          || badge.dataset.col !== col;
+        if (!changed) return;
+        badge.textContent      = txt;
+        badge.style.background = bg;
+        badge.style.color      = col;
+        badge.dataset.bg       = bg;
+        badge.dataset.col      = col;
+        playBlurSwap(badge);
+      }
+
+      function renderTitle() {
+        const title = document.getElementById('ila-title');
+        const sub   = document.getElementById('ila-sub');
+        const order = displayOrder();
+        const nextUnvisited = order.find(s => !visited.includes(s));
+        if (title) {
+          const txt = nextUnvisited
+            ? 'Up next: ' + LABELS[nextUnvisited]
+            : 'All sections explored';
+          if (title.textContent !== txt) {
+            title.textContent = txt;
+            playBlurSwap(title);
+          }
+        }
+        if (sub) {
+          const txt = visited.length + ' of ' + SECTIONS.length + ' explored';
+          if (sub.textContent !== txt) {
+            sub.textContent = txt;
+            playBlurSwap(sub);
+          }
+        }
+      }
+
+      function renderSlots() {
+        const order = displayOrder();
+        order.forEach((section, i) => {
+          const slotEl = document.querySelector('.ila-slot[data-slot="' + (i + 1) + '"]');
+          if (!slotEl) return;
+          slotEl.innerHTML = '';
+          const v = visited.includes(section), c = section === current;
+          const col = COLORS[section];
+          const dot = document.createElement('div');
+          dot.style.borderRadius = '50%';
+          dot.style.transition   = 'all 0.35s ease';
+          if (c) {
+            dot.style.width = dot.style.height = '16px';
+            dot.style.background = col;
+            dot.style.boxShadow  = '0 0 0 3px ' + col + '55';
+          } else if (v) {
+            dot.style.width = dot.style.height = '14px';
+            dot.style.background = col;
+            dot.style.boxShadow  = 'none';
+          } else {
+            dot.style.width = dot.style.height = '12px';
+            dot.style.background = 'transparent';
+            dot.style.boxShadow  = '0 0 0 2px rgba(255,255,255,0.25)';
+          }
+          slotEl.appendChild(dot);
+          const label = document.createElement('span');
+          label.textContent = LABELS[section];
+          label.style.cssText =
+            'position:absolute; top:22px; left:50%; transform:translateX(-50%);' +
+            'white-space:nowrap; font-size:9px; font-weight:600; letter-spacing:0.06em;' +
+            'text-transform:uppercase; color:rgba(255,255,255,' +
+            (c ? '0.85' : v ? '0.6' : '0.4') + ');';
+          slotEl.appendChild(label);
+        });
+      }
+
+      // Render segments. `animateIdxs` = array of 0-based segment indices to
+      // animate (0→100%). All other segments are set to their target instantly.
+      function renderSegs(animateIdxs) {
+        const order  = displayOrder();
+        const filled = getFilledState();
+        for (let i = 0; i < 3; i++) {
+          const segEl  = document.querySelector('.ila-seg[data-seg="' + (i + 1) + '"]');
+          if (!segEl) continue;
+          const fillEl = segEl.querySelector('.ila-seg-fill');
+          segEl.style.background = SEG_EMPTY;
+          if (!fillEl) continue;
+          fillEl.style.background = 'linear-gradient(to right,' + COLORS[order[i]] + ',' + COLORS[order[i+1]] + ')';
+          if (animateIdxs.includes(i)) {
+            const target = filled[i] ? '100%' : '0%';
+            fillEl.style.transition = 'none';
+            fillEl.style.width = '0%';
+            // Short timeout lets the browser commit the 0% paint before animating.
+            ;(function (el, w) {
+              setTimeout(() => {
+                el.style.transition = 'width 0.9s cubic-bezier(0.2,0.7,0.2,1)';
+                el.style.width = w;
+              }, 30);
+            })(fillEl, target);
+          } else {
+            fillEl.style.transition = 'none';
+            fillEl.style.width = filled[i] ? '100%' : '0%';
+          }
+        }
+      }
+
+      // Full replay: each filled seg animates from 0 → 100 %, ONE AFTER THE OTHER,
+      // so the line traces the user's visit order like a route (home → app₁ → app₂ …).
+      // Used when the portfolio card is revealed after off-screen visits.
+      function replayAllAnim() {
+        renderBadge(); renderTitle(); renderSlots();
+        const order  = displayOrder();
+        const filled = getFilledState();
+        const fills  = [0, 1, 2].map(i =>
+          document.querySelector('.ila-seg[data-seg="' + (i + 1) + '"] .ila-seg-fill'));
+
+        const SEG_DUR = 650;  // ms per segment — snappy enough to feel alive
+        const GAP     = 40;   // small breather between legs
+
+        // Snap all fills to 0 (no transition) …
+        fills.forEach((el, i) => {
+          if (!el) return;
+          el.style.background = 'linear-gradient(to right,' + COLORS[order[i]] + ',' + COLORS[order[i + 1]] + ')';
+          el.style.transition = 'none';
+          el.style.width      = '0%';
+        });
+
+        // … then after a short delay (gives browser time to commit the 0% paint),
+        // chain each filled segment so they draw the route in order.
+        setTimeout(() => {
+          let delay = 0;
+          for (let i = 0; i < 3; i++) {
+            const el = fills[i];
+            if (!el) continue;
+            if (!filled[i]) {
+              el.style.transition = 'none';
+              el.style.width      = '0%';
+              continue;
+            }
+            ;(function (node, d) {
+              setTimeout(() => {
+                node.style.transition = 'width ' + SEG_DUR + 'ms cubic-bezier(0.2,0.7,0.2,1)';
+                node.style.width      = '100%';
+              }, d);
+            })(el, delay);
+            delay += SEG_DUR + GAP;
+          }
+        }, 30);
+      }
+
+      // Called when the smart stack switches cards (fired from the carousel IIFE).
+      window.sstackOnCardChange = function (idx) {
+        if (idx === 1 && pendingAnim) {
+          pendingAnim = false;
+          replayAllAnim();
+          // Route replay takes ~30 + 3*(650+40) = ~2100 ms at most. Give the
+          // user ~2.5 s to admire the completed line, then auto-advance.
+          if (visited.length === SECTIONS.length) {
+            scheduleAutoAdvance(2100 + 2500);
+          }
+        }
+      };
+
+      window.ilaVisit = function (section) {
+        if (!SECTIONS.includes(section)) return;
+        // Capture which segments were filled BEFORE this visit.
+        const wasFilledBefore = getFilledState();
+        if (!visited.includes(section)) visited.push(section);
+        current = section;
+        const filledNow = getFilledState();
+        // Newly filled = segments that just transitioned to filled state.
+        const newlyFilled = [0,1,2].filter(i => !wasFilledBefore[i] && filledNow[i]);
+
+        const portfolioVisible = typeof window.sstackGetActiveIdx === 'function'
+          && window.sstackGetActiveIdx() === 1;
+
+        renderBadge();
+        renderTitle();
+        renderSlots();
+
+        if (portfolioVisible) {
+          // Widget is visible: animate only the new segment, leave others instant.
+          renderSegs(newlyFilled);
+          // If this visit just filled the last segment, plan to auto-advance
+          // after the segment animation (~930 ms) + ~2.5 s of admire time.
+          if (visited.length === SECTIONS.length) {
+            scheduleAutoAdvance(930 + 2500);
+          }
+        } else {
+          // Widget hidden: render instantly, queue a full replay for when it appears.
+          renderSegs([]);   // all instant, no animation
+          if (newlyFilled.length > 0) pendingAnim = true;
+          // The auto-advance will be scheduled once the user reveals the card
+          // (see sstackOnCardChange above).
+        }
+      };
+
+      // Initial render — no animation on first paint.
+      renderBadge(); renderTitle(); renderSlots(); renderSegs([]);
+      firstRender = false;
     })();
 
   </script>
