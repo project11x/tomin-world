@@ -575,6 +575,82 @@
     }
     .sstack-dot.is-active { background-color: var(--sstack-dot-active); }
 
+    /* ========== Dynamic Island (prototype) ==========
+       Single black pill at the top of the iOS screen that morphs between
+       compact and expanded states. The signature look: ONLY size + radius
+       animate (no fade), so it reads as a single object breathing rather
+       than a panel appearing. Spring-ish easing approximates iOS. */
+    #dyn-island {
+      /* Hidden for now — scaffolding kept intact, re-enable by removing
+         display:none when we figure out coexistence with hardware notches. */
+      display: none;
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 34px;
+      background: #000;
+      border-radius: 18px;
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: pointer;
+      color: #fff;
+      font-size: 12px;
+      /* The morph: width/height/border-radius all share one easing */
+      transition:
+        width    0.55s cubic-bezier(0.32, 0.72, 0, 1),
+        height   0.55s cubic-bezier(0.32, 0.72, 0, 1),
+        border-radius 0.55s cubic-bezier(0.32, 0.72, 0, 1);
+      will-change: width, height, border-radius;
+    }
+    #dyn-island.is-expanded {
+      width: calc(100% - 24px);
+      max-width: 360px;
+      height: 72px;
+      border-radius: 36px;
+    }
+    /* Content inside fades in/out slightly offset from the morph, so the
+       text doesn't stretch with the pill. */
+    .dyn-compact, .dyn-expanded {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      transition: opacity 0.25s ease;
+      padding: 0 18px;
+    }
+    .dyn-compact {
+      justify-content: center;
+      gap: 8px;
+      opacity: 1;
+    }
+    .dyn-expanded {
+      justify-content: space-between;
+      gap: 12px;
+      opacity: 0;
+      pointer-events: none;
+    }
+    #dyn-island.is-expanded .dyn-compact { opacity: 0; }
+    #dyn-island.is-expanded .dyn-expanded { opacity: 1; transition-delay: 0.2s; }
+    .dyn-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #30d158;
+      box-shadow: 0 0 6px rgba(48,209,88,0.8);
+    }
+    .dyn-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: rgba(255,255,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .dyn-text { flex: 1; min-width: 0; }
+    .dyn-text-title { font-weight: 600; font-size: 13px; line-height: 1.1; }
+    .dyn-text-sub { font-size: 11px; opacity: 0.6; line-height: 1.1; margin-top: 2px; }
+    .dyn-trailing { font-size: 11px; opacity: 0.7; flex-shrink: 0; }
+
     /* iOS scroll-fade: top edge — items fade as they scroll under the player */
     .ios-scroll-fade-top {
       -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 14%);
@@ -585,6 +661,91 @@
       -webkit-mask-image: linear-gradient(to bottom, black 75%, transparent 100%);
       mask-image: linear-gradient(to bottom, black 75%, transparent 100%);
     }
+
+    /* Contact app is always dark-tinted (ignores system theme) — force the
+       segmented-control vars so Auto/Light/Dark toggle stays readable. */
+    #ios-contact-app {
+      --ios-segmented-active: rgba(255,255,255,0.22);
+      --ios-segmented-active-text: #ffffff;
+      --ios-segmented-inactive-text: rgba(255,255,255,0.6);
+      --ios-segmented-bg: rgba(255,255,255,0.1);
+    }
+
+    /* ========== Contact app + Mail app rows ========== */
+    .ios-contact-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 16px;
+      text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
+      cursor: pointer;
+    }
+    .ios-contact-row:active { background: var(--ios-list-hover); }
+    .ios-contact-label {
+      font-size: 13px;
+      color: var(--ios-text-secondary);
+      line-height: 1.2;
+      margin-bottom: 2px;
+    }
+    .ios-contact-value {
+      font-size: 16px;
+      color: var(--ios-text);
+      line-height: 1.25;
+      word-break: break-all;
+    }
+    .ios-contact-trailing {
+      font-size: 20px !important;
+      color: var(--ios-text-secondary);
+      flex-shrink: 0;
+    }
+    .ios-contact-divider {
+      height: 1px;
+      background: var(--ios-list-border);
+      margin-left: 16px;
+    }
+    .ios-quick-action:active { opacity: 0.5; }
+
+    /* Mail app — floating bottom-right pill (reply + compose) */
+    .ios-mail-actions {
+      position: absolute;
+      right: 16px;
+      bottom: max(16px, env(safe-area-inset-bottom, 16px));
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: var(--ios-card-bg);
+      box-shadow: 0 0 0 1px var(--ios-card-border), 0 8px 24px rgba(0,0,0,0.08);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      z-index: 10;
+    }
+    .ios-mail-actions a {
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .ios-mail-actions a:active { background: var(--ios-list-hover); }
+    .ios-mail-actions .material-symbols-outlined {
+      font-size: 20px;
+      color: var(--ios-text);
+    }
+
+    /* Mail row in inbox */
+    .ios-mail-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--ios-list-border);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .ios-mail-row:active { background: var(--ios-list-hover); }
 
     /* Edit list rows */
     .edit-row {
@@ -1043,6 +1204,21 @@
     <!-- safe area spacer -->
     <div style="height:env(safe-area-inset-top, 0px); flex-shrink:0;"></div>
 
+    <!-- Dynamic Island (prototype) -->
+    <div id="dyn-island" title="Tap to cycle demo states">
+      <div class="dyn-compact">
+        <span class="dyn-dot"></span>
+      </div>
+      <div class="dyn-expanded">
+        <div class="dyn-icon" id="dyn-icon">●</div>
+        <div class="dyn-text">
+          <div class="dyn-text-title" id="dyn-title">Dynamic Island</div>
+          <div class="dyn-text-sub" id="dyn-sub">Tap to cycle</div>
+        </div>
+        <div class="dyn-trailing" id="dyn-trailing">demo</div>
+      </div>
+    </div>
+
     <!-- Empty homescreen wallpaper area -->
     <div class="flex-1"></div>
 
@@ -1265,6 +1441,13 @@
           </div>
         </div>
 
+        <!-- Mail -->
+        <div class="ios-dock-item ios-intro-item cursor-pointer" onclick="iosOpenMail()" style="display: none;">
+          <div class="w-[62px] h-[62px] drop-shadow-md">
+            <img src="icons/mail.png" class="w-full h-full object-contain" draggable="false" />
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -1439,87 +1622,235 @@
 
   <!-- iOS Contact App -->
   <div id="ios-contact-app" class="ios-app-overlay fixed inset-0 z-[90] flex flex-col"
-    style="display:none; background:var(--ios-app-bg); transform:scale(0.4); opacity:0; border-radius:40px;">
+    style="display:none; background:#1a1410; transform:scale(0.4); opacity:0; border-radius:40px;">
 
-    <!-- Header -->
-    <div class="shrink-0 px-5 flex items-center justify-between"
-      style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:16px;">
-      <h1 class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text)">Contact</h1>
+    <!-- Floating buttons: stay pinned on top, content scrolls beneath -->
+    <div class="px-5 flex items-center justify-between"
+      style="padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:12px; position:absolute; top:0; left:0; right:0; z-index:10; pointer-events:none;">
       <button onclick="iosCloseContact()"
         class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
-        style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
-        <span class="material-symbols-outlined" style="font-size:20px; color:var(--ios-text-secondary);">chevron_right</span>
+        style="background:rgba(0,0,0,0.28); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); -webkit-tap-highlight-color:transparent; pointer-events:auto;">
+        <span class="material-symbols-outlined" style="font-size:22px; color:#fff;">chevron_left</span>
+      </button>
+      <button
+        class="h-10 px-5 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
+        style="background:rgba(0,0,0,0.28); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); -webkit-tap-highlight-color:transparent; font-size:16px; font-weight:500; color:#fff; pointer-events:auto;">
+        Edit
       </button>
     </div>
 
-    <!-- Contact content -->
-    <div class="flex-1 overflow-y-auto px-5" style="padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));">
-      <!-- Avatar -->
-      <div class="flex flex-col items-center pt-6 pb-8">
-        <h2 class="font-semibold text-[22px]" style="color:var(--ios-text)">EDDIE</h2>
-
-      </div>
-
-      <!-- Info cards -->
-      <div style="background:var(--ios-card-bg); border-radius:12px; overflow:hidden; box-shadow:0 0 0 1px var(--ios-card-border);">
-        <div
-          style="display:flex; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--ios-card-border);">
-          <span style="color:var(--ios-text-secondary); font-size:15px;">Website</span>
-          <span style="color:var(--ios-text); font-size:15px;">2.0</span>
-        </div>
-        <div
-          style="display:flex; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--ios-card-border);">
-          <span style="color:var(--ios-text-secondary); font-size:15px;">Instagram</span>
-          <span style="color:var(--ios-text); font-size:15px;">@edpz</span>
-        </div>
-        <div style="display:flex; justify-content:space-between; padding:14px 16px;">
-          <span style="color:var(--ios-text-secondary); font-size:15px;">Mail</span>
-          <span style="color:var(--ios-text); font-size:15px;">eddie@shouli.de</span>
+    <!-- Scrollable container. -->
+    <div class="flex-1 overflow-y-auto px-4" style="padding-top: calc(max(env(safe-area-inset-top, 0px), 20px) + 60px); padding-bottom: max(24px, env(safe-area-inset-bottom, 24px)); position:relative; z-index:1;">
+      
+      <!-- Sticky photo: stays pinned while content scrolls over it -->
+      <div style="position:sticky; top:0; z-index:0; display:flex; justify-content:center; padding-bottom:18px;">
+        <div style="width:180px; height:180px; border-radius:50%; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.35);">
+          <img id="ios-contact-photo" src="icons/profilepicture.png" draggable="false"
+            style="width:100%; height:100%; object-fit:cover;" />
         </div>
       </div>
 
-      <!-- App Icon Picker -->
-      <!-- Theme Toggle -->
-      <div style="margin-top:32px; background:var(--ios-card-bg); border-radius:12px; padding:18px 16px; box-shadow:0 0 0 1px var(--ios-card-border);">
-        <p style="color:var(--ios-text); font-size:15px; font-weight:600; margin-bottom:10px;">Darstellung</p>
-        <div id="ios-theme-toggle" style="display:flex; gap:2px; border-radius:9px; padding:2px; background:var(--ios-segmented-bg);">
-          <button onclick="setIosTheme('auto')" id="ios-theme-auto" style="flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:var(--ios-segmented-inactive-text); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Auto</button>
-          <button onclick="setIosTheme('light')" id="ios-theme-light" style="flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:var(--ios-segmented-inactive-text); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Light</button>
-          <button onclick="setIosTheme('dark')" id="ios-theme-dark" style="flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:var(--ios-segmented-inactive-text); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Dark</button>
+      <!-- Content wrapper — scrolls OVER the sticky photo -->
+      <div style="position:relative; z-index:1;">
+        <!-- Name -->
+        <div class="flex flex-col items-center pb-6">
+          <h2 style="font-size:42px; font-weight:700; color:#fff; letter-spacing:-0.01em; line-height:1.1;">Eddie</h2>
+        </div>
+
+      <!-- Quick action circles -->
+      <div class="flex items-center justify-center gap-4 pb-6">
+        <a href="https://instagram.com/edpz" target="_blank" rel="noopener" class="ios-quick-action"
+           style="width:54px; height:54px; border-radius:50%; background:rgba(255,255,255,0.08); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; -webkit-tap-highlight-color:transparent; text-decoration:none; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);">
+          <span class="material-symbols-outlined" style="font-size:22px; color:#fff;">chat_bubble</span>
+        </a>
+        <a href="mailto:eddie@shouli.de" class="ios-quick-action"
+           style="width:54px; height:54px; border-radius:50%; background:rgba(255,255,255,0.08); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; -webkit-tap-highlight-color:transparent; text-decoration:none; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);">
+          <span class="material-symbols-outlined" style="font-size:22px; color:#fff;">mail</span>
+        </a>
+      </div>
+
+      <!-- Info list card: email + instagram -->
+      <div style="background:rgba(255,255,255,0.08); border-radius:14px; overflow:hidden; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08); margin-bottom:18px; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);">
+        <a href="mailto:eddie@shouli.de" class="ios-contact-row">
+          <div style="flex:1; min-width:0;">
+            <div class="ios-contact-label" style="color:rgba(255,255,255,0.6);">email</div>
+            <div class="ios-contact-value" style="color:#fff;">eddie@shouli.de</div>
+          </div>
+          <span class="material-symbols-outlined ios-contact-trailing" style="color:rgba(255,255,255,0.6);">mail</span>
+        </a>
+        <div style="height:1px; background:rgba(255,255,255,0.1); margin-left:16px;"></div>
+        <a href="https://instagram.com/edpz" target="_blank" rel="noopener" class="ios-contact-row">
+          <div style="flex:1; min-width:0;">
+            <div class="ios-contact-label" style="color:rgba(255,255,255,0.6);">instagram</div>
+            <div class="ios-contact-value" style="color:#fff;">@edpz</div>
+          </div>
+          <span class="material-symbols-outlined ios-contact-trailing" style="color:rgba(255,255,255,0.6);">open_in_new</span>
+        </a>
+      </div>
+
+      <!-- Notes — site preferences & install info -->
+      <div style="background:rgba(255,255,255,0.08); border-radius:14px; overflow:hidden; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08); margin-bottom:18px; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);">
+        <div style="padding:14px 16px 4px;">
+          <div class="ios-contact-label" style="color:rgba(255,255,255,0.6);">notes</div>
+        </div>
+
+        <!-- Darstellung (theme toggle) -->
+        <div style="padding:10px 16px 14px;">
+          <p style="color:#fff; font-size:15px; font-weight:600; margin:0 0 10px;">Darstellung</p>
+          <div id="ios-theme-toggle" style="display:flex; gap:2px; border-radius:9px; padding:2px; background:rgba(255,255,255,0.1);">
+            <button onclick="setIosTheme('auto')" id="ios-theme-auto" style="flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:rgba(255,255,255,0.5); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Auto</button>
+            <button onclick="setIosTheme('light')" id="ios-theme-light" style="flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:rgba(255,255,255,0.5); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Light</button>
+            <button onclick="setIosTheme('dark')" id="ios-theme-dark" style="flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:rgba(255,255,255,0.5); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Dark</button>
+          </div>
+        </div>
+
+        <!-- App Icon Picker -->
+        <div style="padding:6px 16px 16px;">
+          <p style="color:#fff; font-size:15px; font-weight:600; margin:0 0 6px;">App Icon</p>
+          <p style="color:rgba(255,255,255,0.6); font-size:13px; line-height:1.5; margin:0 0 14px;">Wähle ein Icon aus, dann speichere die Seite zum Home-Bildschirm.</p>
+          <div id="icon-picker" style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:14px;">
+            <div class="icon-pick-option" onclick="setAppIcon('icons/flavicon.png', this)"
+              style="cursor:pointer; position:relative; -webkit-tap-highlight-color:transparent;">
+              <img src="icons/flavicon.png"
+                style="width:60px; height:60px; border-radius:14px; border:3px solid #0a84ff;" />
+              <span class="icon-pick-check"
+                style="position:absolute; bottom:-2px; right:-2px; width:20px; height:20px; background:#0a84ff; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                <span class="material-symbols-outlined" style="font-size:14px; color:#fff;">check</span>
+              </span>
+            </div>
+            <div class="icon-pick-option" onclick="setAppIcon('icons/icon%20alts/MugEddie.png', this)"
+              style="cursor:pointer; position:relative; -webkit-tap-highlight-color:transparent;">
+              <img src="icons/icon%20alts/MugEddie.png"
+                style="width:60px; height:60px; border-radius:14px; border:3px solid transparent;" />
+            </div>
+            <div class="icon-pick-option" onclick="setAppIcon('icons/icon%20alts/fuck%20instagram.png', this)"
+              style="cursor:pointer; position:relative; -webkit-tap-highlight-color:transparent;">
+              <img src="icons/icon%20alts/fuck%20instagram.png"
+                style="width:60px; height:60px; border-radius:14px; border:3px solid transparent;" />
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; color:rgba(255,255,255,0.6); font-size:13px;">
+            <span class="material-symbols-outlined" style="font-size:20px; color:#0a84ff;">ios_share</span>
+            <span>Tippe auf <strong style="color:#fff;">Teilen</strong> → <strong style="color:#fff;">Zum Home-Bildschirm</strong></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- iOS Mail App -->
+  <div id="ios-mail-app" class="ios-app-overlay fixed inset-0 z-[90] flex flex-col"
+    style="display:none; background:var(--ios-app-bg); transform:scale(0.4); opacity:0; border-radius:40px;">
+
+    <!-- === Inbox list screen === -->
+    <div id="ios-mail-screen-list" class="flex flex-col flex-1 min-h-0 relative">
+      <!-- Back button -->
+      <div class="shrink-0 px-5"
+        style="padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:12px;">
+        <button onclick="iosCloseMail()"
+          class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
+          style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
+          <span class="material-symbols-outlined" style="font-size:22px; color:var(--ios-text);">chevron_left</span>
+        </button>
+      </div>
+
+      <!-- Message count + divider + list -->
+      <div class="flex-1 overflow-y-auto px-5" style="padding-bottom: 92px;">
+        <p id="ios-mail-count"
+           style="font-size:14px; color:var(--ios-text-secondary); padding:6px 0 8px;">1 Message</p>
+        <div style="height:1px; background:var(--ios-list-border);"></div>
+
+        <!-- Message row -->
+        <div class="ios-mail-row" onclick="iosMailOpenMessage()">
+          <!-- Avatar bubble -->
+          <div style="width:44px; height:44px; border-radius:50%; background:var(--ios-segmented-bg); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:13px; font-weight:600; color:var(--ios-text-secondary); letter-spacing:0.05em;">ED</div>
+          <!-- Name + To -->
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:16px; font-weight:600; color:var(--ios-text); line-height:1.2;">Eddie</div>
+            <div style="font-size:14px; color:var(--ios-text-secondary); line-height:1.3; margin-top:2px;">
+              To: <span style="color:var(--ios-text-secondary); opacity:0.65;">You</span>
+              <span style="margin-left:4px; opacity:0.45;">›</span>
+            </div>
+          </div>
+          <!-- Timestamp -->
+          <div style="font-size:14px; color:var(--ios-text-secondary); flex-shrink:0; align-self:flex-start; padding-top:2px;">Yesterday</div>
         </div>
       </div>
 
-      <!-- App Icon Picker -->
-      <div style="margin-top:16px; background:var(--ios-card-bg); border-radius:12px; padding:18px 16px; box-shadow:0 0 0 1px var(--ios-card-border);">
-        <p style="color:var(--ios-text); font-size:15px; font-weight:600; margin-bottom:6px;">App Icon</p>
-        <p style="color:var(--ios-text-secondary); font-size:13px; line-height:1.5; margin-bottom:14px;">Wähle ein Icon
-          aus, dann speichere die Seite zum Home-Bildschirm.</p>
-        <div id="icon-picker" style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:16px;">
-          <div class="icon-pick-option" onclick="setAppIcon('icons/flavicon.png', this)"
-            style="cursor:pointer; position:relative; -webkit-tap-highlight-color:transparent;">
-            <img src="icons/flavicon.png"
-              style="width:60px; height:60px; border-radius:14px; border:3px solid #0a84ff;" />
-            <span class="icon-pick-check"
-              style="position:absolute; bottom:-2px; right:-2px; width:20px; height:20px; background:#0a84ff; border-radius:50%; display:flex; align-items:center; justify-content:center;">
-              <span class="material-symbols-outlined" style="font-size:14px; color:#fff;">check</span>
-            </span>
+      <!-- Bottom-right action pill -->
+      <div class="ios-mail-actions">
+        <a href="mailto:eddie@shouli.de" title="Reply">
+          <span class="material-symbols-outlined">reply</span>
+        </a>
+        <a href="mailto:eddie@shouli.de" title="New Mail">
+          <span class="material-symbols-outlined">mail</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- === Message detail screen === -->
+    <div id="ios-mail-screen-detail" class="absolute inset-0 flex flex-col"
+      style="display:none; background:var(--ios-app-bg);">
+      <!-- Back button -->
+      <div class="shrink-0 px-5"
+        style="padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:12px;">
+        <button onclick="iosMailBackToList()"
+          class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
+          style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
+          <span class="material-symbols-outlined" style="font-size:22px; color:var(--ios-text);">chevron_left</span>
+        </button>
+      </div>
+
+      <!-- Scrollable body -->
+      <div class="flex-1 overflow-y-auto px-5" style="padding-bottom: 92px;">
+        <!-- Subject -->
+        <h1 style="font-size:22px; font-weight:700; color:var(--ios-text); line-height:1.2; letter-spacing:-0.01em; padding-top:4px;">Welcome to tomin.world</h1>
+
+        <!-- From / To meta -->
+        <div style="display:flex; align-items:center; gap:12px; padding:16px 0 18px; border-bottom:1px solid var(--ios-list-border);">
+          <div style="width:40px; height:40px; border-radius:50%; background:var(--ios-segmented-bg); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:12px; font-weight:600; color:var(--ios-text-secondary);">ED</div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:15px; color:var(--ios-text);"><span style="font-weight:600;">Eddie</span> <span style="color:var(--ios-text-secondary);">&lt;eddie@shouli.de&gt;</span></div>
+            <div style="font-size:13px; color:var(--ios-text-secondary); margin-top:2px;">To: You</div>
           </div>
-          <div class="icon-pick-option" onclick="setAppIcon('icons/icon alts/MugEddie.png', this)"
-            style="cursor:pointer; position:relative; -webkit-tap-highlight-color:transparent;">
-            <img src="icons/icon alts/MugEddie.png"
-              style="width:60px; height:60px; border-radius:14px; border:3px solid transparent;" />
-          </div>
-          <div class="icon-pick-option" onclick="setAppIcon('icons/icon alts/fuck instagram.png', this)"
-            style="cursor:pointer; position:relative; -webkit-tap-highlight-color:transparent;">
-            <img src="icons/icon alts/fuck instagram.png"
-              style="width:60px; height:60px; border-radius:14px; border:3px solid transparent;" />
-          </div>
+          <div style="font-size:13px; color:var(--ios-text-secondary); flex-shrink:0;">Yesterday</div>
         </div>
-        <div style="display:flex; align-items:center; gap:10px; color:var(--ios-text-secondary); font-size:13px;">
-          <span class="material-symbols-outlined" style="font-size:20px; color:#0a84ff;">ios_share</span>
-          <span>Tippe auf <strong style="color:var(--ios-text);">Teilen</strong> → <strong style="color:var(--ios-text);">Zum
-              Home-Bildschirm</strong></span>
+
+        <!-- Email body — functional content moved from old contact app -->
+        <div style="padding-top:18px; font-size:15px; color:var(--ios-text); line-height:1.55;">
+          <p style="margin:0 0 14px;">Moin 👋</p>
+          <p style="margin:0 0 14px;">Schön dass du hier bist. Ein paar Links und Sachen die du mit meiner Seite machen kannst:</p>
+
+          <!-- Info card (was at top of old contact app) -->
+          <div style="margin-top:16px; background:var(--ios-card-bg); border-radius:12px; overflow:hidden; box-shadow:0 0 0 1px var(--ios-card-border);">
+            <div style="display:flex; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--ios-card-border);">
+              <span style="color:var(--ios-text-secondary); font-size:15px;">Website</span>
+              <span style="color:var(--ios-text); font-size:15px;">2.0</span>
+            </div>
+            <a href="https://instagram.com/edpz" target="_blank" rel="noopener"
+               style="display:flex; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--ios-card-border); text-decoration:none; -webkit-tap-highlight-color:transparent;">
+              <span style="color:var(--ios-text-secondary); font-size:15px;">Instagram</span>
+              <span style="color:var(--ios-text); font-size:15px;">@edpz</span>
+            </a>
+            <a href="mailto:eddie@shouli.de"
+               style="display:flex; justify-content:space-between; padding:14px 16px; text-decoration:none; -webkit-tap-highlight-color:transparent;">
+              <span style="color:var(--ios-text-secondary); font-size:15px;">Mail</span>
+              <span style="color:var(--ios-text); font-size:15px;">eddie@shouli.de</span>
+            </a>
+          </div>
+
+          <p style="margin:22px 0 0; color:var(--ios-text-secondary); font-size:14px;">— Eddie</p>
         </div>
+      </div>
+
+      <!-- Bottom-right action pill -->
+      <div class="ios-mail-actions">
+        <a href="mailto:eddie@shouli.de" title="Reply">
+          <span class="material-symbols-outlined">reply</span>
+        </a>
+        <a href="mailto:eddie@shouli.de" title="New Mail">
+          <span class="material-symbols-outlined">mail</span>
+        </a>
       </div>
     </div>
   </div>
@@ -3419,8 +3750,100 @@
       // ---- iOS Contact App ----
       const iosContactApp = document.getElementById('ios-contact-app');
 
+      function rgbToHsl(r, g, b) {
+        r /= 255; g /= 255; b /= 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        const l = (max + min) / 2;
+        let h = 0, s = 0;
+        if (max !== min) {
+          const d = max - min;
+          s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+          if (max === r) h = ((g - b) / d + (g < b ? 6 : 0));
+          else if (max === g) h = (b - r) / d + 2;
+          else h = (r - g) / d + 4;
+          h /= 6;
+        }
+        return { h, s, l };
+      }
+      function hslToRgb(h, s, l) {
+        let r, g, b;
+        if (s === 0) { r = g = b = l; }
+        else {
+          const hue2rgb = (p, q, t) => {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1/6) return p + (q - p) * 6 * t;
+            if (t < 1/2) return q;
+            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+          };
+          const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+          const p = 2 * l - q;
+          r = hue2rgb(p, q, h + 1/3);
+          g = hue2rgb(p, q, h);
+          b = hue2rgb(p, q, h - 1/3);
+        }
+        return { r: r * 255, g: g * 255, b: b * 255 };
+      }
+
+      // Dominant-color extraction from the contact photo (Apple Music /
+      // Spotify Now Playing-style tinted backdrop). Samples pixels, weights
+      // by saturation so muddy greys/near-blacks don't dominate. Computed
+      // once on first open and cached.
+      let iosContactTintCached = null;
+      async function iosContactComputeTint() {
+        if (iosContactTintCached) return iosContactTintCached;
+        const img = document.getElementById('ios-contact-photo');
+        if (!img) return null;
+        try {
+          if (!img.complete) await new Promise(r => { img.onload = r; img.onerror = r; });
+          const canvas = document.createElement('canvas');
+          canvas.width = 48; canvas.height = 48;
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          ctx.drawImage(img, 0, 0, 48, 48);
+          const data = ctx.getImageData(0, 0, 48, 48).data;
+          let rT=0, gT=0, bT=0, wT=0;
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+            if (a < 200) continue;
+            const max = Math.max(r, g, b), min = Math.min(r, g, b);
+            const lum = (max + min) / 2;
+            const sat = (max === min) ? 0
+              : (lum < 128 ? (max - min) / (max + min) : (max - min) / (510 - max - min));
+            // Weight favours saturated + mid-lightness pixels, but with a
+            // small baseline so the natural (warm) skin tones still carry
+            // weight and the result doesn't swing to whatever small patch
+            // happens to be most saturated.
+            const w = sat * (1 - Math.abs(lum - 128) / 128) + 0.02;
+            rT += r * w; gT += g * w; bT += b * w; wT += w;
+          }
+          if (wT < 0.001) return null;
+          const r = Math.round(rT / wT), g = Math.round(gT / wT), b = Math.round(bT / wT);
+          iosContactTintCached = { r, g, b };
+          return iosContactTintCached;
+        } catch (e) {
+          console.warn('Contact tint extraction failed', e);
+          return null;
+        }
+      }
+
+      async function iosContactApplyTint() {
+        const tint = await iosContactComputeTint();
+        if (!tint) return;
+        const { r, g, b } = tint;
+        const top = `rgb(${Math.round(r*0.85)}, ${Math.round(g*0.85)}, ${Math.round(b*0.85)})`;
+        const mid = `rgb(${Math.round(r*0.5)}, ${Math.round(g*0.5)}, ${Math.round(b*0.5)})`;
+        const bot = `rgb(${Math.round(r*0.22)}, ${Math.round(g*0.22)}, ${Math.round(b*0.22)})`;
+        iosContactApp.style.background =
+          `linear-gradient(180deg, ${top} 0%, ${mid} 55%, ${bot} 100%)`;
+      }
+
+      // Precompute on load so first open has the tint already applied.
+      iosContactApplyTint();
+
       window.iosOpenContact = function () {
         setThemeColorForApp();
+        iosContactApplyTint();
         iosContactApp.classList.remove('closing');
         iosContactApp.style.display = 'flex';
         requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -3442,6 +3865,49 @@
           iosContactApp.style.display = 'none';
           iosContactApp.classList.remove('closing');
         }, 350);
+      };
+
+      // ---- iOS Mail App ----
+      const iosMailApp        = document.getElementById('ios-mail-app');
+      const iosMailScreenList = document.getElementById('ios-mail-screen-list');
+      const iosMailScreenDet  = document.getElementById('ios-mail-screen-detail');
+
+      window.iosOpenMail = function () {
+        setThemeColorForApp();
+        // always open on the inbox list
+        iosMailScreenList.style.display = 'flex';
+        iosMailScreenDet.style.display  = 'none';
+        iosMailApp.classList.remove('closing');
+        iosMailApp.style.display = 'flex';
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          iosMailApp.style.transform = 'scale(1)';
+          iosMailApp.style.opacity = '1';
+          iosMailApp.style.borderRadius = '0';
+        }));
+      };
+
+      window.iosCloseMail = function () {
+        setThemeColorForScreen();
+        iosMailApp.classList.add('closing');
+        requestAnimationFrame(() => {
+          iosMailApp.style.transform = 'scale(0.4)';
+          iosMailApp.style.opacity = '0';
+          iosMailApp.style.borderRadius = '40px';
+        });
+        setTimeout(() => {
+          iosMailApp.style.display = 'none';
+          iosMailApp.classList.remove('closing');
+        }, 350);
+      };
+
+      window.iosMailOpenMessage = function () {
+        iosMailScreenDet.style.display  = 'flex';
+        iosMailScreenList.style.display = 'none';
+      };
+
+      window.iosMailBackToList = function () {
+        iosMailScreenList.style.display = 'flex';
+        iosMailScreenDet.style.display  = 'none';
       };
 
       // ---- iOS BTS App ----
@@ -4045,6 +4511,14 @@
           match: () => isShown('ios-contact-app'),
           back:  () => window.iosCloseContact && window.iosCloseContact(),
         },
+        { // Mail — message detail view
+          match: () => isShown('ios-mail-app') && isShown('ios-mail-screen-detail'),
+          back:  () => window.iosMailBackToList && window.iosMailBackToList(),
+        },
+        { // Mail — inbox list
+          match: () => isShown('ios-mail-app'),
+          back:  () => window.iosCloseMail && window.iosCloseMail(),
+        },
       ];
 
       function isShown(id) {
@@ -4527,6 +5001,60 @@
       // Re-poll the API every 5 min. 12 req/hr per IP fits the 60/hr limit
       // comfortably.
       setInterval(fetchLive, 5 * 60 * 1000);
+    })();
+
+    // ═════════════════════════════════════════════════════════════════════
+    // Dynamic Island (prototype) — tap-to-cycle through demo states so we
+    // can feel the morph. Content is placeholder; plug real triggers later.
+    // ═════════════════════════════════════════════════════════════════════
+    (function () {
+      const island  = document.getElementById('dyn-island');
+      if (!island) return;
+      const icon    = document.getElementById('dyn-icon');
+      const title   = document.getElementById('dyn-title');
+      const sub     = document.getElementById('dyn-sub');
+      const trail   = document.getElementById('dyn-trailing');
+
+      const DEMO = [
+        { icon: '●', title: 'eddie pushed',       sub: 'Fix beachball wobble',      trail: 'now' },
+        { icon: '☀', title: 'Good morning',       sub: 'Berlin — 14°C, sunny',      trail: '↑6:42' },
+        { icon: '✓', title: 'Available',          sub: 'Open for new projects',     trail: '→ mail' },
+        { icon: '▶', title: 'Opening',            sub: 'Edits — Music Videos',      trail: ''     },
+      ];
+      let idx = 0;
+
+      function showExpanded(state) {
+        icon.textContent  = state.icon;
+        title.textContent = state.title;
+        sub.textContent   = state.sub;
+        trail.textContent = state.trail || '';
+        trail.style.display = state.trail ? '' : 'none';
+        island.classList.add('is-expanded');
+      }
+      function collapse() {
+        island.classList.remove('is-expanded');
+      }
+
+      // Tap to cycle: if collapsed, expand to next demo state.
+      // If expanded, collapse.
+      island.addEventListener('click', () => {
+        if (island.classList.contains('is-expanded')) {
+          collapse();
+        } else {
+          showExpanded(DEMO[idx % DEMO.length]);
+          idx++;
+        }
+      });
+
+      // Auto-fire a demo once after the iOS screen shows, so visitors see
+      // the morph without needing to tap.
+      setTimeout(() => {
+        if (document.getElementById('ios-screen').style.display !== 'none') {
+          showExpanded(DEMO[0]);
+          setTimeout(collapse, 3500);
+          idx = 1;
+        }
+      }, 2200);
     })();
 
   </script>
