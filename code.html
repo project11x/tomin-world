@@ -3395,7 +3395,7 @@
           ? '<div style="grid-column:1/-1;text-align:center;padding-top:80px;color:var(--ios-text-secondary);font-size:14px;">No magazines found</div>'
           : magazines.map(mag => `
               <div onclick="iosTapMagazine('${mag.folder.replace(/'/g, "\\'")}',${mag.index})"
-                style="-webkit-tap-highlight-color:transparent;cursor:pointer;">
+                style="-webkit-tap-highlight-color:transparent;cursor:pointer;height:fit-content;">
                 <div style="border-radius:14px;overflow:hidden;aspect-ratio:3/4;background:#1e293b;box-shadow:0 4px 16px rgba(0,0,0,0.25);">
                   ${mag.cover
               ? `<img src="${mag.cover}" style="width:100%;height:100%;object-fit:cover;" />`
