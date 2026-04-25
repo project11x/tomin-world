@@ -1621,7 +1621,7 @@
                 <div id="iww-wind" style="color:rgba(255,255,255,0.42); font-size:10px; margin-bottom:6px;">💨 – km/h
                 </div>
                 <div style="display:flex; align-items:center; gap:6px; justify-content:flex-end;">
-                  <span style="color:rgba(255,255,255,0.55); font-size:10px; letter-spacing:0.03em;">✂️ Cutting</span>
+                  <span id="iww-status-tag" style="color:rgba(255,255,255,0.55); font-size:10px; letter-spacing:0.03em;">✂️ Cutting</span>
                   <div id="iww-live-dot"
                     style="width:6px; height:6px; border-radius:50%; background:#4ade80; flex-shrink:0;"></div>
                 </div>
@@ -5089,7 +5089,9 @@
             
             // NEW: Update compact widget description with the phase
             const compactDescEl = document.getElementById('iww-desc');
+            const compactTagEl = document.getElementById('iww-status-tag');
             if (compactDescEl) compactDescEl.textContent = rn.title || '–';
+            if (compactTagEl) compactTagEl.textContent = rn.title || '–';
           }
 
           const vibe = data.vibe;
@@ -5161,7 +5163,9 @@
         
         // NEW: Update compact widget description with the phase
         const compactDescEl = document.getElementById('iww-desc');
+        const compactTagEl = document.getElementById('iww-status-tag');
         if (compactDescEl) compactDescEl.textContent = rn.title || '–';
+        if (compactTagEl) compactTagEl.textContent = rn.title || '–';
         
         // Also update vibe and working on
         if (data.vibe) {
