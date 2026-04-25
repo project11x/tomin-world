@@ -1,0 +1,1014 @@
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    .glass-panel {
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+    }
+
+    .desktop-bg {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ambient-shadow {
+      box-shadow: 0px 20px 50px rgba(12, 14, 16, 0.08);
+    }
+
+    .folder-gradient {
+      background: linear-gradient(180deg, #007aff 0%, #005bc2 100%);
+    }
+
+    .draggable-handle:active {
+      cursor: grabbing;
+    }
+
+    /* ql-time style for Quick Look */
+    #ql-time {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      font-variant-numeric: tabular-nums;
+      width: 2rem;
+    }
+
+    /* Selection Styles for Desktop Icons */
+    .desktop-icon.selected>span {
+      background-color: #007AFF !important;
+      color: white !important;
+      backdrop-filter: none;
+    }
+
+    .desktop-icon.selected>div {
+      filter: brightness(0.82);
+    }
+
+    .desktop-icon:focus,
+    .desktop-icon:focus-visible {
+      outline: none;
+    }
+
+    /* Glass card for edits viewer */
+    .edits-glass-card {
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .dark .edits-glass-card {
+      background: rgba(55, 55, 60, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Custom Range Slider */
+    .mag-slider {
+      transition: all 0.2s ease;
+    }
+
+    .mag-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 20px;
+      width: 42px;
+      /* Pill shape as requested */
+      margin-top: -7px;
+      border-radius: 20px;
+      background: currentColor;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .mag-slider:active::-webkit-slider-thumb {
+      transform: scale(0.95);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .mag-slider::-webkit-slider-runnable-track {
+      height: 6px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    /* Status Bar Dropdowns */
+    .menu-item {
+      position: relative;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: calc(100% + 2px);
+      left: 0;
+      min-width: 200px;
+      background: rgba(252, 252, 252, 0.94);
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      border-radius: 7px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18), 0 8px 32px rgba(0, 0, 0, 0.14), 0 0 0 0.5px rgba(0, 0, 0, 0.12);
+      border: none;
+      padding: 4px;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.97) translateY(-3px);
+      transform-origin: top left;
+      transition: opacity 0.12s ease, transform 0.12s ease, visibility 0.12s;
+      z-index: 1000;
+    }
+
+    .dark .dropdown-menu {
+      background: rgba(36, 36, 36, 0.92);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+    }
+
+    .dropdown-menu.open {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1) translateY(0);
+    }
+
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 10px 4px 22px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      font-weight: 400;
+      color: #1d1d1f;
+      cursor: default;
+      user-select: none;
+      transition: background 0.06s ease, color 0.06s ease;
+      position: relative;
+    }
+
+    .dark .dropdown-item {
+      color: #f5f5f7;
+    }
+
+    .dropdown-item:hover {
+      background: #1a6cff;
+      color: white !important;
+      border-radius: 4px;
+    }
+
+    .dropdown-item:hover .dropdown-shortcut {
+      color: rgba(255, 255, 255, 0.7) !important;
+    }
+
+    .dropdown-item:hover .submenu-arrow {
+      color: white !important;
+    }
+
+    .dropdown-shortcut {
+      font-size: 13px;
+      color: #8e8e93;
+      margin-left: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    .dark .dropdown-shortcut {
+      color: #8e8e93;
+    }
+
+    .dropdown-separator {
+      height: 1px;
+      background: rgba(0, 0, 0, 0.1);
+      margin: 4px 0;
+    }
+
+    .dark .dropdown-separator {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .dropdown-checkmark {
+      position: absolute;
+      left: 6px;
+      font-size: 11px;
+      color: #1d1d1f;
+    }
+
+    .dark .dropdown-checkmark {
+      color: #f5f5f7;
+    }
+
+    .dropdown-item:hover .dropdown-checkmark {
+      color: white;
+    }
+
+    .submenu-arrow {
+      font-size: 11px;
+      color: #8e8e93;
+    }
+
+    /* Submenus */
+    .submenu-container {
+      position: relative;
+    }
+
+    .submenu {
+      position: absolute;
+      left: calc(100% + 2px);
+      top: -4px;
+      min-width: 160px;
+      background: rgba(252, 252, 252, 0.94);
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      border: none;
+      border-radius: 7px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18), 0 8px 32px rgba(0, 0, 0, 0.14), 0 0 0 0.5px rgba(0, 0, 0, 0.12);
+      padding: 4px;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.97) translateX(-3px);
+      transform-origin: top left;
+      transition: opacity 0.12s ease, transform 0.12s ease, visibility 0.12s;
+    }
+
+    .dark .submenu {
+      background: rgba(36, 36, 36, 0.92);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+    }
+
+    .submenu-container:hover>.submenu {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1) translateX(0);
+    }
+
+    .theme-glass .glass-panel {
+      backdrop-filter: blur(60px) saturate(210%);
+      -webkit-backdrop-filter: blur(60px) saturate(210%);
+      background: rgba(255, 255, 255, 0.25) !important;
+      border-color: rgba(255, 255, 255, 0.4) !important;
+    }
+
+    .theme-glass.dark .glass-panel {
+      background: rgba(0, 0, 0, 0.3) !important;
+      border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+
+    /* Pink Theme */
+    .theme-pink {
+      --primary: #ff4b8e;
+      --primary-dim: #d93d7a;
+      --primary-fixed: #ff4b8e;
+      --primary-fixed-dim: #ff4b8e;
+    }
+
+    .theme-pink .bg-primary {
+      background-color: var(--primary) !important;
+    }
+
+    .theme-pink .text-primary {
+      color: var(--primary) !important;
+    }
+
+    .theme-pink .border-primary {
+      border-color: var(--primary) !important;
+    }
+
+    .theme-pink .folder-gradient {
+      background: linear-gradient(180deg, #ff4b8e 0%, #d93d7a 100%);
+    }
+
+    .theme-pink .glass-panel {
+      background: rgba(255, 240, 245, 0.85) !important;
+      border-color: rgba(255, 75, 142, 0.25) !important;
+    }
+
+    .dark.theme-pink .glass-panel {
+      background: rgba(45, 20, 30, 0.85) !important;
+      border-color: rgba(255, 75, 142, 0.35) !important;
+    }
+
+    .dragging-window {
+      transition: none !important;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .dragging-window * {
+      pointer-events: none;
+    }
+
+    /* Mobile: Hide macOS UI, show iOS screen */
+    @media (max-width: 768px) {
+
+      header,
+      #desktop-main,
+      #macos-dock {
+        display: none !important;
+      }
+
+      #ios-screen {
+        display: flex !important;
+      }
+
+      #quick-look-modal {
+        position: fixed !important;
+      }
+    }
+
+    /* iOS Theme Variables — Light (default) */
+    :root {
+      --ios-bg: #ffffff;
+      --ios-app-bg: #f5f5f5;
+      --ios-text: #000000;
+      --ios-text-secondary: rgba(0, 0, 0, 0.45);
+      --ios-card-bg: #ffffff;
+      --ios-card-border: rgba(0, 0, 0, 0.12);
+      --ios-dock-bg: rgba(232, 232, 232, 0.72);
+      --ios-dock-border: rgba(0, 0, 0, 0.06);
+      --ios-list-border: rgba(0, 0, 0, 0.1);
+      --ios-list-hover: rgba(0, 0, 0, 0.06);
+      --ios-progress-bg: rgba(0, 0, 0, 0.1);
+      --ios-progress-fill: rgba(0, 0, 0, 0.4);
+      --ios-segmented-bg: rgba(118, 118, 128, 0.12);
+      --ios-segmented-active: #ffffff;
+      --ios-segmented-active-text: #000000;
+      --ios-segmented-inactive-text: rgba(0, 0, 0, 0.4);
+    }
+
+    /* iOS Theme Variables — Dark */
+    body.ios-dark {
+      --ios-bg: #000000;
+      --ios-app-bg: #1c1c1e;
+      --ios-text: #ffffff;
+      --ios-text-secondary: rgba(255, 255, 255, 0.6);
+      --ios-card-bg: rgba(255, 255, 255, 0.1);
+      --ios-card-border: rgba(255, 255, 255, 0.08);
+      --ios-dock-bg: rgba(30, 30, 30, 0.72);
+      --ios-dock-border: rgba(255, 255, 255, 0.08);
+      --ios-list-border: rgba(255, 255, 255, 0.08);
+      --ios-list-hover: rgba(255, 255, 255, 0.1);
+      --ios-progress-bg: rgba(255, 255, 255, 0.15);
+      --ios-progress-fill: rgba(255, 255, 255, 0.8);
+      --ios-segmented-bg: rgba(118, 118, 128, 0.24);
+      --ios-segmented-active: rgba(255, 255, 255, 0.2);
+      --ios-segmented-active-text: #ffffff;
+      --ios-segmented-inactive-text: rgba(255, 255, 255, 0.5);
+    }
+
+    @keyframes beachball-spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes iww-pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+      }
+
+      50% {
+        box-shadow: 0 0 0 5px rgba(74, 222, 128, 0);
+      }
+    }
+
+    #iww-live-dot {
+      animation: iww-pulse 2.2s ease-in-out infinite;
+    }
+
+    #ios-smart-stack:hover #sstack-dots {
+      opacity: 1;
+    }
+
+    #sstack-frame .sstack-card {
+      backface-visibility: hidden;
+      border-radius: 20px;
+      overflow: hidden;
+      /* Firefox fix: clip-path follows the transform correctly during animation,
+         whereas overflow:hidden+border-radius can momentarily square off corners */
+      clip-path: inset(0 round 20px);
+    }
+
+    /* Subtle outline around the whole smart-stack frame while dragging.
+       Same show/hide behaviour (and fade timing) as the page dots.
+       Theme-adaptive via CSS vars (mirrors the dot vars logic). */
+    :root {
+      --sstack-outline: rgba(0, 0, 0, 0.14);
+    }
+
+    body.ios-dark {
+      --sstack-outline: rgba(255, 255, 255, 0.22);
+    }
+
+    #sstack-frame {
+      box-shadow: 0 0 0 1px transparent;
+      transition: box-shadow 0.22s ease;
+    }
+
+    #sstack-frame.is-dragging {
+      box-shadow: 0 0 0 1px var(--sstack-outline);
+    }
+
+    /* Explore widget — text elements animate blur→sharp whenever their content
+       changes (badge, "Up next: …", "N of 4 explored"). */
+    @keyframes ilaTextSwap {
+      0% {
+        filter: blur(6px);
+        opacity: 0.25;
+      }
+
+      60% {
+        filter: blur(2px);
+        opacity: 0.75;
+      }
+
+      100% {
+        filter: blur(0);
+        opacity: 1;
+      }
+    }
+
+    .ila-blur-swap,
+    .sys-blur-swap {
+      animation: ilaTextSwap 0.55s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    /* System Pulse widget — live dot pulse */
+    @keyframes sysPulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+        box-shadow: 0 0 6px rgba(48, 209, 88, 0.7), 0 0 12px rgba(48, 209, 88, 0.35);
+      }
+
+      50% {
+        opacity: 0.55;
+        transform: scale(1.35);
+        box-shadow: 0 0 10px rgba(48, 209, 88, 1), 0 0 18px rgba(48, 209, 88, 0.5);
+      }
+    }
+
+    /* Subtle pulse on the comet head too, so the rail feels alive even when
+       the position doesn't change. */
+    @keyframes sysCometPulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 5px rgba(48, 209, 88, 0.9), 0 0 10px rgba(48, 209, 88, 0.45);
+      }
+
+      50% {
+        box-shadow: 0 0 9px rgba(48, 209, 88, 1), 0 0 16px rgba(48, 209, 88, 0.65);
+      }
+    }
+
+    /* Bright scanline sweep across the rail so the widget reads as "live"
+       even while we're waiting for new commits. */
+    @keyframes sysScan {
+      0% {
+        transform: translateX(-30%);
+        opacity: 0;
+      }
+
+      20% {
+        opacity: 1;
+      }
+
+      55% {
+        opacity: 0.9;
+      }
+
+      80% {
+        opacity: 0.15;
+      }
+
+      100% {
+        transform: translateX(130%);
+        opacity: 0;
+      }
+    }
+
+    /* Smart Stack page dots — adapt to iOS light/dark theme (body.ios-dark) */
+    :root {
+      --sstack-dot-active: rgba(20, 20, 28, 0.95);
+      --sstack-dot-inactive: rgba(20, 20, 28, 0.35);
+      --sstack-dot-ring: rgba(255, 255, 255, 0.7);
+    }
+
+    body.ios-dark {
+      --sstack-dot-active: rgba(255, 255, 255, 0.95);
+      --sstack-dot-inactive: rgba(255, 255, 255, 0.4);
+      --sstack-dot-ring: rgba(0, 0, 0, 0.35);
+    }
+
+    .sstack-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background-color: var(--sstack-dot-inactive);
+      box-shadow: 0 0 0 1px var(--sstack-dot-ring);
+    }
+
+    .sstack-dot.is-active {
+      background-color: var(--sstack-dot-active);
+    }
+
+    /* ========== Dynamic Island (prototype) ==========
+       Single black pill at the top of the iOS screen that morphs between
+       compact and expanded states. The signature look: ONLY size + radius
+       animate (no fade), so it reads as a single object breathing rather
+       than a panel appearing. Spring-ish easing approximates iOS. */
+    #dyn-island {
+      /* Hidden for now — scaffolding kept intact, re-enable by removing
+         display:none when we figure out coexistence with hardware notches. */
+      display: none;
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 34px;
+      background: #000;
+      border-radius: 18px;
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: pointer;
+      color: #fff;
+      font-size: 12px;
+      /* The morph: width/height/border-radius all share one easing */
+      transition:
+        width 0.55s cubic-bezier(0.32, 0.72, 0, 1),
+        height 0.55s cubic-bezier(0.32, 0.72, 0, 1),
+        border-radius 0.55s cubic-bezier(0.32, 0.72, 0, 1);
+      will-change: width, height, border-radius;
+    }
+
+    #dyn-island.is-expanded {
+      width: calc(100% - 24px);
+      max-width: 360px;
+      height: 72px;
+      border-radius: 36px;
+    }
+
+    /* Content inside fades in/out slightly offset from the morph, so the
+       text doesn't stretch with the pill. */
+    .dyn-compact,
+    .dyn-expanded {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      transition: opacity 0.25s ease;
+      padding: 0 18px;
+    }
+
+    .dyn-compact {
+      justify-content: center;
+      gap: 8px;
+      opacity: 1;
+    }
+
+    .dyn-expanded {
+      justify-content: space-between;
+      gap: 12px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #dyn-island.is-expanded .dyn-compact {
+      opacity: 0;
+    }
+
+    #dyn-island.is-expanded .dyn-expanded {
+      opacity: 1;
+      transition-delay: 0.2s;
+    }
+
+    .dyn-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #30d158;
+      box-shadow: 0 0 6px rgba(48, 209, 88, 0.8);
+    }
+
+    .dyn-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .dyn-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .dyn-text-title {
+      font-weight: 600;
+      font-size: 13px;
+      line-height: 1.1;
+    }
+
+    .dyn-text-sub {
+      font-size: 11px;
+      opacity: 0.6;
+      line-height: 1.1;
+      margin-top: 2px;
+    }
+
+    .dyn-trailing {
+      font-size: 11px;
+      opacity: 0.7;
+      flex-shrink: 0;
+    }
+
+    /* iOS scroll-fade: top edge — items fade as they scroll under the player */
+    .ios-scroll-fade-top {
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 14%);
+      mask-image: linear-gradient(to bottom, transparent 0%, black 14%);
+    }
+
+    /* iOS scroll-fade: bottom edge — indicates more content below */
+    .ios-scroll-fade-bottom {
+      -webkit-mask-image: linear-gradient(to bottom, black 75%, transparent 100%);
+      mask-image: linear-gradient(to bottom, black 75%, transparent 100%);
+    }
+
+    /* Contact app is always dark-tinted (ignores system theme) — force the
+       segmented-control vars so Auto/Light/Dark toggle stays readable. */
+    #ios-contact-app {
+      --ios-segmented-active: rgba(255, 255, 255, 0.22);
+      --ios-segmented-active-text: #ffffff;
+      --ios-segmented-inactive-text: rgba(255, 255, 255, 0.6);
+      --ios-segmented-bg: rgba(255, 255, 255, 0.1);
+    }
+
+    /* ========== Contact app + Mail app rows ========== */
+    .ios-contact-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 16px;
+      text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
+      cursor: pointer;
+    }
+
+    .ios-contact-row:active {
+      background: var(--ios-list-hover);
+    }
+
+    .ios-contact-label {
+      font-size: 13px;
+      color: var(--ios-text-secondary);
+      line-height: 1.2;
+      margin-bottom: 2px;
+    }
+
+    .ios-contact-value {
+      font-size: 16px;
+      color: var(--ios-text);
+      line-height: 1.25;
+      word-break: break-all;
+    }
+
+    .ios-contact-trailing {
+      font-size: 20px !important;
+      color: var(--ios-text-secondary);
+      flex-shrink: 0;
+    }
+
+    .ios-contact-divider {
+      height: 1px;
+      background: var(--ios-list-border);
+      margin-left: 16px;
+    }
+
+    .ios-quick-action:active {
+      opacity: 0.5;
+    }
+
+    /* Mail app — floating bottom-right pill (reply + compose) */
+    .ios-mail-actions {
+      position: absolute;
+      right: 16px;
+      bottom: max(16px, env(safe-area-inset-bottom, 16px));
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: var(--ios-card-bg);
+      box-shadow: 0 0 0 1px var(--ios-card-border), 0 8px 24px rgba(0, 0, 0, 0.08);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      z-index: 10;
+    }
+
+    .ios-mail-actions a {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .ios-mail-actions a:active {
+      background: var(--ios-list-hover);
+    }
+
+    .ios-mail-actions .material-symbols-outlined {
+      font-size: 20px;
+      color: var(--ios-text);
+    }
+
+    /* Mail row in inbox */
+    .ios-mail-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--ios-list-border);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .ios-mail-row:active {
+      background: var(--ios-list-hover);
+    }
+
+    /* Edit list rows */
+    .edit-row {
+      border-radius: 8px;
+      margin: 0 8px;
+      padding: 6px 16px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+      color: #1e293b;
+      transition: background 0.12s ease, color 0.12s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .dark .edit-row {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .edit-row:hover:not(.edit-selected) {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .dark .edit-row:hover:not(.edit-selected) {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .edit-selected {
+      background: #1c7eff !important;
+      color: white !important;
+    }
+
+    @keyframes ios-item-in {
+      from {
+        opacity: 0;
+        filter: blur(18px);
+        transform: scale(0.85);
+      }
+
+      to {
+        opacity: 1;
+        filter: blur(0px);
+        transform: scale(1);
+      }
+    }
+
+    .ios-intro-item {
+      opacity: 0;
+    }
+
+    .ios-intro-item.ios-intro-run {
+      animation: ios-item-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* iOS UI Styles */
+    .ios-dock-item>div {
+      transition: transform 0.12s ease;
+    }
+
+    .ios-dock-item:active>div {
+      transform: scale(0.88) !important;
+    }
+
+    .ios-app-overlay {
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1),
+        opacity 0.3s ease,
+        border-radius 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+      transform-origin: center bottom;
+    }
+
+    .ios-app-overlay.closing {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.7, 0.2),
+        opacity 0.18s cubic-bezier(0.6, 0, 1, 1),
+        border-radius 0.3s cubic-bezier(0.4, 0, 0.7, 0.2);
+    }
+
+    #quick-look-modal {
+      -webkit-mask-image: radial-gradient(white, black);
+      mask-image: radial-gradient(white, black);
+    }
+
+    /* iOS App Animations */
+    .ios-app-overlay {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        border-radius 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: transform, opacity, border-radius;
+      overflow: hidden;
+      clip-path: inset(0 round 0px);
+      /* Initial state will be updated by border-radius */
+    }
+
+    #ios-screen {
+      transition: filter 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: filter, transform;
+    }
+
+    .ios-screen-blurred {
+      filter: blur(12px) brightness(0.9);
+      transform: scale(0.97);
+      pointer-events: none;
+    }
+
+    body.ios-dark .ios-screen-blurred {
+      filter: blur(12px) brightness(0.7);
+    }
+
+    /* Admin Panel Styles */
+    #ios-admin-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    #ios-admin-overlay.visible {
+      opacity: 1;
+      display: flex;
+    }
+
+    .admin-card {
+      width: 90%;
+      max-width: 400px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 30px;
+      padding: 30px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      color: #fff;
+    }
+
+    .passcode-dot {
+      width: 12px;
+      height: 12px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      margin: 0 10px;
+      transition: background 0.2s;
+    }
+
+    .passcode-dot.filled {
+      background: #fff;
+    }
+
+    .numpad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-top: 30px;
+    }
+
+    .num-btn {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .num-btn:active {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .admin-field {
+      background: rgba(0, 0, 0, 0.7) !important;
+      background-color: rgba(0, 0, 0, 0.7) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 12px !important;
+      padding: 14px 16px !important;
+      color: #fff !important;
+      width: 100% !important;
+      margin-bottom: 16px !important;
+      font-size: 15px !important;
+      box-sizing: border-box !important;
+      outline: none !important;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .admin-field:focus {
+      background: rgba(0, 0, 0, 0.9) !important;
+      border-color: #007aff !important;
+    }
+
+    .admin-field::placeholder {
+      color: rgba(255, 255, 255, 0.4) !important;
+    }
+
+    .admin-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.6) !important;
+      margin-bottom: 8px;
+      margin-left: 4px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .admin-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .admin-chip {
+      padding: 6px 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .admin-chip.active {
+      background: #007aff;
+      border-color: #007aff;
+    }
+
+    .admin-chip-add {
+      padding: 6px 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px dashed rgba(255, 255, 255, 0.3);
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .admin-btn {
+      background: #007aff;
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 14px;
+      width: 100%;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+    }
