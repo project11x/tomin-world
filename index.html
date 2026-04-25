@@ -505,8 +505,11 @@
     #ios-smart-stack:hover #sstack-dots { opacity: 1; }
     #sstack-frame .sstack-card {
       backface-visibility: hidden;
-      border-radius: 20px;          /* each widget has its own rounded corners */
+      border-radius: 20px;
       overflow: hidden;
+      /* Firefox fix: clip-path follows the transform correctly during animation,
+         whereas overflow:hidden+border-radius can momentarily square off corners */
+      clip-path: inset(0 round 20px);
     }
     /* Subtle outline around the whole smart-stack frame while dragging.
        Same show/hide behaviour (and fade timing) as the page dots.
@@ -814,6 +817,31 @@
     #quick-look-modal {
       -webkit-mask-image: radial-gradient(white, black);
       mask-image: radial-gradient(white, black);
+    }
+    /* iOS App Animations */
+    .ios-app-overlay {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                  opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                  border-radius 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: transform, opacity, border-radius;
+      overflow: hidden;
+      clip-path: inset(0 round 0px); /* Initial state will be updated by border-radius */
+    }
+
+    #ios-screen {
+      transition: filter 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                  transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: filter, transform;
+    }
+
+    .ios-screen-blurred {
+      filter: blur(12px) brightness(0.9);
+      transform: scale(0.97);
+      pointer-events: none;
+    }
+
+    body.ios-dark .ios-screen-blurred {
+      filter: blur(12px) brightness(0.7);
     }
   </style>
 </head>
@@ -1232,9 +1260,9 @@
       <div id="sstack-frame" style="position:relative; height:168px; border-radius:20px; overflow:hidden; touch-action:none; cursor:grab; user-select:none;">
 
         <!-- Card 0: Time & Weather -->
-        <div id="ios-weather-widget" class="sstack-card"
-          style="position:absolute; top:0; left:0; width:100%; height:100%; background:#16213e; overflow:hidden; will-change:transform,opacity;">
-          <svg id="iww-arc-svg" viewBox="-5 0 115 50" preserveAspectRatio="none"
+        <div id="ios-weather-widget" class="sstack-card" onclick="iosWeatherOpen(event)"
+          style="position:absolute; top:0; left:0; width:100%; height:100%; background:#16213e; overflow:hidden; will-change:transform,opacity; cursor:pointer;">
+          <svg id="iww-arc-svg" viewBox="-5 -22 115 72" preserveAspectRatio="none"
             style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;
                    -webkit-mask-image:linear-gradient(to right,transparent 0%,black 11%,black 89%,transparent 100%);
                    mask-image:linear-gradient(to right,transparent 0%,black 11%,black 89%,transparent 100%);">
@@ -1279,10 +1307,11 @@
         </div>
 
         <!-- Card 1: Portfolio Exploration (transit-style, slot-based for smart reordering) -->
-        <div id="ios-live-activity" class="sstack-card"
+        <div id="ios-live-activity" class="sstack-card" onclick="iosPortfolioOpen(event)"
           style="position:absolute; top:0; left:0; width:100%; height:100%;
                  background:linear-gradient(135deg,#2a1420 0%,#1a1018 100%);
-                 display:flex; flex-direction:column; padding:13px 16px 14px; box-sizing:border-box; will-change:transform,opacity;">
+                 display:flex; flex-direction:column; padding:13px 16px 14px; box-sizing:border-box; will-change:transform,opacity;
+                 cursor:pointer;">
 
           <!-- Top row: current-section badge + eyebrow label -->
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1304,18 +1333,18 @@
           <div style="flex:1; min-height:4px;"></div>
 
           <!-- Slot-based timeline (JS fills dots + labels + segment fills by visit order) -->
-          <div style="display:flex; align-items:center; gap:2px; padding-bottom:22px;">
+          <div id="ila-timeline" style="display:flex; align-items:center; gap:2px; padding-bottom:22px;">
             <div class="ila-slot" data-slot="1" style="position:relative; flex-shrink:0; display:flex; align-items:center; justify-content:center; width:20px; height:20px; z-index:2;"></div>
-            <div class="ila-seg"  data-seg="1"  style="position:relative; flex:1; height:10px; border-radius:5px; overflow:hidden;">
-              <div class="ila-seg-fill" style="position:absolute; top:0; left:0; height:100%; width:0; border-radius:5px; transform-origin:left center; transition:width 0.9s cubic-bezier(0.2,0.7,0.2,1);"></div>
+            <div class="ila-seg"  data-seg="1"  style="position:relative; flex:1; height:4px; border-radius:2px; overflow:hidden; background:rgba(255,255,255,0.08);">
+              <div class="ila-seg-fill" style="position:absolute; top:0; left:0; height:100%; width:0; border-radius:inherit; transform-origin:left center; transition:width 0.9s cubic-bezier(0.2,0.7,0.2,1);"></div>
             </div>
             <div class="ila-slot" data-slot="2" style="position:relative; flex-shrink:0; display:flex; align-items:center; justify-content:center; width:20px; height:20px; z-index:2;"></div>
-            <div class="ila-seg"  data-seg="2"  style="position:relative; flex:1; height:10px; border-radius:5px; overflow:hidden;">
-              <div class="ila-seg-fill" style="position:absolute; top:0; left:0; height:100%; width:0; border-radius:5px; transform-origin:left center; transition:width 0.9s cubic-bezier(0.2,0.7,0.2,1);"></div>
+            <div class="ila-seg"  data-seg="2"  style="position:relative; flex:1; height:4px; border-radius:2px; overflow:hidden; background:rgba(255,255,255,0.08);">
+              <div class="ila-seg-fill" style="position:absolute; top:0; left:0; height:100%; width:0; border-radius:inherit; transform-origin:left center; transition:width 0.9s cubic-bezier(0.2,0.7,0.2,1);"></div>
             </div>
             <div class="ila-slot" data-slot="3" style="position:relative; flex-shrink:0; display:flex; align-items:center; justify-content:center; width:20px; height:20px; z-index:2;"></div>
-            <div class="ila-seg"  data-seg="3"  style="position:relative; flex:1; height:10px; border-radius:5px; overflow:hidden;">
-              <div class="ila-seg-fill" style="position:absolute; top:0; left:0; height:100%; width:0; border-radius:5px; transform-origin:left center; transition:width 0.9s cubic-bezier(0.2,0.7,0.2,1);"></div>
+            <div class="ila-seg"  data-seg="3"  style="position:relative; flex:1; height:4px; border-radius:2px; overflow:hidden; background:rgba(255,255,255,0.08);">
+              <div class="ila-seg-fill" style="position:absolute; top:0; left:0; height:100%; width:0; border-radius:inherit; transform-origin:left center; transition:width 0.9s cubic-bezier(0.2,0.7,0.2,1);"></div>
             </div>
             <div class="ila-slot" data-slot="4" style="position:relative; flex-shrink:0; display:flex; align-items:center; justify-content:center; width:20px; height:20px; z-index:2;"></div>
           </div>
@@ -1324,11 +1353,11 @@
         <!-- Card 2: System Pulse — live feed of recent commits from the GitHub
              repo. Terminal-inspired dark look; a comet on the rail shows how
              fresh the latest push is (right = just now, left = stale). -->
-        <div id="ios-system-pulse" class="sstack-card"
+        <div id="ios-system-pulse" class="sstack-card" onclick="iosChangelogOpen(event)"
           style="position:absolute; top:0; left:0; width:100%; height:100%;
                  background:linear-gradient(135deg,#0a1820 0%,#0d0f14 55%,#0a0c10 100%);
                  display:flex; flex-direction:column; padding:13px 16px 14px; box-sizing:border-box; will-change:transform,opacity;
-                 overflow:hidden;">
+                 overflow:hidden; cursor:pointer;">
 
           <!-- Top row: live status dot + eyebrow label -->
           <div style="display:flex; justify-content:space-between; align-items:center; position:relative; z-index:2;">
@@ -1411,41 +1440,310 @@
 
     </div><!-- /ios-smart-stack wrapper -->
 
+    <!-- Expanded Changelog — iOS-style "grow from widget" overlay.
+         Hidden by default; iosChangelogOpen() positions #ios-changelog-card
+         at the widget's exact bounding rect, then transitions it to the
+         inset fullscreen layout. Close via tap on the backdrop, grab bar
+         swipe-down, or chevron button. -->
+    <div id="ios-changelog-expanded"
+      style="display:none; position:absolute; inset:0; z-index:110; pointer-events:none;">
+      <!-- No visible backdrop — close by swiping down or tapping the grab bar -->
+      <div id="ios-changelog-backdrop"
+        style="position:absolute; inset:0; pointer-events:auto;"></div>
+      <!-- Expanded card — absolute position/size set by JS during animation -->
+      <div id="ios-changelog-card"
+        style="position:absolute; overflow:hidden;
+               background:linear-gradient(135deg,#0a1820 0%,#0d0f14 55%,#0a0c10 100%);
+               box-shadow:0 25px 60px rgba(0,0,0,0.55);
+               pointer-events:auto; display:flex; flex-direction:column;
+               transform:translateY(0);">
+        <!-- Inner content wrapper — fades independently during open/close -->
+        <div id="ios-changelog-content" style="display:flex; flex-direction:column; flex:1; min-height:0; opacity:0; transition:opacity 0.22s ease;">
+          <!-- Top grab zone -->
+          <div id="ios-changelog-grab"
+            style="flex-shrink:0; padding:10px 0 8px; display:flex; justify-content:center;
+                   cursor:grab; touch-action:none; -webkit-user-select:none; user-select:none;">
+            <div style="width:42px; height:4.5px; border-radius:3px; background:rgba(255,255,255,0.28);"></div>
+          </div>
+          <!-- Header row: LIVE + CHANGELOG eyebrow -->
+          <div style="flex-shrink:0; padding:4px 22px 0; display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="width:8px; height:8px; border-radius:50%; background:#30d158;
+                          animation:sysPulse 1.8s ease-in-out infinite;"></div>
+              <span style="color:rgba(255,255,255,0.88); font-size:11px; letter-spacing:0.14em;
+                           font-weight:800; text-transform:uppercase;
+                           font-family:ui-monospace,SFMono-Regular,Menlo,monospace;">LIVE</span>
+            </div>
+            <span style="color:rgba(255,255,255,0.38); font-size:11px; letter-spacing:0.16em;
+                         font-weight:600; text-transform:uppercase;">CHANGELOG</span>
+          </div>
+          <!-- "Latest commits" title -->
+          <div style="flex-shrink:0; padding:22px 22px 14px;">
+            <h2 style="color:#fff; font-size:30px; font-weight:700; margin:0; letter-spacing:-0.02em;">
+              Latest commits
+            </h2>
+          </div>
+          <!-- Scrollable commit list -->
+          <div id="sys-commits-list"
+            style="flex:1; min-height:0; overflow-y:auto; padding:0 16px 22px; display:flex; flex-direction:column; gap:10px;
+                   -webkit-overflow-scrolling:touch; mask-image:linear-gradient(to bottom, black 85%, transparent 100%);
+                   -webkit-mask-image:linear-gradient(to bottom, black 85%, transparent 100%);">
+            <!-- populated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Portfolio Guide — same expand/collapse pattern as Changelog -->
+    <div id="ios-portfolio-expanded"
+      style="display:none; position:absolute; inset:0; z-index:110; pointer-events:none;">
+      <div id="ios-portfolio-backdrop"
+        style="position:absolute; inset:0; pointer-events:auto;"></div>
+      <div id="ios-portfolio-card"
+        style="position:absolute; overflow:hidden;
+               background:linear-gradient(135deg,#2a1420 0%,#1a1018 100%);
+               box-shadow:0 25px 60px rgba(0,0,0,0.6);
+               pointer-events:auto; display:flex; flex-direction:column;
+               transform:translateY(0);">
+        <div id="ios-portfolio-content"
+          style="display:flex; flex-direction:column; flex:1; min-height:0; opacity:0;
+                 transition:opacity 0.22s ease; overflow:hidden;">
+          <!-- Grab bar -->
+          <div id="ios-portfolio-grab"
+            style="flex-shrink:0; padding:10px 0 8px; display:flex; justify-content:center;
+                   cursor:grab; touch-action:none; -webkit-user-select:none; user-select:none;">
+            <div style="width:42px; height:4.5px; border-radius:3px; background:rgba(255,255,255,0.22);"></div>
+          </div>
+          <!-- Header -->
+          <div style="flex-shrink:0; padding:4px 22px 0; display:flex; justify-content:space-between; align-items:center;">
+            <div id="ios-portfolio-badge"
+              style="padding:3px 9px; border-radius:6px; font-size:10px; font-weight:800;
+                     letter-spacing:0.08em; color:#1a1a1a; background:#e0e0e0;
+                     text-transform:uppercase; line-height:1.4; user-select:none;">HOME</div>
+            <span style="color:rgba(255,255,255,0.32); font-size:11px; letter-spacing:0.16em;
+                         font-weight:600; text-transform:uppercase;">Portfolio</span>
+          </div>
+          <!-- Title -->
+          <div style="flex-shrink:0; padding:20px 22px 6px;">
+            <h2 style="color:#fff; font-size:28px; font-weight:700; margin:0 0 4px; letter-spacing:-0.02em;">
+              How to navigate
+            </h2>
+            <p id="ios-portfolio-sub" style="color:rgba(255,255,255,0.38); font-size:13px; margin:0; font-weight:400; line-height:1.4;">
+              Quick guide to get around
+            </p>
+          </div>
+          <!-- Progress timeline — rendered from ilaGetState() on open -->
+          <div id="ios-portfolio-timeline"
+            style="flex-shrink:0; padding:14px 22px 26px;"></div>
+          <!-- Tips list -->
+          <div style="flex:1; min-height:0; overflow-y:auto; padding:14px 18px 28px;
+                      -webkit-overflow-scrolling:touch;
+                      mask-image:linear-gradient(to bottom, black 88%, transparent 100%);
+                      -webkit-mask-image:linear-gradient(to bottom, black 88%, transparent 100%);">
+            <!-- Tip 1 -->
+            <div style="display:flex; align-items:flex-start; gap:16px; padding:16px 0; border-bottom:1px solid rgba(255,255,255,0.06);">
+              <div style="flex-shrink:0; width:46px; height:46px; border-radius:14px;
+                          background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1);
+                          display:flex; align-items:center; justify-content:center; font-size:22px;">↕</div>
+              <div>
+                <p style="color:#fff; font-size:15px; font-weight:600; margin:0 0 4px; letter-spacing:-0.01em;">Scroll to explore</p>
+                <p style="color:rgba(255,255,255,0.48); font-size:13px; margin:0; line-height:1.5; font-weight:400;">
+                  Scroll down past the home screen to discover Edits, Magazines, and BTS — each section has its own feel.
+                </p>
+              </div>
+            </div>
+            <!-- Tip 2 -->
+            <div style="display:flex; align-items:flex-start; gap:16px; padding:16px 0; border-bottom:1px solid rgba(255,255,255,0.06);">
+              <div style="flex-shrink:0; width:46px; height:46px; border-radius:14px;
+                          background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1);
+                          display:flex; align-items:center; justify-content:center; font-size:22px;">⬆</div>
+              <div>
+                <p style="color:#fff; font-size:15px; font-weight:600; margin:0 0 4px; letter-spacing:-0.01em;">Swipe widgets up or down</p>
+                <p style="color:rgba(255,255,255,0.48); font-size:13px; margin:0; line-height:1.5; font-weight:400;">
+                  The widget stack here has two cards — drag up or down to switch between the Portfolio tracker and the live Changelog.
+                </p>
+              </div>
+            </div>
+            <!-- Tip 3 -->
+            <div style="display:flex; align-items:flex-start; gap:16px; padding:16px 0;">
+              <div style="flex-shrink:0; width:46px; height:46px; border-radius:14px;
+                          background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.1);
+                          display:flex; align-items:center; justify-content:center; font-size:22px;">👆</div>
+              <div>
+                <p style="color:#fff; font-size:15px; font-weight:600; margin:0 0 4px; letter-spacing:-0.01em;">Use the dock to jump anywhere</p>
+                <p style="color:rgba(255,255,255,0.48); font-size:13px; margin:0; line-height:1.5; font-weight:400;">
+                  The four icons at the bottom open Edits, Magazines, BTS, and Contact instantly — no scrolling required.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weather / Berlin Status — same expand/collapse pattern as Portfolio -->
+    <div id="ios-weather-expanded"
+      style="display:none; position:absolute; inset:0; z-index:110; pointer-events:none;">
+      <div id="ios-weather-backdrop"
+        style="position:absolute; inset:0; pointer-events:auto;"></div>
+      <div id="ios-weather-card"
+        style="position:absolute; overflow:hidden;
+               background:linear-gradient(160deg,#0f1a2e 0%,#16213e 50%,#0a1220 100%);
+               box-shadow:0 25px 60px rgba(0,0,0,0.6);
+               pointer-events:auto; display:flex; flex-direction:column;
+               transform:translateY(0);">
+        <!-- Decorative arc — sun/moon live inside SVG so coords are exact -->
+        <svg id="iwe-arc-svg" viewBox="-5 0 115 50" preserveAspectRatio="none"
+          style="position:absolute; bottom:0; left:0; width:100%; height:200px; pointer-events:none; overflow:visible;">
+          <defs>
+            <radialGradient id="iwe-sun-glow-grad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%"   stop-color="rgba(251,191,36,0.55)"/>
+              <stop offset="45%"  stop-color="rgba(251,191,36,0.18)"/>
+              <stop offset="100%" stop-color="rgba(251,191,36,0)"/>
+            </radialGradient>
+          </defs>
+          <path id="iwe-arc-bg"   d="M -5,48 Q 52,-18 110,48" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="0.35" stroke-linecap="round"/>
+          <path id="iwe-arc-prog" d="M -5,48 Q 52,-18 110,48" fill="none" stroke="rgba(255,215,75,0.55)"  stroke-width="0.37" stroke-linecap="round" stroke-dasharray="0 300"/>
+          <!-- Sun glow + dot (shown during day) -->
+          <circle id="iwe-svg-sun-glow" cx="0" cy="0" r="5" fill="url(#iwe-sun-glow-grad)" display="none"/>
+          <circle id="iwe-svg-sun-dot"  cx="0" cy="0" r="1.6" fill="#fbbf24" display="none"
+            filter="url(#iwe-sun-blur)" style="filter:drop-shadow(0 0 1.5px rgba(251,191,36,0.9))"/>
+          <!-- Moon (shown at night) -->
+          <text id="iwe-svg-moon" x="0" y="0" font-size="4.5" text-anchor="middle" dominant-baseline="middle" display="none">🌙</text>
+        </svg>
+
+        <div id="ios-weather-content" style="position:relative; z-index:3; display:flex; flex-direction:column; flex:1; min-height:0; opacity:0; transition:opacity 0.22s ease; overflow:hidden;">
+          <!-- Grab bar -->
+          <div id="ios-weather-grab"
+            style="flex-shrink:0; padding:10px 0 8px; display:flex; justify-content:center;
+                   cursor:grab; touch-action:none; -webkit-user-select:none; user-select:none;">
+            <div style="width:42px; height:4.5px; border-radius:3px; background:rgba(255,255,255,0.28);"></div>
+          </div>
+
+          <!-- Header row: BERLIN + TIME & WEATHER label -->
+          <div style="flex-shrink:0; padding:4px 22px 0; display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:rgba(255,255,255,0.62); font-size:11px; letter-spacing:0.18em; font-weight:700; text-transform:uppercase;">BERLIN</span>
+            <span style="color:rgba(255,255,255,0.32); font-size:11px; letter-spacing:0.16em; font-weight:600; text-transform:uppercase;">Time &amp; Weather</span>
+          </div>
+
+          <!-- Big time + weather block -->
+          <div style="flex-shrink:0; padding:18px 22px 6px; display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <div id="iwe-time" style="color:#fff; font-size:54px; font-weight:200; letter-spacing:-2px; line-height:1; font-variant-numeric:tabular-nums;">00:00</div>
+              <div id="iwe-date" style="color:rgba(255,255,255,0.42); font-size:12px; font-weight:500; letter-spacing:0.05em; margin-top:8px;">–</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="display:flex; align-items:center; gap:8px; justify-content:flex-end; margin-bottom:6px;">
+                <span id="iwe-icon" style="font-size:26px; line-height:1;">–</span>
+                <span id="iwe-temp" style="color:#fff; font-size:26px; font-weight:300; line-height:1;">–°C</span>
+              </div>
+              <div id="iwe-wind" style="color:rgba(255,255,255,0.5); font-size:12px; margin-bottom:2px;">💨 – km/h</div>
+              <div id="iwe-desc" style="color:rgba(255,255,255,0.42); font-size:12px; font-weight:500;">–</div>
+            </div>
+          </div>
+
+          <!-- Scrollable content -->
+          <div id="ios-weather-scroll" style="flex:1; min-height:0; overflow-y:auto; padding:18px 22px 28px;
+                      -webkit-overflow-scrolling:touch;
+                      mask-image:linear-gradient(to bottom, black 88%, transparent 100%);
+                      -webkit-mask-image:linear-gradient(to bottom, black 88%, transparent 100%);">
+
+            <!-- Status card -->
+            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:18px; padding:18px; margin-bottom:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <span style="color:rgba(255,255,255,0.4); font-size:10.5px; letter-spacing:0.16em; font-weight:700; text-transform:uppercase;">Right now</span>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <div style="width:7px; height:7px; border-radius:50%; background:#4ade80; box-shadow:0 0 8px rgba(74,222,128,0.7); animation:sysPulse 1.8s ease-in-out infinite;"></div>
+                  <span style="color:rgba(74,222,128,0.9); font-size:10.5px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;">Live</span>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+                <span style="font-size:30px; line-height:1;">✂️</span>
+                <div>
+                  <div id="iwe-status-title" style="color:#fff; font-size:20px; font-weight:600; letter-spacing:-0.01em; line-height:1.1;">Cutting</div>
+                  <div id="iwe-status-project" style="color:rgba(255,255,255,0.55); font-size:13px; margin-top:3px;">Milano BTS · Day 3</div>
+                </div>
+              </div>
+              <p id="iwe-status-note" style="color:rgba(255,255,255,0.7); font-size:13.5px; line-height:1.5; margin:0; font-weight:400;">
+                Deep in the edit. Coffee on the desk, color grade tomorrow.
+              </p>
+            </div>
+
+            <!-- Vibe + Output row -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+              <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:14px;">
+                <div style="color:rgba(255,255,255,0.4); font-size:10px; letter-spacing:0.14em; font-weight:700; text-transform:uppercase; margin-bottom:8px;">Vibe</div>
+                <div id="iwe-vibe" style="color:#fff; font-size:17px; font-weight:600; letter-spacing:-0.01em;">Hyperfocus</div>
+                <div style="color:rgba(255,255,255,0.42); font-size:11.5px; margin-top:4px;">⚡ high energy</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:16px; padding:14px;">
+                <div style="color:rgba(255,255,255,0.4); font-size:10px; letter-spacing:0.14em; font-weight:700; text-transform:uppercase; margin-bottom:8px;">This week</div>
+                <div style="color:#fff; font-size:17px; font-weight:600; letter-spacing:-0.01em;"><span id="iwe-cuts">3</span> cuts</div>
+                <div style="color:rgba(255,255,255,0.42); font-size:11.5px; margin-top:4px;">🎬 last: 2d ago</div>
+              </div>
+            </div>
+
+            <!-- Sun timing card -->
+            <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:18px; padding:16px 18px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <span style="color:rgba(255,255,255,0.4); font-size:10.5px; letter-spacing:0.16em; font-weight:700; text-transform:uppercase;">Daylight</span>
+                <span id="iwe-daylight-state" style="color:rgba(255,215,75,0.85); font-size:10.5px; letter-spacing:0.1em; font-weight:700; text-transform:uppercase;">Day</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+                <div>
+                  <div style="color:rgba(255,255,255,0.45); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; font-weight:600; margin-bottom:3px;">🌅 Sunrise</div>
+                  <div id="iwe-sunrise" style="color:#fff; font-size:18px; font-weight:500; font-variant-numeric:tabular-nums;">–:–</div>
+                </div>
+                <div id="iwe-daylight-countdown" style="text-align:center; color:rgba(255,255,255,0.55); font-size:12px; font-weight:500;">
+                  <div style="font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:rgba(255,255,255,0.35); margin-bottom:3px;">Until sunset</div>
+                  <div id="iwe-countdown-val" style="color:#fff; font-size:15px; font-weight:600;">–</div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="color:rgba(255,255,255,0.45); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; font-weight:600; margin-bottom:3px;">🌇 Sunset</div>
+                  <div id="iwe-sunset" style="color:#fff; font-size:18px; font-weight:500; font-variant-numeric:tabular-nums;">–:–</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- iOS Dock -->
     <div class="flex justify-center px-4" style="padding-bottom: max(28px, env(safe-area-inset-bottom, 28px));">
       <div class="flex items-center justify-center gap-3 px-4 py-3 rounded-[26px]"
         style="background:var(--ios-dock-bg); backdrop-filter:blur(40px) saturate(180%); -webkit-backdrop-filter:blur(40px) saturate(180%); border:1px solid var(--ios-dock-border); max-width:calc(100vw - 32px);">
 
         <!-- Edits -->
-        <div class="ios-dock-item ios-intro-item cursor-pointer" onclick="iosOpenEdits()">
+        <div class="ios-dock-item ios-intro-item cursor-pointer" onclick="iosOpenEdits(event)">
           <div class="w-[62px] h-[62px] drop-shadow-md">
             <img src="icons/edits.png" class="w-full h-full object-contain" draggable="false" />
           </div>
         </div>
 
         <!-- Magazines -->
-        <div class="ios-dock-item ios-intro-item cursor-pointer" onclick="iosOpenMagazines()">
+        <div class="ios-dock-item ios-intro-item cursor-pointer" onclick="iosOpenMagazines(event)">
           <div class="w-[62px] h-[62px] drop-shadow-md">
             <img src="icons/magazine.png" class="w-full h-full object-contain" draggable="false" />
           </div>
         </div>
 
         <!-- BTS -->
-        <div class="ios-dock-item ios-intro-item cursor-pointer" onclick="iosOpenBts()">
+        <div class="ios-dock-item ios-intro-item cursor-pointer" onclick="iosOpenBts(event)">
           <div class="w-[62px] h-[62px] drop-shadow-md">
             <img src="icons/bts.png" class="w-full h-full object-contain" draggable="false" />
           </div>
         </div>
 
         <!-- Contact -->
-        <div class="ios-dock-item ios-intro-item cursor-pointer" onclick="iosOpenContact()">
+        <div class="ios-dock-item ios-intro-item cursor-pointer" onclick="iosOpenContact(event)">
           <div class="w-[62px] h-[62px] drop-shadow-md">
             <img src="icons/contact.png" class="w-full h-full object-contain" draggable="false" />
           </div>
         </div>
 
         <!-- Mail -->
-        <div class="ios-dock-item ios-intro-item cursor-pointer" onclick="iosOpenMail()" style="display: none;">
+        <div class="ios-dock-item ios-intro-item cursor-pointer" onclick="iosOpenMail(event)" style="display: none;">
           <div class="w-[62px] h-[62px] drop-shadow-md">
             <img src="icons/mail.png" class="w-full h-full object-contain" draggable="false" />
           </div>
@@ -3374,9 +3672,70 @@
         });
       }
 
+      // ---- iOS App Transition Logic ----
+      let lastIosAppIcon = null;
+
+      function performIosAppTransition(appEl, iconEl, isOpen) {
+        const screen = document.getElementById('ios-screen');
+        if (isOpen) {
+          lastIosAppIcon = iconEl;
+          const rect = iconEl.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          
+          // Initial state: centered on icon, small scale, high border radius
+          appEl.style.transition = 'none';
+          appEl.style.display = 'flex';
+          appEl.style.opacity = '0';
+          appEl.style.borderRadius = '45px';
+          
+          // Calculate scale and translate to match icon
+          // We target a bit larger than the icon for a smoother transition
+          const scale = (rect.width * 1.2) / window.innerWidth;
+          const translateX = centerX - window.innerWidth / 2;
+          const translateY = centerY - window.innerHeight / 2;
+          
+          appEl.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+          
+          // Force reflow
+          appEl.offsetHeight;
+          
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              appEl.style.transition = ''; // Use CSS transitions
+              appEl.style.opacity = '1';
+              appEl.style.transform = 'translate(0, 0) scale(1)';
+              appEl.style.borderRadius = '0';
+              screen.classList.add('ios-screen-blurred');
+            });
+          });
+        } else {
+          // Fallback if iconEl is missing (e.g. closing via hardware gesture/keyboard)
+          const rect = lastIosAppIcon ? lastIosAppIcon.getBoundingClientRect() : { left: window.innerWidth/2, top: window.innerHeight, width: 0, height: 0 };
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          
+          const scale = (rect.width * 0.8) / window.innerWidth;
+          const translateX = centerX - window.innerWidth / 2;
+          const translateY = centerY - window.innerHeight / 2;
+          
+          appEl.style.opacity = '0';
+          appEl.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+          appEl.style.borderRadius = '45px';
+          screen.classList.remove('ios-screen-blurred');
+          
+          setTimeout(() => {
+            appEl.style.display = 'none';
+            appEl.classList.remove('closing');
+          }, 300);
+        }
+      }
+
       // Open Magazines app
-      window.iosOpenMagazines = function () {
+      window.iosOpenMagazines = function (event) {
+        const iconEl = event ? event.currentTarget : null;
         setThemeColorForApp();
+
         // Build grid from portfolioData
         const magazines = [];
         Object.keys(portfolioData).forEach(key => {
@@ -3407,22 +3766,13 @@
               </div>`).join('');
 
         iosMagazinesApp.classList.remove('closing');
-        iosMagazinesApp.style.display = 'flex';
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          iosMagazinesApp.style.transform = 'scale(1)';
-          iosMagazinesApp.style.opacity = '1';
-          iosMagazinesApp.style.borderRadius = '0';
-        }));
+        performIosAppTransition(iosMagazinesApp, iconEl, true);
       };
 
       window.iosCloseMagazines = function () {
         setThemeColorForScreen();
         iosMagazinesApp.classList.add('closing');
-        requestAnimationFrame(() => {
-          iosMagazinesApp.style.transform = 'scale(0.4)';
-          iosMagazinesApp.style.opacity = '0';
-          iosMagazinesApp.style.borderRadius = '40px';
-        });
+        performIosAppTransition(iosMagazinesApp, null, false);
         setTimeout(() => {
           iosMagazinesApp.style.display = 'none';
           iosMagazinesApp.classList.remove('closing');
@@ -3433,7 +3783,7 @@
           iosMagReaderPages.innerHTML = '';
           // Animate the portfolio route only once the user is actually back on home.
           if (window.ilaVisit) window.ilaVisit('magazin');
-        }, 350);
+        }, 300);
       };
 
       const iosMagScreenGrid = document.getElementById('ios-mag-screen-grid');
@@ -3622,7 +3972,8 @@
         });
       }
 
-      window.iosOpenEdits = function () {
+      window.iosOpenEdits = function (event) {
+        const iconEl = event ? event.currentTarget : null;
         setThemeColorForApp();
         iosEditsItems = iosCollectEdits();
         iosRenderEditsList();
@@ -3630,12 +3981,7 @@
         iosEditsVideo.src = '';
 
         iosEditsApp.classList.remove('closing');
-        iosEditsApp.style.display = 'flex';
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          iosEditsApp.style.transform = 'scale(1)';
-          iosEditsApp.style.opacity = '1';
-          iosEditsApp.style.borderRadius = '0';
-        }));
+        performIosAppTransition(iosEditsApp, iconEl, true);
 
         // Auto-select first edit directly (no setTimeout = stays in user gesture context)
         iosSelectEdit(0, true);
@@ -3646,17 +3992,13 @@
         iosEditsApp.classList.add('closing');
         iosEditsVideo.pause();
         iosEditsVideo.src = '';
-        requestAnimationFrame(() => {
-          iosEditsApp.style.transform = 'scale(0.4)';
-          iosEditsApp.style.opacity = '0';
-          iosEditsApp.style.borderRadius = '40px';
-        });
+        performIosAppTransition(iosEditsApp, null, false);
         setTimeout(() => {
           iosEditsApp.style.display = 'none';
           iosEditsApp.classList.remove('closing');
           // Animate the portfolio route only once the user is actually back on home.
           if (window.ilaVisit) window.ilaVisit('edits');
-        }, 350);
+        }, 300);
       };
 
       // ---- iOS Theme ----
@@ -3845,30 +4187,22 @@
       // Precompute on load so first open has the tint already applied.
       iosContactApplyTint();
 
-      window.iosOpenContact = function () {
+      window.iosOpenContact = function (event) {
+        const iconEl = event ? event.currentTarget : null;
         setThemeColorForApp();
         iosContactApplyTint();
         iosContactApp.classList.remove('closing');
-        iosContactApp.style.display = 'flex';
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          iosContactApp.style.transform = 'scale(1)';
-          iosContactApp.style.opacity = '1';
-          iosContactApp.style.borderRadius = '0';
-        }));
+        performIosAppTransition(iosContactApp, iconEl, true);
       };
 
       window.iosCloseContact = function () {
         setThemeColorForScreen();
         iosContactApp.classList.add('closing');
-        requestAnimationFrame(() => {
-          iosContactApp.style.transform = 'scale(0.4)';
-          iosContactApp.style.opacity = '0';
-          iosContactApp.style.borderRadius = '40px';
-        });
+        performIosAppTransition(iosContactApp, null, false);
         setTimeout(() => {
           iosContactApp.style.display = 'none';
           iosContactApp.classList.remove('closing');
-        }, 350);
+        }, 300);
       };
 
       // ---- iOS Mail App ----
@@ -3876,32 +4210,24 @@
       const iosMailScreenList = document.getElementById('ios-mail-screen-list');
       const iosMailScreenDet  = document.getElementById('ios-mail-screen-detail');
 
-      window.iosOpenMail = function () {
+      window.iosOpenMail = function (event) {
+        const iconEl = event ? event.currentTarget : null;
         setThemeColorForApp();
         // always open on the inbox list
         iosMailScreenList.style.display = 'flex';
         iosMailScreenDet.style.display  = 'none';
         iosMailApp.classList.remove('closing');
-        iosMailApp.style.display = 'flex';
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          iosMailApp.style.transform = 'scale(1)';
-          iosMailApp.style.opacity = '1';
-          iosMailApp.style.borderRadius = '0';
-        }));
+        performIosAppTransition(iosMailApp, iconEl, true);
       };
 
       window.iosCloseMail = function () {
         setThemeColorForScreen();
         iosMailApp.classList.add('closing');
-        requestAnimationFrame(() => {
-          iosMailApp.style.transform = 'scale(0.4)';
-          iosMailApp.style.opacity = '0';
-          iosMailApp.style.borderRadius = '40px';
-        });
+        performIosAppTransition(iosMailApp, null, false);
         setTimeout(() => {
           iosMailApp.style.display = 'none';
           iosMailApp.classList.remove('closing');
-        }, 350);
+        }, 300);
       };
 
       window.iosMailOpenMessage = function () {
@@ -3957,7 +4283,8 @@
         });
       }
 
-      window.iosOpenBts = function () {
+      window.iosOpenBts = function (event) {
+        const iconEl = event ? event.currentTarget : null;
         setThemeColorForApp();
         const folders = iosBtsCollectFolders();
         iosBtsFolderList.innerHTML = folders.length === 0
@@ -3979,22 +4306,13 @@
         iosBtsViewer.style.display = 'none';
 
         iosBtsApp.classList.remove('closing');
-        iosBtsApp.style.display = 'flex';
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          iosBtsApp.style.transform = 'scale(1)';
-          iosBtsApp.style.opacity = '1';
-          iosBtsApp.style.borderRadius = '0';
-        }));
+        performIosAppTransition(iosBtsApp, iconEl, true);
       };
 
       window.iosCloseBts = function () {
         setThemeColorForScreen();
         iosBtsApp.classList.add('closing');
-        requestAnimationFrame(() => {
-          iosBtsApp.style.transform = 'scale(0.4)';
-          iosBtsApp.style.opacity = '0';
-          iosBtsApp.style.borderRadius = '40px';
-        });
+        performIosAppTransition(iosBtsApp, null, false);
         setTimeout(() => {
           iosBtsApp.style.display = 'none';
           iosBtsApp.classList.remove('closing');
@@ -4002,7 +4320,7 @@
           iosBtsViewer.style.display = 'none';
           // Animate the portfolio route only once the user is actually back on home.
           if (window.ilaVisit) window.ilaVisit('bts');
-        }, 350);
+        }, 300);
       };
 
       window.iosBtsTapFolder = function (folderName) {
@@ -4139,9 +4457,10 @@
       // Convert SVG viewBox coords to pixel coords within the weather widget
       // viewBox "-5 0 115 50": x range [-5,110] w=115, y range [0,50] h=50
       function svgToPx(svgX, svgY) {
-        const w = weatherWgt ? weatherWgt.offsetWidth  : 343;
-        const h = weatherWgt ? weatherWgt.offsetHeight : 148;
-        return { x: (svgX + 5) / 115 * w, y: svgY / 50 * h };
+        // Use fallbacks if dimensions aren't yet available (e.g. initial render)
+        const w = (weatherWgt && weatherWgt.offsetWidth)  || 343;
+        const h = (weatherWgt && weatherWgt.offsetHeight) || 148;
+        return { x: (svgX + 5) / 115 * w, y: (svgY + 22) / 72 * h };
       }
 
       let sunriseMs = null, sunsetMs = null;
@@ -4161,45 +4480,74 @@
         if (introPlayed) updateArc(now);
       }
 
-      // Compute the arc target (progLen + isDay) for the current moment.
-      function currentTarget(now) {
-        if (!arcBg) return null;
-        const totalLen = arcBg.getTotalLength ? arcBg.getTotalLength() : 220;
-        const nowMs = now.getTime();
-        const isDay = sunriseMs && sunsetMs && nowMs > sunriseMs && nowMs < sunsetMs;
-        let t;
-        if (isDay) {
-          t = Math.max(0, Math.min(1, (nowMs - sunriseMs) / (sunsetMs - sunriseMs)));
-        } else {
-          // Moon sits at the arc midpoint when we're outside daytime.
-          t = 0.5;
+      // ── Pure-JS arc math (bypasses SVG API which gives stale values in
+      //    Safari after CSS-transform animations) ──────────────────────────
+      // Path: M -5,48 Q 52,-18 110,48  (quadratic bezier)
+      // dB/dt = (114+2t, -132+264t)
+      // Precompute cumulative arc-length table at 200 samples so we can
+      // convert parametric-t ↔ arc-length fraction analytically.
+      const IWW_N = 200;
+      const IWW_LUT = (() => {
+        const a = new Float64Array(IWW_N + 1);
+        for (let i = 1; i <= IWW_N; i++) {
+          const tm = (i - 0.5) / IWW_N;
+          const dx = 114 + 2*tm, dy = -132 + 264*tm;
+          a[i] = a[i-1] + Math.sqrt(dx*dx + dy*dy) / IWW_N;
         }
-        return { totalLen, isDay, progLen: totalLen * t };
+        return a;
+      })();
+      const IWW_TOTAL = IWW_LUT[IWW_N]; // total arc length in viewBox units
+
+      // Bezier point at parametric t in viewBox coords
+      function iwwBezier(t) {
+        const u = 1 - t;
+        return { x: u*u*(-5) + 2*u*t*52 + t*t*110,
+                 y: u*u*48  + 2*u*t*(-18) + t*t*48 };
+      }
+      // Arc length (viewBox units) from t=0 to parametric t
+      function iwwArcLen(t) {
+        const i = Math.min(IWW_N - 1, (t * IWW_N) | 0);
+        const f = t * IWW_N - i;
+        return IWW_LUT[i] + f * (IWW_LUT[i + 1] - IWW_LUT[i]);
       }
 
-      // Place the sun (day) or moon (night) at an arbitrary point on the
-      // arc. Used by both the intro tween and the instant updater below.
-      function placeAt(progLen, isDay, totalLen) {
-        if (!arcBg || !arcBg.getPointAtLength) return;
-        const pt  = arcBg.getPointAtLength(progLen);
+      // Compute the arc target for the current moment.
+      // Uses IWW_TOTAL (analytical) so getTotalLength() is never called —
+      // that SVG API can return stale values after CSS-transform animations.
+      function currentTarget(now) {
+        const nowMs = now.getTime();
+        const isDay = sunriseMs && sunsetMs && nowMs > sunriseMs && nowMs < sunsetMs;
+        const t = isDay
+          ? Math.max(0, Math.min(1, (nowMs - sunriseMs) / (sunsetMs - sunriseMs)))
+          : 0.5;
+        return { isDay, t };
+      }
+
+      // Place the sun (day) or moon (night) at parametric t on the arc.
+      // Arc-length for stroke-dasharray is also computed analytically so the
+      // sun dot always sits exactly on the end of the filled arc line.
+      function placeAt(t, isDay) {
+        const pt  = iwwBezier(t);
         const pos = svgToPx(pt.x, pt.y);
+        const len = iwwArcLen(t);
+        const CENTER = 'translate(-50%,-50%)';
         if (isDay) {
-          if (arcProg) arcProg.setAttribute('stroke-dasharray', progLen + ' ' + (totalLen + 10));
-          if (sunDotHtml)  { sunDotHtml.style.left  = pos.x + 'px'; sunDotHtml.style.top  = pos.y + 'px'; sunDotHtml.style.display = ''; }
-          if (sunGlowHtml) { sunGlowHtml.style.left = pos.x + 'px'; sunGlowHtml.style.top = pos.y + 'px'; sunGlowHtml.style.display = ''; }
+          if (arcProg) arcProg.setAttribute('stroke-dasharray', len + ' ' + (IWW_TOTAL + 10));
+          if (sunDotHtml)  { sunDotHtml.style.left  = pos.x + 'px'; sunDotHtml.style.top  = pos.y + 'px'; sunDotHtml.style.transform = CENTER; sunDotHtml.style.display = ''; }
+          if (sunGlowHtml) { sunGlowHtml.style.left = pos.x + 'px'; sunGlowHtml.style.top = pos.y + 'px'; sunGlowHtml.style.transform = CENTER; sunGlowHtml.style.display = ''; }
           if (moonHtml) moonHtml.style.display = 'none';
         } else {
-          if (arcProg) arcProg.setAttribute('stroke-dasharray', '0 ' + (totalLen + 10));
+          if (arcProg) arcProg.setAttribute('stroke-dasharray', '0 ' + (IWW_TOTAL + 10));
           if (sunDotHtml)  sunDotHtml.style.display  = 'none';
           if (sunGlowHtml) sunGlowHtml.style.display = 'none';
-          if (moonHtml)    { moonHtml.style.left = pos.x + 'px'; moonHtml.style.top  = pos.y + 'px'; moonHtml.style.display = ''; }
+          if (moonHtml)    { moonHtml.style.left = pos.x + 'px'; moonHtml.style.top  = pos.y + 'px'; moonHtml.style.transform = CENTER; moonHtml.style.display = ''; }
         }
       }
 
       function updateArc(now) {
         const tgt = currentTarget(now);
         if (!tgt) return;
-        placeAt(tgt.progLen, tgt.isDay, tgt.totalLen);
+        placeAt(tgt.t, tgt.isDay);
       }
 
       // Ease-out cubic: fast start, gentle stop — lets the sun/moon glide
@@ -4211,7 +4559,7 @@
       function playArcIntro() {
         if (introPlayed) return;
         const tgt = currentTarget(new Date());
-        if (!tgt || tgt.progLen <= 0) {
+        if (!tgt || tgt.t <= 0) {
           // Nothing to animate yet (e.g. sunrise/sunset not fetched) — try
           // again on the next tick/card-reveal.
           return;
@@ -4221,12 +4569,12 @@
 
         const DUR   = 1800;
         const start = performance.now();
-        const { totalLen, isDay, progLen: target } = tgt;
+        const { isDay, t: target } = tgt;
 
         function frame(ts) {
           const raw   = Math.min(1, (ts - start) / DUR);
           const eased = easeOutCubic(raw);
-          placeAt(target * eased, isDay, totalLen);
+          placeAt(target * eased, isDay);
           if (raw < 1) {
             introRAF = requestAnimationFrame(frame);
           } else {
@@ -4283,6 +4631,11 @@
           if (descEl) descEl.textContent = 'Berlin';
         }
       }
+
+      // Expose sun times so the expanded weather view can render daylight info.
+      window.iwwGetSunTimes = function () {
+        return { sunrise: sunriseMs, sunset: sunsetMs };
+      };
 
       tickClock();
       setInterval(tickClock, 30000);
@@ -4381,22 +4734,31 @@
       }
 
       // Pointer handlers
+      let downTarget = null;
+      let captured   = false;
       frame.addEventListener('pointerdown', (e) => {
         // Don't hijack clicks on interactive children
         if (e.target.closest('a, button')) return;
-        dragging  = true;
-        startY    = e.clientY;
-        dragY     = 0;
-        pointerId = e.pointerId;
-        H         = frame.offsetHeight || 148;
-        try { frame.setPointerCapture(pointerId); } catch (_) {}
-        frame.style.cursor = 'grabbing';
-        flashDots();   // shows outline + dots, no hide-timer while dragging
+        dragging   = true;
+        startY     = e.clientY;
+        dragY      = 0;
+        pointerId  = e.pointerId;
+        downTarget = e.target;
+        captured   = false;
+        H          = frame.offsetHeight || 148;
+        flashDots();
       });
 
       frame.addEventListener('pointermove', (e) => {
         if (!dragging) return;
         let dy = e.clientY - startY;
+        if (!captured && Math.abs(dy) > 4) {
+          // Only capture once real drag intent is clear — lets pure taps
+          // still reach onclick handlers on child elements.
+          captured = true;
+          try { frame.setPointerCapture(pointerId); } catch (_) {}
+          frame.style.cursor = 'grabbing';
+        }
         // Rubber-band a little past the card
         if (Math.abs(dy) > H) dy = Math.sign(dy) * (H + (Math.abs(dy) - H) * 0.35);
         dragY = dy;
@@ -4407,9 +4769,11 @@
       function endDrag(e) {
         if (!dragging) return;
         dragging = false;
-        frame.style.cursor = 'grab';
-        // outline stays on; flashDots() below starts the shared hide-timer
-        try { frame.releasePointerCapture(pointerId); } catch (_) {}
+        if (captured) {
+          frame.style.cursor = 'grab';
+          try { frame.releasePointerCapture(pointerId); } catch (_) {}
+        }
+        captured = false;
 
         // Decide: snap back or advance
         let cardChanged = false;
@@ -4595,9 +4959,8 @@
       const SECTIONS = ['home', 'edits', 'magazin', 'bts'];
       const LABELS   = { home: 'Home',  edits: 'Edits',  magazin: 'Magazin', bts: 'BTS' };
       const COLORS   = { home: '#e0e0e0', edits: '#7c3aed', magazin: '#dc2626', bts: '#b91c1c' };
-      // Rounded-pill dashes for empty segments (SVG data URI so individual dashes
-      // have properly rounded ends, not the flat ends of a linear-gradient).
-      const SEG_EMPTY = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='10'%3E%3Crect x='0' y='2' width='9' height='6' rx='3' fill='%23ffffff' fill-opacity='0.2'/%3E%3C/svg%3E\") repeat-x left center";
+      // Solid empty rail — matches the expanded portfolio view's design.
+      const SEG_EMPTY = 'rgba(255,255,255,0.08)';
 
       const visited = ['home'];      // ordered by first-visit; 'home' always first
       let   current = 'home';
@@ -4607,23 +4970,38 @@
 
       // Schedule an auto-advance to the next Smart Stack widget once the route
       // animation has had time to finish + the user has had a few seconds to
-      // admire the completed line.
+      // admire the completed line. If the user has the portfolio expanded when
+      // the timer fires, defer the advance until they collapse it.
+      let pendingAdvanceOnClose = false;
+      function runAdvance() {
+        if (autoAdvanceDone) return;
+        if (window.iosPortfolioIsOpen && window.iosPortfolioIsOpen()) {
+          pendingAdvanceOnClose = true;
+          return;
+        }
+        if (typeof window.sstackGetActiveIdx === 'function'
+            && window.sstackGetActiveIdx() === 1
+            && visited.length === SECTIONS.length
+            && typeof window.sstackNext === 'function') {
+          autoAdvanceDone = true;
+          window.sstackNext();
+        }
+      }
       function scheduleAutoAdvance(afterMs) {
         if (autoAdvanceDone) return;
         if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
         autoAdvanceTimer = setTimeout(() => {
           autoAdvanceTimer = null;
-          // Only advance if the user hasn't already swiped away from the
-          // portfolio card themselves.
-          if (typeof window.sstackGetActiveIdx === 'function'
-              && window.sstackGetActiveIdx() === 1
-              && visited.length === SECTIONS.length
-              && typeof window.sstackNext === 'function') {
-            autoAdvanceDone = true;
-            window.sstackNext();
-          }
+          runAdvance();
         }, afterMs);
       }
+      // Called by closePortfolio() so a deferred advance can fire once the
+      // user has collapsed the widget.
+      window.ilaResumeAdvance = function () {
+        if (!pendingAdvanceOnClose) return;
+        pendingAdvanceOnClose = false;
+        setTimeout(runAdvance, 600);
+      };
 
       function displayOrder() {
         const unvisited = SECTIONS.filter(s => !visited.includes(s));
@@ -4711,15 +5089,15 @@
           if (c) {
             dot.style.width = dot.style.height = '16px';
             dot.style.background = col;
-            dot.style.boxShadow  = '0 0 0 3px ' + col + '55';
+            dot.style.boxShadow  = '0 0 0 3px ' + col + '40, 0 0 10px ' + col + '60';
           } else if (v) {
-            dot.style.width = dot.style.height = '14px';
+            dot.style.width = dot.style.height = '13px';
             dot.style.background = col;
             dot.style.boxShadow  = 'none';
           } else {
-            dot.style.width = dot.style.height = '12px';
+            dot.style.width = dot.style.height = '11px';
             dot.style.background = 'transparent';
-            dot.style.boxShadow  = '0 0 0 2px rgba(255,255,255,0.25)';
+            dot.style.boxShadow  = '0 0 0 2px rgba(255,255,255,0.22)';
           }
           slotEl.appendChild(dot);
           const label = document.createElement('span');
@@ -4820,6 +5198,15 @@
         }
       };
 
+      // Let the expanded weather close handler re-sync the compact arc position.
+      window.iwwRefreshArc = () => updateArc(new Date());
+
+      // Expose read-only state for the expanded Portfolio view to render its own
+      // larger, stylised timeline (cloning the compact widget DOM looks bad).
+      window.ilaGetState = function () {
+        return { SECTIONS, LABELS, COLORS, visited: visited.slice(), current, displayOrder: displayOrder(), filled: getFilledState() };
+      };
+
       window.ilaVisit = function (section) {
         if (!SECTIONS.includes(section)) return;
         // Capture which segments were filled BEFORE this visit.
@@ -4904,7 +5291,9 @@
       if (!headline || !message || !hashEl || !timeEl) return;
 
       const REPO   = 'project11x/tomin-world';
-      const API    = 'https://api.github.com/repos/' + REPO + '/commits?per_page=5';
+      // Fetch more than the compact widget needs so the expanded list has
+      // enough to fill the screen without re-fetching on open.
+      const API    = 'https://api.github.com/repos/' + REPO + '/commits?per_page=30';
       // Shared normalised commit shape: { sha, msg, date }.
       let commits  = [];
 
@@ -5005,6 +5394,825 @@
       // Re-poll the API every 5 min. 12 req/hr per IP fits the 60/hr limit
       // comfortably.
       setInterval(fetchLive, 5 * 60 * 1000);
+
+      // ───────────────────────────────────────────────────────────────────
+      // Expanded changelog — iOS-style "grow from widget" expansion.
+      //
+      // Open: position the expanded card at the widget's current bounding
+      // rect, force a reflow, then transition to the inset-fullscreen
+      // target layout. Uses the iOS spring easing.
+      // Close: reverse — animate back to the widget's rect and hide.
+      // Drag: pointer on the top grab zone; drag down → translate, release
+      // past a threshold (or fast flick) closes the sheet.
+      // ───────────────────────────────────────────────────────────────────
+      const widget      = document.getElementById('ios-system-pulse');
+      const expanded    = document.getElementById('ios-changelog-expanded');
+      const expCard     = document.getElementById('ios-changelog-card');
+      const backdrop    = document.getElementById('ios-changelog-backdrop');
+      const contentEl   = document.getElementById('ios-changelog-content');
+      const listEl      = document.getElementById('sys-commits-list');
+      const grabEl      = document.getElementById('ios-changelog-grab');
+      // iOS widget expand easing — tuned to match Springboard's feel:
+      // a slightly over-damped spring that settles without overshoot.
+      const SPRING      = 'cubic-bezier(0.32, 0.72, 0, 1)';
+      const DUR         = 0.48; // seconds — Apple widget expand is ~460–500ms
+      const ANIM_PROPS  = `top ${DUR}s ${SPRING}, left ${DUR}s ${SPRING}, ` +
+                          `width ${DUR}s ${SPRING}, height ${DUR}s ${SPRING}, ` +
+                          `border-radius ${DUR}s ${SPRING}, transform ${DUR}s ${SPRING}`;
+      // Content transition — scale + fade move together, ease-out on entry,
+      // slightly steeper ease-in on exit so it "pulls back" into the widget.
+      const CONTENT_IN  = 'opacity 0.32s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.42s cubic-bezier(0.2, 0.7, 0.2, 1)';
+      const CONTENT_OUT = 'opacity 0.22s cubic-bezier(0.6, 0, 0.8, 0.2), transform 0.30s cubic-bezier(0.5, 0, 0.75, 0)';
+
+      // Render the scrollable list of commits inside the expanded card.
+      function renderList() {
+        if (!listEl) return;
+        if (!commits.length) {
+          listEl.innerHTML = '<div style="color:rgba(255,255,255,0.5); font-size:13px; padding:20px 6px;">No commits yet.</div>';
+          return;
+        }
+        listEl.innerHTML = commits.map(c => {
+          const subj = (c.msg || '').split('\n')[0];
+          const sha  = (c.sha || '').slice(0, 7);
+          const ago  = fmtAgo(new Date(c.date));
+          // Escape subject — commit messages are untrusted text.
+          const esc  = subj.replace(/[&<>"']/g, ch => ({
+            '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+          }[ch]));
+          return (
+            '<div style="padding:4px 2px;">' +
+              '<div style="background:rgba(255,255,255,0.03); border:1px solid rgba(48,209,88,0.18); border-radius:9px; padding:10px 12px; color:rgba(212,245,225,0.92); font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12.5px; line-height:1.4; font-weight:500;">' +
+                esc +
+              '</div>' +
+              '<div style="display:flex; justify-content:space-between; align-items:center; padding:7px 4px 0;">' +
+                '<code style="color:#5ac8fa; font-size:11.5px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-weight:700; letter-spacing:0.02em;">' + sha + '</code>' +
+                '<span style="color:rgba(255,255,255,0.44); font-size:11.5px; font-weight:500;">' + ago + '</span>' +
+              '</div>' +
+            '</div>'
+          );
+        }).join('');
+      }
+
+      // Compute target rect for the expanded card: inset from the screen
+      // edges, rounded both top and bottom (per the sketch).
+      function getExpandedTarget() {
+        const screen = document.getElementById('ios-screen');
+        const sr = screen ? screen.getBoundingClientRect() : { top:0, left:0, width:window.innerWidth, height:window.innerHeight };
+        const sideInset   = 14;
+        const topInset    = 32;  // leaves breathing room below the status bar
+        const bottomInset = 28;
+        return {
+          top:    sr.top + topInset,
+          left:   sr.left + sideInset,
+          width:  sr.width - sideInset * 2,
+          height: sr.height - topInset - bottomInset,
+          radius: 32,
+        };
+      }
+
+      // Set the card's absolute frame instantly (no transition).
+      function setCardFrame(rect, radius) {
+        expCard.style.transition = 'none';
+        expCard.style.top    = rect.top + 'px';
+        expCard.style.left   = rect.left + 'px';
+        expCard.style.width  = rect.width + 'px';
+        expCard.style.height = rect.height + 'px';
+        expCard.style.borderRadius = (radius != null ? radius : 20) + 'px';
+        expCard.style.transform = 'translateY(0)';
+      }
+
+      let isOpen = false;
+
+      function openChangelog() {
+        if (isOpen) return;
+        isOpen = true;
+        renderList();
+        requestAnimationFrame(updateScrollFade);
+        const r = widget.getBoundingClientRect();
+        expanded.style.display = 'block';
+        // Content starts collapsed toward the widget — small scale + offset so it
+        // feels like it's emerging from the card rather than popping on top.
+        if (contentEl) {
+          contentEl.style.transition = 'none';
+          contentEl.style.opacity   = '0';
+          contentEl.style.transform = 'scale(0.94) translateY(6px)';
+          contentEl.style.transformOrigin = '50% 20%';
+        }
+        setCardFrame({ top: r.top, left: r.left, width: r.width, height: r.height }, 20);
+        void expCard.offsetWidth;
+        // Card expands; content fades/scales in with overlapping timing so
+        // the two motions feel like one continuous morph.
+        requestAnimationFrame(() => {
+          const t = getExpandedTarget();
+          expCard.style.transition = ANIM_PROPS;
+          expCard.style.top    = t.top + 'px';
+          expCard.style.left   = t.left + 'px';
+          expCard.style.width  = t.width + 'px';
+          expCard.style.height = t.height + 'px';
+          expCard.style.borderRadius = t.radius + 'px';
+          // Start content reveal at ~35% through the card animation — the
+          // card is already clearly growing, content catches up on the way.
+          setTimeout(() => {
+            if (!isOpen) return;
+            if (contentEl) {
+              contentEl.style.transition = CONTENT_IN;
+              contentEl.style.opacity    = '1';
+              contentEl.style.transform  = 'scale(1) translateY(0)';
+            }
+          }, Math.round(DUR * 1000 * 0.18));
+        });
+      }
+
+      function closeChangelog() {
+        if (!isOpen) return;
+        isOpen = false;
+        // Content retreats — scale + fade together, anchored near the top
+        // so it visually collapses toward where the widget will settle.
+        if (contentEl) {
+          contentEl.style.transition = CONTENT_OUT;
+          contentEl.style.opacity    = '0';
+          contentEl.style.transform  = 'scale(0.92) translateY(-4px)';
+          contentEl.style.transformOrigin = '50% 20%';
+        }
+        // Prime the widget's own children: hide them instantly so we can
+        // fade them back in while the card is still shrinking. This gives
+        // the close a cross-fade feel — user sees the widget text emerging
+        // well before the card fully lands.
+        const widgetKids = Array.from(widget.children);
+        widgetKids.forEach(el => {
+          el.style.transition = 'none';
+          el.style.opacity    = '0';
+          el.style.transform  = 'translateY(3px) scale(0.985)';
+          // Force the hidden style to commit before we set the fade-in.
+          void el.offsetWidth;
+        });
+        // Card begins shrinking almost immediately, and simultaneously
+        // fades its own opacity — revealing the widget beneath.
+        requestAnimationFrame(() => {
+          if (isOpen) return;
+          const r = widget.getBoundingClientRect();
+          expCard.style.transition = ANIM_PROPS + `, opacity ${DUR * 0.65}s cubic-bezier(0.4, 0, 0.7, 0.2) ${DUR * 0.3}s`;
+          expCard.style.top    = r.top + 'px';
+          expCard.style.left   = r.left + 'px';
+          expCard.style.width  = r.width + 'px';
+          expCard.style.height = r.height + 'px';
+          expCard.style.borderRadius = '20px';
+          expCard.style.transform = 'translateY(0)';
+          expCard.style.opacity  = '0';
+        });
+        // At ~30% of the shrink, start the widget's own reveal. The user
+        // sees widget text fading up *through* the dissolving card.
+        setTimeout(() => {
+          if (isOpen) return;
+          widgetKids.forEach(el => {
+            el.style.transition = 'opacity 0.42s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1)';
+            el.style.opacity   = '1';
+            el.style.transform = 'translateY(0) scale(1)';
+          });
+        }, Math.round(DUR * 1000 * 0.3));
+        // Hide overlay + clean up widget inline styles once everything settles.
+        setTimeout(() => {
+          if (isOpen) return;
+          expanded.style.display = 'none';
+          expCard.style.opacity = '1';
+          widgetKids.forEach(el => {
+            el.style.transition = '';
+            el.style.opacity    = '';
+            el.style.transform  = '';
+          });
+        }, Math.round(DUR * 1000) + 80);
+      }
+
+      window.iosChangelogOpen = (e) => {
+        if (e && e.stopPropagation) e.stopPropagation();
+        openChangelog();
+      };
+      window.iosChangelogClose = closeChangelog;
+
+      // ─── Drag-to-close from outside the scrollable list ───────────────
+      // iOS-style sheet: a downward drag on the header/grab bar dismisses
+      // the sheet. Inside the commit list we always defer to native
+      // scrolling so the user can browse older commits without the sheet
+      // collapsing on them.
+      if (expCard) {
+        let dragging = false;
+        let startY = 0;
+        let startT = 0;
+        let moved = 0;
+        let pendingPointerId = null;
+
+        expCard.addEventListener('pointerdown', (e) => {
+          if (!isOpen) return;
+          if (e.pointerType === 'mouse' && e.button !== 0) return;
+          // Inside the list → always scroll, never drag-to-close.
+          if (listEl && listEl.contains(e.target)) return;
+          pendingPointerId = e.pointerId;
+          startY = e.clientY;
+          startT = Date.now();
+          moved = 0;
+          dragging = false; // activate only once movement crosses threshold
+        });
+        expCard.addEventListener('pointermove', (e) => {
+          if (pendingPointerId !== e.pointerId) return;
+          const dy = e.clientY - startY;
+          if (!dragging) {
+            // Threshold: wait for a clear downward intent so normal taps /
+            // vertical scroll nudges inside the list still work.
+            if (dy > 6) {
+              dragging = true;
+              try { expCard.setPointerCapture(e.pointerId); } catch (_) {}
+              expCard.style.transition = 'none';
+            } else if (dy < -6) {
+              // Upward motion — abandon drag intent; let scroll take over.
+              pendingPointerId = null;
+              return;
+            } else {
+              return;
+            }
+          }
+          moved = dy;
+          const y = dy > 0 ? dy : dy * 0.2;
+          expCard.style.transform = 'translateY(' + y + 'px)';
+          // Fade content out as the card is pulled down
+          if (contentEl) {
+            const fade = Math.max(0, 1 - Math.max(0, dy) / 200);
+            contentEl.style.transition = 'none';
+            contentEl.style.opacity = String(fade);
+          }
+        });
+        const endDrag = (e) => {
+          if (pendingPointerId !== e.pointerId) return;
+          pendingPointerId = null;
+          if (!dragging) return;
+          dragging = false;
+          try { expCard.releasePointerCapture(e.pointerId); } catch (_) {}
+          const dt = Date.now() - startT;
+          const velocity = moved / Math.max(1, dt);
+          if (moved > 110 || (velocity > 0.6 && moved > 30)) {
+            closeChangelog();
+          } else {
+            expCard.style.transition = 'transform 0.35s ' + SPRING;
+            expCard.style.transform = 'translateY(0)';
+            if (contentEl) { contentEl.style.transition = 'opacity 0.2s ease'; contentEl.style.opacity = '1'; }
+          }
+        };
+        expCard.addEventListener('pointerup', endDrag);
+        expCard.addEventListener('pointercancel', endDrag);
+      }
+
+      // Dynamic scroll-fade: top edge appears when scrolled, bottom fades when more content below.
+      function updateScrollFade() {
+        if (!listEl) return;
+        const atTop    = listEl.scrollTop < 8;
+        const atBottom = listEl.scrollTop + listEl.clientHeight >= listEl.scrollHeight - 8;
+        const top    = atTop    ? 'black'       : 'transparent';
+        const bottom = atBottom ? 'black'       : 'transparent';
+        const topStop    = atTop    ? '0%'      : '12%';
+        const bottomStop = atBottom ? '100%'    : '88%';
+        const mask = `linear-gradient(to bottom, ${top} 0%, black ${topStop}, black ${bottomStop}, ${bottom} 100%)`;
+        listEl.style.maskImage = mask;
+        listEl.style.webkitMaskImage = mask;
+      }
+      if (listEl) listEl.addEventListener('scroll', updateScrollFade, { passive: true });
+
+      // Keep the expanded list fresh: re-render "Xm ago" labels and any
+      // new commits the fetch picked up, every 30 s while open.
+      setInterval(() => { if (isOpen) renderList(); }, 30000);
+      // Initial pass so openChangelog has data immediately.
+      renderList();
+    })();
+
+    // ═════════════════════════════════════════════════════════════════════
+    // Portfolio Guide — iOS-style expand/collapse, same animation as Changelog.
+    // ═════════════════════════════════════════════════════════════════════
+    (function () {
+      const widget     = document.getElementById('ios-live-activity');
+      const expanded   = document.getElementById('ios-portfolio-expanded');
+      const expCard    = document.getElementById('ios-portfolio-card');
+      const contentEl  = document.getElementById('ios-portfolio-content');
+      const grabEl     = document.getElementById('ios-portfolio-grab');
+      const badgeEl    = document.getElementById('ios-portfolio-badge');
+      const srcBadge   = document.getElementById('ila-badge');
+      if (!widget || !expanded || !expCard) return;
+
+      const SPRING     = 'cubic-bezier(0.32, 0.72, 0, 1)';
+      const DUR        = 0.48;
+      const ANIM_PROPS = `top ${DUR}s ${SPRING}, left ${DUR}s ${SPRING}, ` +
+                         `width ${DUR}s ${SPRING}, height ${DUR}s ${SPRING}, ` +
+                         `border-radius ${DUR}s ${SPRING}, transform ${DUR}s ${SPRING}`;
+      const CONTENT_IN  = 'opacity 0.32s cubic-bezier(0.2,0.7,0.2,1), transform 0.42s cubic-bezier(0.2,0.7,0.2,1)';
+      const CONTENT_OUT = 'opacity 0.22s cubic-bezier(0.6,0,0.8,0.2), transform 0.30s cubic-bezier(0.5,0,0.75,0)';
+
+      // Build a scaled-up version of the widget's progress timeline inside the
+      // expanded card. Pulls live state from window.ilaGetState() so the dots
+      // and segments reflect what the user has actually visited.
+      function renderExpandedTimeline() {
+        const host = document.getElementById('ios-portfolio-timeline');
+        if (!host || typeof window.ilaGetState !== 'function') return;
+        const s = window.ilaGetState();
+        host.innerHTML = '';
+
+        const SIZE_CUR     = 22;   // current section dot
+        const SIZE_VIS     = 18;   // visited dot
+        const SIZE_EMP     = 16;   // unvisited hollow dot
+        const SLOT_W       = 24;   // container width so layout stays stable as dot size changes
+        const SEG_H        = 4;    // segment rail height
+        const SEG_EMPTY_BG = 'rgba(255,255,255,0.08)';
+
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex; align-items:center; gap:3px; width:100%;';
+
+        for (let i = 0; i < s.displayOrder.length; i++) {
+          const section = s.displayOrder[i];
+          const isCur   = section === s.current;
+          const isVis   = s.visited.includes(section);
+          const col     = s.COLORS[section];
+
+          const slot = document.createElement('div');
+          slot.style.cssText = `position:relative; flex-shrink:0; width:${SLOT_W}px; height:${SLOT_W}px;
+            display:flex; align-items:center; justify-content:center; z-index:2;`;
+
+          const dot = document.createElement('div');
+          dot.style.borderRadius = '50%';
+          dot.style.transition   = 'all 0.35s ease';
+          if (isCur) {
+            dot.style.width = dot.style.height = SIZE_CUR + 'px';
+            dot.style.background = col;
+            dot.style.boxShadow  = `0 0 0 4px ${col}40, 0 0 14px ${col}60`;
+          } else if (isVis) {
+            dot.style.width = dot.style.height = SIZE_VIS + 'px';
+            dot.style.background = col;
+            dot.style.boxShadow  = 'none';
+          } else {
+            dot.style.width = dot.style.height = SIZE_EMP + 'px';
+            dot.style.background = 'transparent';
+            dot.style.boxShadow  = '0 0 0 2px rgba(255,255,255,0.22)';
+          }
+          slot.appendChild(dot);
+
+          const label = document.createElement('span');
+          label.textContent = s.LABELS[section];
+          label.style.cssText =
+            'position:absolute; top:32px; left:50%; transform:translateX(-50%); ' +
+            'white-space:nowrap; font-size:10.5px; font-weight:700; letter-spacing:0.09em; ' +
+            'text-transform:uppercase; color:rgba(255,255,255,' +
+            (isCur ? '0.95' : isVis ? '0.7' : '0.38') + ');';
+          slot.appendChild(label);
+          row.appendChild(slot);
+
+          // Segment between this slot and the next
+          if (i < s.displayOrder.length - 1) {
+            const seg = document.createElement('div');
+            seg.style.cssText = `flex:1; position:relative; height:${SEG_H}px; border-radius:${SEG_H/2}px;
+              background:${SEG_EMPTY_BG}; overflow:hidden;`;
+            if (s.filled[i]) {
+              const fill = document.createElement('div');
+              const nextCol = s.COLORS[s.displayOrder[i+1]];
+              fill.style.cssText = `position:absolute; inset:0; border-radius:inherit;
+                background:linear-gradient(to right, ${col}, ${nextCol});`;
+              seg.appendChild(fill);
+            }
+            row.appendChild(seg);
+          }
+        }
+
+        host.appendChild(row);
+      }
+
+      function getExpandedTarget() {
+        const screen = document.getElementById('ios-screen');
+        const sr = screen ? screen.getBoundingClientRect() : { top:0, left:0, width:window.innerWidth, height:window.innerHeight };
+        return { top: sr.top + 32, left: sr.left + 14, width: sr.width - 28, height: sr.height - 60, radius: 32 };
+      }
+
+      function setCardFrame(rect, radius) {
+        expCard.style.transition = 'none';
+        expCard.style.top    = rect.top + 'px';
+        expCard.style.left   = rect.left + 'px';
+        expCard.style.width  = rect.width + 'px';
+        expCard.style.height = rect.height + 'px';
+        expCard.style.borderRadius = (radius ?? 20) + 'px';
+        expCard.style.transform = 'translateY(0)';
+      }
+
+      let isOpen = false;
+
+      function openPortfolio() {
+        if (isOpen) return;
+        isOpen = true;
+        // Sync badge from widget
+        if (badgeEl && srcBadge) {
+          badgeEl.textContent = srcBadge.textContent;
+          badgeEl.style.background = srcBadge.style.background || '#e0e0e0';
+          badgeEl.style.color = srcBadge.style.color || '#1a1a1a';
+        }
+        // Render a properly sized timeline for the expanded view — the widget
+        // version is too tiny when scaled up, so we build a cleaner one here.
+        renderExpandedTimeline();
+        // Sync the explored count subtitle
+        const srcSub  = document.getElementById('ila-sub');
+        const expSub  = document.getElementById('ios-portfolio-sub');
+        if (srcSub && expSub) expSub.textContent = srcSub.textContent;
+        const r = widget.getBoundingClientRect();
+        expanded.style.display = 'block';
+        if (contentEl) {
+          contentEl.style.transition = 'none';
+          contentEl.style.opacity   = '0';
+          contentEl.style.transform = 'scale(0.94) translateY(6px)';
+          contentEl.style.transformOrigin = '50% 20%';
+        }
+        setCardFrame({ top: r.top, left: r.left, width: r.width, height: r.height }, 20);
+        void expCard.offsetWidth;
+        requestAnimationFrame(() => {
+          const t = getExpandedTarget();
+          expCard.style.transition = ANIM_PROPS;
+          expCard.style.top    = t.top + 'px';
+          expCard.style.left   = t.left + 'px';
+          expCard.style.width  = t.width + 'px';
+          expCard.style.height = t.height + 'px';
+          expCard.style.borderRadius = t.radius + 'px';
+          setTimeout(() => {
+            if (!isOpen) return;
+            if (contentEl) {
+              contentEl.style.transition = CONTENT_IN;
+              contentEl.style.opacity    = '1';
+              contentEl.style.transform  = 'scale(1) translateY(0)';
+            }
+          }, Math.round(DUR * 1000 * 0.18));
+        });
+      }
+
+      function closePortfolio() {
+        if (!isOpen) return;
+        isOpen = false;
+        if (window.ilaResumeAdvance) window.ilaResumeAdvance();
+        if (contentEl) {
+          contentEl.style.transition = CONTENT_OUT;
+          contentEl.style.opacity    = '0';
+          contentEl.style.transform  = 'scale(0.92) translateY(-4px)';
+          contentEl.style.transformOrigin = '50% 20%';
+        }
+        const widgetKids = Array.from(widget.children);
+        widgetKids.forEach(el => {
+          el.style.transition = 'none';
+          el.style.opacity    = '0';
+          el.style.transform  = 'translateY(3px) scale(0.985)';
+          void el.offsetWidth;
+        });
+        requestAnimationFrame(() => {
+          if (isOpen) return;
+          const r = widget.getBoundingClientRect();
+          expCard.style.transition = ANIM_PROPS + `, opacity ${DUR * 0.65}s cubic-bezier(0.4,0,0.7,0.2) ${DUR * 0.3}s`;
+          expCard.style.top    = r.top + 'px';
+          expCard.style.left   = r.left + 'px';
+          expCard.style.width  = r.width + 'px';
+          expCard.style.height = r.height + 'px';
+          expCard.style.borderRadius = '20px';
+          expCard.style.transform = 'translateY(0)';
+          expCard.style.opacity  = '0';
+        });
+        setTimeout(() => {
+          if (isOpen) return;
+          widgetKids.forEach(el => {
+            el.style.transition = 'opacity 0.42s cubic-bezier(0.2,0.7,0.2,1), transform 0.5s cubic-bezier(0.2,0.7,0.2,1)';
+            el.style.opacity    = '1';
+            el.style.transform  = 'translateY(0) scale(1)';
+          });
+        }, Math.round(DUR * 1000 * 0.3));
+        setTimeout(() => {
+          if (isOpen) return;
+          expanded.style.display = 'none';
+          expCard.style.opacity  = '1';
+          widgetKids.forEach(el => { el.style.transition = ''; el.style.opacity = ''; el.style.transform = ''; });
+        }, Math.round(DUR * 1000) + 80);
+      }
+
+      window.iosPortfolioOpen = (e) => { if (e) e.stopPropagation(); openPortfolio(); };
+      window.iosPortfolioClose = closePortfolio;
+      window.iosPortfolioIsOpen = () => isOpen;
+
+      // Drag-to-close from anywhere on the card
+      if (expCard) {
+        let dragging = false, startY = 0, startT = 0, moved = 0, pendingId = null;
+        expCard.addEventListener('pointerdown', (e) => {
+          if (!isOpen || (e.pointerType === 'mouse' && e.button !== 0)) return;
+          pendingId = e.pointerId; startY = e.clientY; startT = Date.now(); moved = 0; dragging = false;
+        });
+        expCard.addEventListener('pointermove', (e) => {
+          if (pendingId !== e.pointerId) return;
+          const dy = e.clientY - startY;
+          if (!dragging) {
+            if (dy > 6) { dragging = true; try { expCard.setPointerCapture(e.pointerId); } catch(_){} expCard.style.transition = 'none'; }
+            else if (dy < -6) { pendingId = null; return; }
+            else return;
+          }
+          moved = dy;
+          expCard.style.transform = 'translateY(' + (dy > 0 ? dy : dy * 0.2) + 'px)';
+          if (contentEl) { contentEl.style.transition = 'none'; contentEl.style.opacity = String(Math.max(0, 1 - Math.max(0, dy) / 200)); }
+        });
+        const endDrag = (e) => {
+          if (pendingId !== e.pointerId) return;
+          pendingId = null;
+          if (!dragging) return;
+          dragging = false;
+          try { expCard.releasePointerCapture(e.pointerId); } catch(_){}
+          const velocity = moved / Math.max(1, Date.now() - startT);
+          if (moved > 110 || (velocity > 0.6 && moved > 30)) {
+            closePortfolio();
+          } else {
+            expCard.style.transition = 'transform 0.35s ' + SPRING;
+            expCard.style.transform  = 'translateY(0)';
+            if (contentEl) { contentEl.style.transition = 'opacity 0.2s ease'; contentEl.style.opacity = '1'; }
+          }
+        };
+        expCard.addEventListener('pointerup', endDrag);
+        expCard.addEventListener('pointercancel', endDrag);
+      }
+    })();
+
+    // ═════════════════════════════════════════════════════════════════════
+    // Weather / Berlin Status — iOS-style expand/collapse, same animation as Portfolio.
+    // ═════════════════════════════════════════════════════════════════════
+    (function () {
+      const widget    = document.getElementById('ios-weather-widget');
+      const expanded  = document.getElementById('ios-weather-expanded');
+      const expCard   = document.getElementById('ios-weather-card');
+      const contentEl = document.getElementById('ios-weather-content');
+      const scrollEl  = document.getElementById('ios-weather-scroll');
+      if (!widget || !expanded || !expCard) return;
+
+      const SPRING     = 'cubic-bezier(0.32, 0.72, 0, 1)';
+      const DUR        = 0.48;
+      const ANIM_PROPS = `top ${DUR}s ${SPRING}, left ${DUR}s ${SPRING}, ` +
+                         `width ${DUR}s ${SPRING}, height ${DUR}s ${SPRING}, ` +
+                         `border-radius ${DUR}s ${SPRING}, transform ${DUR}s ${SPRING}`;
+      const CONTENT_IN  = 'opacity 0.32s cubic-bezier(0.2,0.7,0.2,1), transform 0.42s cubic-bezier(0.2,0.7,0.2,1)';
+      const CONTENT_OUT = 'opacity 0.22s cubic-bezier(0.6,0,0.8,0.2), transform 0.30s cubic-bezier(0.5,0,0.75,0)';
+
+      // ─── Manual status — edit these to update what's shown ────────────
+      const STATUS = {
+        emoji: '✂️',
+        title: 'Cutting',
+        project: 'Milano BTS · Day 3',
+        note: 'Deep in the edit. Coffee on the desk, color grade tomorrow.',
+        vibe: 'Hyperfocus',
+        vibeIcon: '⚡ high energy',
+        cutsThisWeek: 3,
+        lastUpload: '2d ago',
+      };
+
+      function applyStatus() {
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+        set('iwe-status-title',   STATUS.title);
+        set('iwe-status-project', STATUS.project);
+        set('iwe-status-note',    STATUS.note);
+        set('iwe-vibe',           STATUS.vibe);
+        set('iwe-cuts',           STATUS.cutsThisWeek);
+        const lastEl = document.querySelector('#ios-weather-scroll [style*="last:"]'); // no-op
+        // (vibeIcon + lastUpload styling stays inline since rare-change)
+      }
+
+      // ─── Mirror compact widget data into the expanded view ────────────
+      function syncFromCompact() {
+        const map = [
+          ['iww-time', 'iwe-time'],
+          ['iww-icon', 'iwe-icon'],
+          ['iww-temp', 'iwe-temp'],
+          ['iww-wind', 'iwe-wind'],
+          ['iww-desc', 'iwe-desc'],
+        ];
+        map.forEach(([src, dst]) => {
+          const s = document.getElementById(src);
+          const d = document.getElementById(dst);
+          if (s && d) d.textContent = s.textContent;
+        });
+        // Date
+        const dateEl = document.getElementById('iwe-date');
+        if (dateEl) {
+          const now = new Date();
+          dateEl.textContent = now.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long' });
+        }
+        // Sunrise/Sunset (read from open-meteo cache via Date objects rebuilt)
+        // We re-fetch the times from the compact widget's exposed state if available.
+        if (window.iwwGetSunTimes) {
+          const t = window.iwwGetSunTimes();
+          if (t && t.sunrise && t.sunset) {
+            const fmt = (ms) => {
+              const d = new Date(ms);
+              return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+            };
+            const sunriseEl = document.getElementById('iwe-sunrise');
+            const sunsetEl  = document.getElementById('iwe-sunset');
+            const stateEl   = document.getElementById('iwe-daylight-state');
+            const cdLabel   = document.querySelector('#iwe-daylight-countdown div:first-child');
+            const cdVal     = document.getElementById('iwe-countdown-val');
+            if (sunriseEl) sunriseEl.textContent = fmt(t.sunrise);
+            if (sunsetEl)  sunsetEl.textContent  = fmt(t.sunset);
+            const now = Date.now();
+            const isDay = now > t.sunrise && now < t.sunset;
+            if (stateEl) {
+              stateEl.textContent = isDay ? 'Day' : 'Night';
+              stateEl.style.color = isDay ? 'rgba(255,215,75,0.85)' : 'rgba(140,180,255,0.85)';
+            }
+            if (cdLabel && cdVal) {
+              const target = isDay ? t.sunset : (now < t.sunrise ? t.sunrise : t.sunrise + 86400000);
+              cdLabel.textContent = isDay ? 'Until sunset' : 'Until sunrise';
+              const diff = Math.max(0, target - now);
+              const h = Math.floor(diff / 3600000);
+              const m = Math.floor((diff % 3600000) / 60000);
+              cdVal.textContent = h + 'h ' + String(m).padStart(2,'0') + 'm';
+            }
+            placeArcMarker(t, isDay);
+          }
+        }
+      }
+
+      // Position sun/moon on the arc using native SVG coords — no pixel conversion needed.
+      function placeArcMarker(t, isDay) {
+        const arcBg   = document.getElementById('iwe-arc-bg');
+        const arcProg = document.getElementById('iwe-arc-prog');
+        const sunGlow = document.getElementById('iwe-svg-sun-glow');
+        const sunDot  = document.getElementById('iwe-svg-sun-dot');
+        const moon    = document.getElementById('iwe-svg-moon');
+        if (!arcBg || !arcBg.getPointAtLength) return;
+        const totalLen = arcBg.getTotalLength();
+        const now = Date.now();
+        const progT = isDay
+          ? Math.max(0, Math.min(1, (now - t.sunrise) / (t.sunset - t.sunrise)))
+          : 0.5;
+        const progLen = totalLen * progT;
+        const pt = arcBg.getPointAtLength(progLen);  // viewBox coords directly
+        if (isDay) {
+          if (arcProg) arcProg.setAttribute('stroke-dasharray', progLen + ' ' + (totalLen + 10));
+          if (sunGlow) { sunGlow.setAttribute('cx', pt.x); sunGlow.setAttribute('cy', pt.y); sunGlow.removeAttribute('display'); }
+          if (sunDot)  { sunDot.setAttribute('cx', pt.x);  sunDot.setAttribute('cy', pt.y);  sunDot.removeAttribute('display'); }
+          if (moon)    moon.setAttribute('display', 'none');
+        } else {
+          if (arcProg) arcProg.setAttribute('stroke-dasharray', '0 ' + (totalLen + 10));
+          if (sunGlow) sunGlow.setAttribute('display', 'none');
+          if (sunDot)  sunDot.setAttribute('display', 'none');
+          if (moon)    { moon.setAttribute('x', pt.x); moon.setAttribute('y', pt.y); moon.removeAttribute('display'); }
+        }
+      }
+
+      function getExpandedTarget() {
+        const screen = document.getElementById('ios-screen');
+        const sr = screen ? screen.getBoundingClientRect() : { top:0, left:0, width:window.innerWidth, height:window.innerHeight };
+        return { top: sr.top + 32, left: sr.left + 14, width: sr.width - 28, height: sr.height - 60, radius: 32 };
+      }
+
+      function setCardFrame(rect, radius) {
+        expCard.style.transition = 'none';
+        expCard.style.top    = rect.top + 'px';
+        expCard.style.left   = rect.left + 'px';
+        expCard.style.width  = rect.width + 'px';
+        expCard.style.height = rect.height + 'px';
+        expCard.style.borderRadius = (radius ?? 20) + 'px';
+        expCard.style.transform = 'translateY(0)';
+      }
+
+      let isOpen = false;
+      let liveSyncTimer = null;
+
+      function openWeather() {
+        if (isOpen) return;
+        isOpen = true;
+        applyStatus();
+        syncFromCompact();
+        if (liveSyncTimer) clearInterval(liveSyncTimer);
+        liveSyncTimer = setInterval(syncFromCompact, 30000);
+        const r = widget.getBoundingClientRect();
+        expanded.style.display = 'block';
+        if (contentEl) {
+          contentEl.style.transition = 'none';
+          contentEl.style.opacity   = '0';
+          contentEl.style.transform = 'scale(0.94) translateY(6px)';
+          contentEl.style.transformOrigin = '50% 20%';
+        }
+        setCardFrame({ top: r.top, left: r.left, width: r.width, height: r.height }, 20);
+        void expCard.offsetWidth;
+        requestAnimationFrame(() => {
+          const t = getExpandedTarget();
+          expCard.style.transition = ANIM_PROPS;
+          expCard.style.top    = t.top + 'px';
+          expCard.style.left   = t.left + 'px';
+          expCard.style.width  = t.width + 'px';
+          expCard.style.height = t.height + 'px';
+          expCard.style.borderRadius = t.radius + 'px';
+          setTimeout(() => {
+            if (!isOpen) return;
+            if (contentEl) {
+              contentEl.style.transition = CONTENT_IN;
+              contentEl.style.opacity    = '1';
+              contentEl.style.transform  = 'scale(1) translateY(0)';
+            }
+          }, Math.round(DUR * 1000 * 0.18));
+          // Place arc marker AFTER card has fully expanded, so getBoundingClientRect() is accurate.
+          setTimeout(() => {
+            if (!isOpen) return;
+            requestAnimationFrame(syncFromCompact);
+          }, Math.round(DUR * 1000) + 40);
+        });
+      }
+
+      function closeWeather() {
+        if (!isOpen) return;
+        isOpen = false;
+        if (liveSyncTimer) { clearInterval(liveSyncTimer); liveSyncTimer = null; }
+        if (contentEl) {
+          contentEl.style.transition = CONTENT_OUT;
+          contentEl.style.opacity    = '0';
+          contentEl.style.transform  = 'scale(0.92) translateY(-4px)';
+          contentEl.style.transformOrigin = '50% 20%';
+        }
+        // Exclude sun/glow/moon HTML overlays from the close animation —
+        // they use transform:translate(-50%,-50%) for centering which would
+        // be overwritten, causing them to jump on re-open.
+        const excludeIds = new Set(['iww-sun-dot-html','iww-sun-glow-html','iww-moon-html']);
+        const widgetKids = Array.from(widget.children).filter(el => !excludeIds.has(el.id));
+        widgetKids.forEach(el => {
+          el.style.transition = 'none';
+          el.style.opacity    = '0';
+          el.style.transform  = 'translateY(3px) scale(0.985)';
+          void el.offsetWidth;
+        });
+        requestAnimationFrame(() => {
+          if (isOpen) return;
+          const r = widget.getBoundingClientRect();
+          expCard.style.transition = ANIM_PROPS + `, opacity ${DUR * 0.65}s cubic-bezier(0.4,0,0.7,0.2) ${DUR * 0.3}s`;
+          expCard.style.top    = r.top + 'px';
+          expCard.style.left   = r.left + 'px';
+          expCard.style.width  = r.width + 'px';
+          expCard.style.height = r.height + 'px';
+          expCard.style.borderRadius = '20px';
+          expCard.style.transform = 'translateY(0)';
+          expCard.style.opacity  = '0';
+        });
+        setTimeout(() => {
+          if (isOpen) return;
+          widgetKids.forEach(el => {
+            el.style.transition = 'opacity 0.42s cubic-bezier(0.2,0.7,0.2,1), transform 0.5s cubic-bezier(0.2,0.7,0.2,1)';
+            el.style.opacity    = '1';
+            el.style.transform  = 'translateY(0) scale(1)';
+          });
+        }, Math.round(DUR * 1000 * 0.3));
+        setTimeout(() => {
+          if (isOpen) return;
+          expanded.style.display = 'none';
+          expCard.style.opacity  = '1';
+          widgetKids.forEach(el => { el.style.transition = ''; el.style.opacity = ''; el.style.transform = ''; });
+          // Re-place the compact arc marker now that widget children are restored.
+          // Wait one frame so the cleared transforms/transitions are fully committed
+          // before placeAt() reads the SVG geometry — otherwise the sun/glow can
+          // land at a stale position from the in-progress fade-in animation.
+          requestAnimationFrame(() => {
+            if (window.iwwRefreshArc) window.iwwRefreshArc();
+          });
+        }, Math.round(DUR * 1000) + 80);
+      }
+
+      window.iosWeatherOpen  = (e) => { if (e) e.stopPropagation(); openWeather(); };
+      window.iosWeatherClose = closeWeather;
+      window.iosWeatherIsOpen = () => isOpen;
+
+      // Drag-to-close — same pattern as fixed changelog: skip when started inside scrollable list.
+      if (expCard) {
+        let dragging = false, startY = 0, startT = 0, moved = 0, pendingId = null;
+        expCard.addEventListener('pointerdown', (e) => {
+          if (!isOpen || (e.pointerType === 'mouse' && e.button !== 0)) return;
+          if (scrollEl && scrollEl.contains(e.target)) return;
+          pendingId = e.pointerId; startY = e.clientY; startT = Date.now(); moved = 0; dragging = false;
+        });
+        expCard.addEventListener('pointermove', (e) => {
+          if (pendingId !== e.pointerId) return;
+          const dy = e.clientY - startY;
+          if (!dragging) {
+            if (dy > 6) { dragging = true; try { expCard.setPointerCapture(e.pointerId); } catch(_){} expCard.style.transition = 'none'; }
+            else if (dy < -6) { pendingId = null; return; }
+            else return;
+          }
+          moved = dy;
+          expCard.style.transform = 'translateY(' + (dy > 0 ? dy : dy * 0.2) + 'px)';
+          if (contentEl) { contentEl.style.transition = 'none'; contentEl.style.opacity = String(Math.max(0, 1 - Math.max(0, dy) / 200)); }
+        });
+        const endDrag = (e) => {
+          if (pendingId !== e.pointerId) return;
+          pendingId = null;
+          if (!dragging) return;
+          dragging = false;
+          try { expCard.releasePointerCapture(e.pointerId); } catch(_){}
+          const velocity = moved / Math.max(1, Date.now() - startT);
+          if (moved > 110 || (velocity > 0.6 && moved > 30)) {
+            closeWeather();
+          } else {
+            expCard.style.transition = 'transform 0.35s ' + SPRING;
+            expCard.style.transform  = 'translateY(0)';
+            if (contentEl) { contentEl.style.transition = 'opacity 0.2s ease'; contentEl.style.opacity = '1'; }
+          }
+        };
+        expCard.addEventListener('pointerup', endDrag);
+        expCard.addEventListener('pointercancel', endDrag);
+      }
     })();
 
     // ═════════════════════════════════════════════════════════════════════
