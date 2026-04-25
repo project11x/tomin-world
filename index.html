@@ -5065,6 +5065,11 @@
 
           const rn = data.rightNow;
           if (rn) {
+            const titleEl = document.getElementById('iwe-status-title');
+            const projectEl = document.getElementById('iwe-status-project');
+            const noteEl = document.getElementById('iwe-status-note');
+            const emojiEl = document.getElementById('iwe-status-emoji');
+
             // Handle Emoji and Title (split "🎬 Pre-Production" into "🎬" and "Pre-Production")
             let fullTitle = rn.title || '';
             let phaseName = fullTitle;
