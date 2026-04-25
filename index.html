@@ -6479,27 +6479,8 @@
       const CONTENT_IN = 'opacity 0.32s cubic-bezier(0.2,0.7,0.2,1), transform 0.42s cubic-bezier(0.2,0.7,0.2,1)';
       const CONTENT_OUT = 'opacity 0.22s cubic-bezier(0.6,0,0.8,0.2), transform 0.30s cubic-bezier(0.5,0,0.75,0)';
 
-      // ─── Manual status — edit these to update what's shown ────────────
-      const STATUS = {
-        emoji: '✂️',
-        title: 'Cutting',
-        project: 'Milano BTS · Day 3',
-        note: 'Deep in the edit. Coffee on the desk, color grade tomorrow.',
-        vibe: 'Hyperfocus',
-        vibeIcon: '⚡ high energy',
-        cutsThisWeek: 3,
-        lastUpload: '2d ago',
-      };
-
       function applyStatus() {
-        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-        set('iwe-status-title', STATUS.title);
-        set('iwe-status-project', STATUS.project);
-        set('iwe-status-note', STATUS.note);
-        set('iwe-vibe', STATUS.vibe);
-        set('iwe-cuts', STATUS.cutsThisWeek);
-        const lastEl = document.querySelector('#ios-weather-scroll [style*="last:"]'); // no-op
-        // (vibeIcon + lastUpload styling stays inline since rare-change)
+        // Redundant - now handled by populateStatus() from status.json
       }
 
       // ─── Mirror compact widget data into the expanded view ────────────
