@@ -5086,6 +5086,10 @@
             if (titleEl) titleEl.textContent = phaseName;
             if (projectEl) projectEl.textContent = rn.note || '';
             if (noteEl) noteEl.textContent = rn.statusDetail || '';
+            
+            // NEW: Update compact widget description with the phase
+            const compactDescEl = document.getElementById('iww-desc');
+            if (compactDescEl) compactDescEl.textContent = rn.title || '–';
           }
 
           const vibe = data.vibe;
@@ -5154,6 +5158,10 @@
         if (titleEl) titleEl.textContent = phaseName;
         if (projectEl) projectEl.textContent = rn.note || '';
         if (noteEl) noteEl.textContent = rn.statusDetail || '';
+        
+        // NEW: Update compact widget description with the phase
+        const compactDescEl = document.getElementById('iww-desc');
+        if (compactDescEl) compactDescEl.textContent = rn.title || '–';
         
         // Also update vibe and working on
         if (data.vibe) {
