@@ -5065,23 +5065,20 @@
 
           const rn = data.rightNow;
           if (rn) {
-            const titleEl = document.getElementById('iwe-status-title');
-            const projectEl = document.getElementById('iwe-status-project');
-            const noteEl = document.getElementById('iwe-status-note');
-            const emojiEl = document.getElementById('iwe-status-emoji');
-
-            // Handle Emoji and Title (split "🎬 Phase" into "🎬" and "Phase")
-            let titleText = rn.title || '';
+            // Handle Emoji and Title (split "🎬 Pre-Production" into "🎬" and "Pre-Production")
+            let fullTitle = rn.title || '';
+            let phaseName = fullTitle;
             let emoji = '✂️';
-            // Regex to match the first emoji in the string
-            const emojiMatch = titleText.match(/^(\ud83c[\udf00-\uffff]|\ud83d[\udf00-\uffff]|\ud83e[\udf00-\uffff]|[\u2000-\u3299])/);
+            
+            // Comprehensive emoji regex
+            const emojiMatch = fullTitle.match(/^(\ud83c[\udf00-\uffff]|\ud83d[\udf00-\uffff]|\ud83e[\udf00-\uffff]|[\u2700-\u27bf]|[\u2000-\u3299])/);
             if (emojiMatch) {
               emoji = emojiMatch[0];
-              titleText = titleText.replace(emoji, '').trim();
+              phaseName = fullTitle.replace(emoji, '').trim();
             }
 
             if (emojiEl) emojiEl.textContent = emoji;
-            if (titleEl) titleEl.textContent = titleText;
+            if (titleEl) titleEl.textContent = phaseName;
             if (projectEl) projectEl.textContent = rn.note || '';
             if (noteEl) noteEl.textContent = rn.statusDetail || '';
           }
@@ -5131,6 +5128,38 @@
           console.log("Status update error:", e);
         }
       }
+      // Expose for immediate admin updates
+      window.populateStatusManually = (data) => {
+        const rn = data.rightNow;
+        if (!rn) return;
+        const titleEl = document.getElementById('iwe-status-title');
+        const projectEl = document.getElementById('iwe-status-project');
+        const noteEl = document.getElementById('iwe-status-note');
+        const emojiEl = document.getElementById('iwe-status-emoji');
+        
+        let fullTitle = rn.title || '';
+        let phaseName = fullTitle;
+        let emoji = '✂️';
+        const emojiMatch = fullTitle.match(/^(\ud83c[\udf00-\uffff]|\ud83d[\udf00-\uffff]|\ud83e[\udf00-\uffff]|[\u2700-\u27bf]|[\u2000-\u3299])/);
+        if (emojiMatch) {
+          emoji = emojiMatch[0];
+          phaseName = fullTitle.replace(emoji, '').trim();
+        }
+        if (emojiEl) emojiEl.textContent = emoji;
+        if (titleEl) titleEl.textContent = phaseName;
+        if (projectEl) projectEl.textContent = rn.note || '';
+        if (noteEl) noteEl.textContent = rn.statusDetail || '';
+        
+        // Also update vibe and working on
+        if (data.vibe) {
+          const vTitle = document.getElementById('iwe-vibe-title');
+          if (vTitle) vTitle.textContent = data.vibe.title || '';
+        }
+        if (data.workingOn !== undefined) {
+          const wTitle = document.getElementById('iwe-working-title');
+          if (wTitle) wTitle.textContent = data.workingOn;
+        }
+      };
       populateStatus();
 
       tickClock();
@@ -7021,7 +7050,15 @@
         if (updateResp.ok) {
           status.textContent = "✅ Success! Site will update in a moment.";
           status.style.color = "#30d158";
-          setTimeout(() => { location.reload(); }, 2000);
+          
+          // Force immediate UI update on the page so user sees it locally
+          if (window.populateStatusManually) {
+             window.populateStatusManually(newStatus);
+          } else {
+             // Fallback if global function not exposed yet
+             location.reload();
+          }
+          setTimeout(() => { adminClose(); }, 1500);
         } else {
           const err = await updateResp.json();
           throw new Error(err.message || "Push failed");
