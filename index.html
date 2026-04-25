@@ -5065,12 +5065,25 @@
 
           const rn = data.rightNow;
           if (rn) {
-            const title = document.getElementById('iwe-status-title');
-            const project = document.getElementById('iwe-status-project');
-            const note = document.getElementById('iwe-status-note');
-            if (title) title.textContent = rn.title || '';
-            if (project) project.textContent = rn.note || '';
-            if (note) note.textContent = rn.statusDetail || '';
+            const titleEl = document.getElementById('iwe-status-title');
+            const projectEl = document.getElementById('iwe-status-project');
+            const noteEl = document.getElementById('iwe-status-note');
+            const emojiEl = document.getElementById('iwe-status-emoji');
+
+            // Handle Emoji and Title (split "🎬 Phase" into "🎬" and "Phase")
+            let titleText = rn.title || '';
+            let emoji = '✂️';
+            // Regex to match the first emoji in the string
+            const emojiMatch = titleText.match(/^(\ud83c[\udf00-\uffff]|\ud83d[\udf00-\uffff]|\ud83e[\udf00-\uffff]|[\u2000-\u3299])/);
+            if (emojiMatch) {
+              emoji = emojiMatch[0];
+              titleText = titleText.replace(emoji, '').trim();
+            }
+
+            if (emojiEl) emojiEl.textContent = emoji;
+            if (titleEl) titleEl.textContent = titleText;
+            if (projectEl) projectEl.textContent = rn.note || '';
+            if (noteEl) noteEl.textContent = rn.statusDetail || '';
           }
 
           const vibe = data.vibe;
