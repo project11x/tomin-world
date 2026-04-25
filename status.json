@@ -1,0 +1,23 @@
+{
+  "rightNow": {
+    "title": "✂️ Post",
+    "note": "Milano BTS · Day 3",
+    "statusDetail": "Deep in the edit. Coffee on the desk, color grade tomorrow."
+  },
+  "vibe": {
+    "title": "hyperfocus"
+  },
+  "workingOn": "New portfolio layout",
+  "availableDoing": [
+    "🎬 Pre-Production",
+    "🎥 Shooting",
+    "✂️ Post",
+    "✅ Published"
+  ],
+  "availableVibes": [
+    "hyperfocus",
+    "referencing",
+    "stuck",
+    "shipping"
+  ]
+}

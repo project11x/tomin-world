@@ -3,11 +3,19 @@
 const portfolioData = {
   "5am in munic": [
     {
+      "name": "5am in munich mid quality_web.mp4",
+      "type": "Video",
+      "size": "84.4 MB",
+      "date": "Apr 1, 2026",
+      "src": "5am%20in%20munic/5am%20in%20munich%20mid%20quality_web.mp4",
+      "isVideo": true
+    },
+    {
       "name": "5am in munich mid quality.mp4",
       "type": "Video",
       "size": "915 MB",
       "date": "Jan 13, 2026",
-      "src": "5am%20in%20munic/5am%20in%20munich%20mid%20quality_web.mp4",
+      "src": "5am%20in%20munic/5am%20in%20munich%20mid%20quality.mp4",
       "isVideo": true
     },
     {
@@ -45,11 +53,27 @@ const portfolioData = {
   ],
   "LDN x UKG": [
     {
+      "name": "london x ukg_compressed.mp4",
+      "type": "Video",
+      "size": "38.6 MB",
+      "date": "Mar 31, 2026",
+      "src": "LDN%20x%20UKG/london%20x%20ukg_compressed.mp4",
+      "isVideo": true
+    },
+    {
+      "name": "london x ukg_web.mp4",
+      "type": "Video",
+      "size": "43.6 MB",
+      "date": "Mar 31, 2026",
+      "src": "LDN%20x%20UKG/london%20x%20ukg_web.mp4",
+      "isVideo": true
+    },
+    {
       "name": "london x ukg.mp4",
       "type": "Video",
       "size": "232.9 MB",
       "date": "Jan 11, 2026",
-      "src": "LDN%20x%20UKG/london%20x%20ukg_web.mp4",
+      "src": "LDN%20x%20UKG/london%20x%20ukg.mp4",
       "isVideo": true
     },
     {
@@ -111,11 +135,27 @@ const portfolioData = {
   ],
   "Lunatic": [
     {
+      "name": "lunatic_compressed.mp4",
+      "type": "Video",
+      "size": "23.7 MB",
+      "date": "Mar 31, 2026",
+      "src": "Lunatic/lunatic_compressed.mp4",
+      "isVideo": true
+    },
+    {
+      "name": "lunatic_web.mp4",
+      "type": "Video",
+      "size": "23.7 MB",
+      "date": "Mar 31, 2026",
+      "src": "Lunatic/lunatic_web.mp4",
+      "isVideo": true
+    },
+    {
       "name": "lunatic.mp4",
       "type": "Video",
       "size": "120.8 MB",
       "date": "Feb 18, 2025",
-      "src": "Lunatic/lunatic_web.mp4",
+      "src": "Lunatic/lunatic.mp4",
       "isVideo": true
     },
     {
@@ -164,7 +204,7 @@ const portfolioData = {
       "name": "032C",
       "type": "Magazine",
       "size": "--",
-      "date": "Mar 28, 2026",
+      "date": "Mar 30, 2026",
       "src": "",
       "isVideo": false,
       "isMagazine": true
@@ -231,8 +271,8 @@ const portfolioData = {
     {
       "name": "7.mp4",
       "type": "Video",
-      "size": "408 KB",
-      "date": "Mar 28, 2026",
+      "size": "375.2 KB",
+      "date": "Mar 30, 2026",
       "src": "TOMIN%20INDEX.TXT/032C/7.mp4",
       "isVideo": true
     },
@@ -433,31 +473,71 @@ const portfolioData = {
   ],
   "bents n glitches": [
     {
+      "name": "bent footage edit test HQ_compressed.mp4",
+      "type": "Video",
+      "size": "21.6 MB",
+      "date": "Mar 31, 2026",
+      "src": "bents%20n%20glitches/bent%20footage%20edit%20test%20HQ_compressed.mp4",
+      "isVideo": true
+    },
+    {
+      "name": "bent footage edit test HQ_web.mp4",
+      "type": "Video",
+      "size": "21.6 MB",
+      "date": "Mar 31, 2026",
+      "src": "bents%20n%20glitches/bent%20footage%20edit%20test%20HQ_web.mp4",
+      "isVideo": true
+    },
+    {
       "name": "bent footage edit test HQ.mp4",
       "type": "Video",
       "size": "104.1 MB",
       "date": "Mar 4, 2026",
-      "src": "bents%20n%20glitches/bent%20footage%20edit%20test%20HQ_web.mp4",
+      "src": "bents%20n%20glitches/bent%20footage%20edit%20test%20HQ.mp4",
       "isVideo": true
     }
   ],
   "birthday kisses": [
     {
+      "name": "birthDayKisses_web.mp4",
+      "type": "Video",
+      "size": "13.3 MB",
+      "date": "Mar 31, 2026",
+      "src": "birthday%20kisses/birthDayKisses_web.mp4",
+      "isVideo": true
+    },
+    {
       "name": "birthDayKisses.mp4",
       "type": "Video",
       "size": "192.2 MB",
       "date": "Jun 29, 2024",
-      "src": "birthday%20kisses/birthDayKisses_web.mp4",
+      "src": "birthday%20kisses/birthDayKisses.mp4",
       "isVideo": true
     }
   ],
   "ftlotg": [
     {
+      "name": "ftlotg_compressed.mp4",
+      "type": "Video",
+      "size": "65.2 MB",
+      "date": "Mar 31, 2026",
+      "src": "ftlotg/ftlotg_compressed.mp4",
+      "isVideo": true
+    },
+    {
+      "name": "ftlotg_web.mp4",
+      "type": "Video",
+      "size": "28.8 MB",
+      "date": "Mar 31, 2026",
+      "src": "ftlotg/ftlotg_web.mp4",
+      "isVideo": true
+    },
+    {
       "name": "ftlotg.mp4",
       "type": "Video",
       "size": "220.3 MB",
       "date": "Jan 14, 2026",
-      "src": "ftlotg/ftlotg_web.mp4",
+      "src": "ftlotg/ftlotg.mp4",
       "isVideo": true
     },
     {
@@ -471,11 +551,43 @@ const portfolioData = {
   ],
   "hlfatpch": [
     {
+      "name": "how life feels after the paycheck hits HQ_compressed.mp4",
+      "type": "Video",
+      "size": "62.6 MB",
+      "date": "Mar 31, 2026",
+      "src": "hlfatpch/how%20life%20feels%20after%20the%20paycheck%20hits%20HQ_compressed.mp4",
+      "isVideo": true
+    },
+    {
+      "name": "how life feels after the paycheck hits HQ_web.mp4",
+      "type": "Video",
+      "size": "62.6 MB",
+      "date": "Mar 31, 2026",
+      "src": "hlfatpch/how%20life%20feels%20after%20the%20paycheck%20hits%20HQ_web.mp4",
+      "isVideo": true
+    },
+    {
       "name": "how life feels after the paycheck hits HQ.mp4",
       "type": "Video",
       "size": "95.5 MB",
       "date": "Mar 4, 2026",
-      "src": "hlfatpch/how%20life%20feels%20after%20the%20paycheck%20hits%20HQ_web.mp4",
+      "src": "hlfatpch/how%20life%20feels%20after%20the%20paycheck%20hits%20HQ.mp4",
+      "isVideo": true
+    },
+    {
+      "name": "how mf start movin after getting their moms car keys HQ_compressed.mp4",
+      "type": "Video",
+      "size": "45.1 MB",
+      "date": "Mar 31, 2026",
+      "src": "hlfatpch/how%20mf%20start%20movin%20after%20getting%20their%20moms%20car%20keys%20HQ_compressed.mp4",
+      "isVideo": true
+    },
+    {
+      "name": "how mf start movin after getting their moms car keys HQ_web.mp4",
+      "type": "Video",
+      "size": "45.1 MB",
+      "date": "Mar 31, 2026",
+      "src": "hlfatpch/how%20mf%20start%20movin%20after%20getting%20their%20moms%20car%20keys%20HQ_web.mp4",
       "isVideo": true
     },
     {
@@ -483,7 +595,23 @@ const portfolioData = {
       "type": "Video",
       "size": "92.1 MB",
       "date": "Mar 6, 2026",
-      "src": "hlfatpch/how%20mf%20start%20movin%20after%20getting%20their%20moms%20car%20keys%20HQ_web.mp4",
+      "src": "hlfatpch/how%20mf%20start%20movin%20after%20getting%20their%20moms%20car%20keys%20HQ.mp4",
+      "isVideo": true
+    },
+    {
+      "name": "late night sketches_compressed.mp4",
+      "type": "Video",
+      "size": "30.4 MB",
+      "date": "Mar 31, 2026",
+      "src": "hlfatpch/late%20night%20sketches_compressed.mp4",
+      "isVideo": true
+    },
+    {
+      "name": "late night sketches_web.mp4",
+      "type": "Video",
+      "size": "53.1 MB",
+      "date": "Mar 31, 2026",
+      "src": "hlfatpch/late%20night%20sketches_web.mp4",
       "isVideo": true
     },
     {
@@ -491,47 +619,169 @@ const portfolioData = {
       "type": "Video",
       "size": "176 MB",
       "date": "Mar 6, 2026",
-      "src": "hlfatpch/late%20night%20sketches_web.mp4",
+      "src": "hlfatpch/late%20night%20sketches.mp4",
       "isVideo": true
     }
   ],
+  "icons": [
+    {
+      "name": "bts.png",
+      "type": "Image",
+      "size": "132.2 KB",
+      "date": "Mar 30, 2026",
+      "src": "icons/bts.png",
+      "isVideo": false
+    },
+    {
+      "name": "contact.png",
+      "type": "Image",
+      "size": "476.4 KB",
+      "date": "Mar 28, 2026",
+      "src": "icons/contact.png",
+      "isVideo": false
+    },
+    {
+      "name": "edits.png",
+      "type": "Image",
+      "size": "429.4 KB",
+      "date": "Mar 28, 2026",
+      "src": "icons/edits.png",
+      "isVideo": false
+    },
+    {
+      "name": "finder.png",
+      "type": "Image",
+      "size": "392.9 KB",
+      "date": "Mar 28, 2026",
+      "src": "icons/finder.png",
+      "isVideo": false
+    },
+    {
+      "name": "flavicon.png",
+      "type": "Image",
+      "size": "37.5 KB",
+      "date": "Mar 30, 2026",
+      "src": "icons/flavicon.png",
+      "isVideo": false
+    },
+    {
+      "name": "folder.png",
+      "type": "Image",
+      "size": "54.4 KB",
+      "date": "Mar 28, 2026",
+      "src": "icons/folder.png",
+      "isVideo": false
+    },
+    {
+      "name": "magazine.png",
+      "type": "Image",
+      "size": "458.1 KB",
+      "date": "Mar 28, 2026",
+      "src": "icons/magazine.png",
+      "isVideo": false
+    },
+    {
+      "name": "mail.png",
+      "type": "Image",
+      "size": "361.5 KB",
+      "date": "Apr 24, 2026",
+      "src": "icons/mail.png",
+      "isVideo": false
+    },
+    {
+      "name": "profilepicture.png",
+      "type": "Image",
+      "size": "4.6 MB",
+      "date": "Apr 22, 2026",
+      "src": "icons/profilepicture.png",
+      "isVideo": false
+    },
+    {
+      "name": "tomin-index.png",
+      "type": "Image",
+      "size": "68.2 KB",
+      "date": "Mar 28, 2026",
+      "src": "icons/tomin-index.png",
+      "isVideo": false
+    }
+  ],
   "lindsay lohan": [
+    {
+      "name": "lindsay lohan_compressed.mp4",
+      "type": "Video",
+      "size": "21.6 MB",
+      "date": "Mar 31, 2026",
+      "src": "lindsay%20lohan/lindsay%20lohan_compressed.mp4",
+      "isVideo": true
+    },
+    {
+      "name": "lindsay lohan_web.mp4",
+      "type": "Video",
+      "size": "21.6 MB",
+      "date": "Mar 31, 2026",
+      "src": "lindsay%20lohan/lindsay%20lohan_web.mp4",
+      "isVideo": true
+    },
     {
       "name": "lindsay lohan.mp4",
       "type": "Video",
       "size": "34.3 MB",
       "date": "Jul 6, 2025",
-      "src": "lindsay%20lohan/lindsay%20lohan_web.mp4",
+      "src": "lindsay%20lohan/lindsay%20lohan.mp4",
       "isVideo": true
     }
   ],
   "milano": [
     {
+      "name": "milano export_web.mp4",
+      "type": "Video",
+      "size": "13.8 MB",
+      "date": "Mar 31, 2026",
+      "src": "milano/milano%20export_web.mp4",
+      "isVideo": true
+    },
+    {
       "name": "milano export.mp4",
       "type": "Video",
       "size": "27.2 MB",
       "date": "Jan 13, 2026",
-      "src": "milano/milano%20export_web.mp4",
+      "src": "milano/milano%20export.mp4",
       "isVideo": true
     }
   ],
   "schimmel in schladming": [
     {
+      "name": "schimmel in schladming HQ_web.mp4",
+      "type": "Video",
+      "size": "172.4 MB",
+      "date": "Mar 31, 2026",
+      "src": "schimmel%20in%20schladming/schimmel%20in%20schladming%20HQ_web.mp4",
+      "isVideo": true
+    },
+    {
       "name": "schimmel in schladming HQ.mp4",
       "type": "Video",
       "size": "188.1 MB",
       "date": "Mar 6, 2026",
-      "src": "schimmel%20in%20schladming/schimmel%20in%20schladming%20HQ_web.mp4",
+      "src": "schimmel%20in%20schladming/schimmel%20in%20schladming%20HQ.mp4",
       "isVideo": true
     }
   ],
   "stoical": [
     {
+      "name": "new ideas 120fps_web.mp4",
+      "type": "Video",
+      "size": "30.8 MB",
+      "date": "Mar 31, 2026",
+      "src": "stoical/new%20ideas%20120fps_web.mp4",
+      "isVideo": true
+    },
+    {
       "name": "new ideas 120fps.mp4",
       "type": "Video",
       "size": "98.8 MB",
       "date": "Dec 21, 2024",
-      "src": "stoical/new%20ideas%20120fps_web.mp4",
+      "src": "stoical/new%20ideas%20120fps.mp4",
       "isVideo": true
     },
     {
@@ -569,11 +819,19 @@ const portfolioData = {
   ],
   "tipsy triad": [
     {
+      "name": "tipsy triad_web.mp4",
+      "type": "Video",
+      "size": "46.4 MB",
+      "date": "Mar 31, 2026",
+      "src": "tipsy%20triad/tipsy%20triad_web.mp4",
+      "isVideo": true
+    },
+    {
       "name": "tipsy triad.mp4",
       "type": "Video",
       "size": "77.6 MB",
       "date": "Mar 5, 2025",
-      "src": "tipsy%20triad/tipsy%20triad_web.mp4",
+      "src": "tipsy%20triad/tipsy%20triad.mp4",
       "isVideo": true
     },
     {
@@ -610,3 +868,4 @@ const portfolioData = {
     }
   ]
 };
+const globalLatestFileTime = 1776981600000;
