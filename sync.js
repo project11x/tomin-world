@@ -100,23 +100,36 @@ function generateData() {
             } else {
                 portfolioData[item] = [];
                 const folderFiles = fs.readdirSync(itemPath);
-                
+                const folderFileSet = new Set(folderFiles);
+
                 for (const file of folderFiles) {
                     if (file.startsWith('.')) continue; // ignore .DS_Store, etc.
-                    
+
+                    // Skip _web and _compressed variants — they're shown via the original
+                    if (file.match(/_(web|compressed)\.[^.]+$/)) continue;
+
                     const filePath = path.join(itemPath, file);
                     const fileStat = fs.statSync(filePath);
-                    
+
                     // Only process files inside that folder
                     if (fileStat.isFile()) {
                         const meta = getFileMeta(file);
+
+                        // For videos, prefer the _web version for playback if it exists
+                        let srcFile = file;
+                        if (meta.isVideo) {
+                            const ext = path.extname(file);
+                            const base = file.slice(0, -ext.length);
+                            const webFile = `${base}_web${ext}`;
+                            if (folderFileSet.has(webFile)) srcFile = webFile;
+                        }
+
                         portfolioData[item].push({
                             name: file,
                             type: meta.type,
                             size: formatBytes(fileStat.size),
                             date: formatDate(fileStat.mtime),
-                            // src should be relative to where the HTML is, e.g., "milano/pic.jpg"
-                            src: `${encodeURIComponent(item)}/${encodeURIComponent(file)}`,
+                            src: `${encodeURIComponent(item)}/${encodeURIComponent(srcFile)}`,
                             isVideo: meta.isVideo
                         });
                     }
