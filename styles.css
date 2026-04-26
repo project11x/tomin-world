@@ -822,33 +822,68 @@
       transform: scale(0.88) !important;
     }
 
-    .ios-app-overlay {
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1),
-        opacity 0.3s ease,
-        border-radius 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
-      transform-origin: center bottom;
+    /* === Shared Element Transition via native View Transitions API === */
+    /* The element with this class becomes the morph source/target.
+       The class is moved between icon and app overlay in JS during
+       document.startViewTransition(). */
+    .app-morphing {
+      view-transition-name: app-expansion;
     }
 
-    .ios-app-overlay.closing {
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.7, 0.2),
-        opacity 0.18s cubic-bezier(0.6, 0, 1, 1),
-        border-radius 0.3s cubic-bezier(0.4, 0, 0.7, 0.2);
+    /* Apple-style timing for the morph */
+    ::view-transition-group(app-expansion) {
+      animation-duration: 0.45s;
+      animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    /* Make old + new snapshots fill their group box so border-radius
+       and size morph fluently between icon and full-screen */
+    ::view-transition-old(app-expansion),
+    ::view-transition-new(app-expansion) {
+      height: 100%;
+      width: 100%;
+      border-radius: inherit;
+    }
+
+    /* Old snapshot (icon on open / app on close) fades out very early so the
+       white app surface shows through almost immediately while the box keeps
+       stretching. */
+    ::view-transition-old(app-expansion) {
+      animation-duration: 0.08s;
+      animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
+    }
+
+    /* New snapshot fades in over the full morph duration. */
+    ::view-transition-new(app-expansion) {
+      animation-duration: 0.45s;
+      animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+    }
+
+    .ios-app-overlay {
+      overflow: hidden;
+      will-change: transform, opacity, border-radius;
+    }
+
+    /* Fallback for browsers without View Transitions API
+       (Firefox, older iOS Safari) */
+    @supports not (view-transition-name: none) {
+      .ios-app-overlay {
+        transition:
+          transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+          opacity 0.25s ease,
+          border-radius 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .ios-app-overlay.closing {
+        transition:
+          transform 0.28s cubic-bezier(0.55, 0, 0.9, 0.3),
+          opacity 0.18s ease-in,
+          border-radius 0.28s cubic-bezier(0.55, 0, 0.9, 0.3);
+      }
     }
 
     #quick-look-modal {
       -webkit-mask-image: radial-gradient(white, black);
       mask-image: radial-gradient(white, black);
-    }
-
-    /* iOS App Animations */
-    .ios-app-overlay {
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-        opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-        border-radius 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      will-change: transform, opacity, border-radius;
-      overflow: hidden;
-      clip-path: inset(0 round 0px);
-      /* Initial state will be updated by border-radius */
     }
 
     #ios-screen {

@@ -12,6 +12,68 @@
         }
       })();
 
+    // --- Pinch-to-Zoom for image viewers ---
+    function addPinchZoom(imgEl) {
+      let scale = 1, tx = 0, ty = 0;
+      let initDist = 0, initScale = 1;
+      let initX = 0, initY = 0, initTx = 0, initTy = 0;
+      let pinching = false;
+      let lastTap = 0;
+
+      function clamp(s, x, y) {
+        const hw = imgEl.offsetWidth * (s - 1) / 2;
+        const hh = imgEl.offsetHeight * (s - 1) / 2;
+        return { x: Math.max(-hw, Math.min(hw, x)), y: Math.max(-hh, Math.min(hh, y)) };
+      }
+
+      function applyTransform(anim) {
+        imgEl.style.transition = anim ? 'transform 0.25s ease' : 'none';
+        imgEl.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+      }
+
+      function resetZoom(anim) {
+        scale = 1; tx = 0; ty = 0;
+        applyTransform(anim);
+      }
+
+      imgEl.addEventListener('touchstart', e => {
+        if (e.touches.length === 2) {
+          pinching = true;
+          initDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+          initScale = scale;
+          e.preventDefault();
+        } else if (e.touches.length === 1 && scale > 1) {
+          initX = e.touches[0].clientX; initY = e.touches[0].clientY;
+          initTx = tx; initTy = ty;
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      imgEl.addEventListener('touchmove', e => {
+        if (e.touches.length === 2 && pinching) {
+          const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+          scale = Math.min(5, Math.max(1, initScale * dist / initDist));
+          const c = clamp(scale, tx, ty);
+          tx = c.x; ty = c.y;
+          applyTransform(false);
+          e.preventDefault();
+        } else if (e.touches.length === 1 && scale > 1) {
+          const c = clamp(scale, initTx + (e.touches[0].clientX - initX), initTy + (e.touches[0].clientY - initY));
+          tx = c.x; ty = c.y;
+          applyTransform(false);
+          e.preventDefault();
+        }
+      }, { passive: false });
+
+      imgEl.addEventListener('touchend', e => {
+        if (e.touches.length < 2) pinching = false;
+        if (scale < 1.05) resetZoom(true);
+        const now = Date.now();
+        if (now - lastTap < 300) resetZoom(true);
+        lastTap = now;
+      });
+    }
+
     // --- Video Playback Buffer Manager ---
     // Ensures smooth video playback: waits for enough buffer before playing,
     // auto-pauses if buffer runs low, resumes when buffered enough.
@@ -1427,59 +1489,71 @@
       // ---- iOS App Transition Logic ----
       let lastIosAppIcon = null;
 
+      // Shared Element Transition using the native View Transitions API.
+      // The same view-transition-name ("app-expansion") is moved between the
+      // tapped icon and the full-screen app overlay inside startViewTransition().
+      // The browser captures the OLD bounding box (icon) and NEW bounding box
+      // (overlay) and morphs position + size + border-radius between them.
       function performIosAppTransition(appEl, iconEl, isOpen) {
         const screen = document.getElementById('ios-screen');
+        const supportsVT = typeof document.startViewTransition === 'function';
+
+        // Only one element may carry a given view-transition-name at a time.
+        const clearMorphMarkers = () => {
+          document.querySelectorAll('.app-morphing').forEach(el => el.classList.remove('app-morphing'));
+        };
+
         if (isOpen) {
           lastIosAppIcon = iconEl;
-          const rect = iconEl.getBoundingClientRect();
-          const centerX = rect.left + rect.width / 2;
-          const centerY = rect.top + rect.height / 2;
 
-          // Initial state: centered on icon, small scale, high border radius
-          appEl.style.transition = 'none';
-          appEl.style.display = 'flex';
-          appEl.style.opacity = '0';
-          appEl.style.borderRadius = '45px';
+          if (supportsVT) {
+            clearMorphMarkers();
+            // Mark the icon as the morph source — captured as OLD state
+            iconEl.classList.add('app-morphing');
 
-          // Calculate scale and translate to match icon
-          // We target a bit larger than the icon for a smoother transition
-          const scale = (rect.width * 1.2) / window.innerWidth;
-          const translateX = centerX - window.innerWidth / 2;
-          const translateY = centerY - window.innerHeight / 2;
-
-          appEl.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-
-          // Force reflow
-          appEl.offsetHeight;
-
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              appEl.style.transition = ''; // Use CSS transitions
+            document.startViewTransition(() => {
+              // Inside the callback we mutate the DOM. The browser snapshots
+              // BEFORE this runs (icon) and AFTER (overlay), then animates.
+              iconEl.classList.remove('app-morphing');
+              appEl.classList.add('app-morphing');
+              appEl.style.display = 'flex';
               appEl.style.opacity = '1';
-              appEl.style.transform = 'translate(0, 0) scale(1)';
-              appEl.style.borderRadius = '0';
+              appEl.style.transform = '';
+              appEl.style.borderRadius = '0px';
               screen.classList.add('ios-screen-blurred');
             });
-          });
+          } else {
+            // Fallback: instant show (no morph) for unsupported browsers
+            appEl.style.display = 'flex';
+            appEl.style.opacity = '1';
+            appEl.style.transform = '';
+            appEl.style.borderRadius = '0px';
+            screen.classList.add('ios-screen-blurred');
+          }
         } else {
-          // Fallback if iconEl is missing (e.g. closing via hardware gesture/keyboard)
-          const rect = lastIosAppIcon ? lastIosAppIcon.getBoundingClientRect() : { left: window.innerWidth / 2, top: window.innerHeight, width: 0, height: 0 };
-          const centerX = rect.left + rect.width / 2;
-          const centerY = rect.top + rect.height / 2;
+          const iconForReturn = lastIosAppIcon;
 
-          const scale = (rect.width * 0.8) / window.innerWidth;
-          const translateX = centerX - window.innerWidth / 2;
-          const translateY = centerY - window.innerHeight / 2;
+          if (supportsVT) {
+            clearMorphMarkers();
+            // Overlay is the morph source going OUT
+            appEl.classList.add('app-morphing');
 
-          appEl.style.opacity = '0';
-          appEl.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-          appEl.style.borderRadius = '45px';
-          screen.classList.remove('ios-screen-blurred');
+            const transition = document.startViewTransition(() => {
+              appEl.classList.remove('app-morphing');
+              if (iconForReturn) iconForReturn.classList.add('app-morphing');
+              appEl.style.display = 'none';
+              screen.classList.remove('ios-screen-blurred');
+            });
 
-          setTimeout(() => {
+            // Clean up the morph marker on the icon once animation is done
+            transition.finished.finally(() => {
+              if (iconForReturn) iconForReturn.classList.remove('app-morphing');
+            });
+          } else {
+            // Fallback: instant hide
             appEl.style.display = 'none';
-            appEl.classList.remove('closing');
-          }, 300);
+            screen.classList.remove('ios-screen-blurred');
+          }
         }
       }
 

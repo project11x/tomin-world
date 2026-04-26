@@ -2,10 +2,11 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "tomin",
+      "name": "tomin-world",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["http-server", "/Volumes/T7/tomin.world", "-p", "8080", "-c-1"],
-      "port": 8080
+      "runtimeArgs": ["http-server", "/Volumes/T7/tomin.world", "-c-1"],
+      "port": 8080,
+      "autoPort": true
     }
   ]
 }
