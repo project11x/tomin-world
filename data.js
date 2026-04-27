@@ -607,6 +607,16 @@ const portfolioData = {
       "isVideo": true
     }
   ],
+  "src": [
+    {
+      "name": "tailwind.css",
+      "type": "File",
+      "size": "59 B",
+      "date": "Apr 25, 2026",
+      "src": "src/tailwind.css",
+      "isVideo": false
+    }
+  ],
   "stoical": [
     {
       "name": "new ideas 120fps.mp4",
