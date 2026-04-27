@@ -314,21 +314,27 @@ async function togglePushSubscription() {
       if (result === 'granted') {
         showPushHint('Speichere…');
         
-        // Timeout for the opt-in process
-        const optInTimeout = new Promise((_, reject) => 
+        // Timeout for the entire saving process (including SW check)
+        const totalTimeout = new Promise((_, reject) => 
           setTimeout(() => reject(new Error("Zeitüberschreitung (30s).")), 30000)
         );
 
-        try {
-          // Extra check: wait for Service Worker to be active
+        const saveAction = async () => {
+          // 1. Ensure Service Worker is registered and ready
           if ('serviceWorker' in navigator) {
-            const ready = await navigator.serviceWorker.ready;
-            console.log("SW is ready:", ready);
+            console.log("Waiting for SW...");
+            await navigator.serviceWorker.ready;
           }
-          
-          await Promise.race([sub.optIn(), optInTimeout]);
+          // 2. Perform the actual opt-in
+          console.log("Calling optIn...");
+          return await sub.optIn();
+        };
+
+        try {
+          await Promise.race([saveAction(), totalTimeout]);
           showPushHint('Erfolgreich!', '#34c759');
         } catch (err) {
+          console.error("Save Error:", err);
           showPushHint('Speicher-Fehler: ' + err.message, '#ff453a');
         }
         
