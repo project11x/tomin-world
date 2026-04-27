@@ -1949,13 +1949,6 @@
           document.head.appendChild(meta);
         }
         document.title = name;
-        
-        // Nudge Safari to re-read the page metadata by updating the URL
-        try {
-          const url = new URL(window.location);
-          url.searchParams.set('n', name);
-          window.history.replaceState({}, '', url);
-        } catch (e) { }
 
         // Update visible selection state
         document.querySelectorAll('.icon-pick-option').forEach(opt => {
