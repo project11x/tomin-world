@@ -312,6 +312,7 @@ async function togglePushSubscription() {
       const result = await Notification.requestPermission();
       if (result === 'granted') {
         showPushHint('Erlaubnis erteilt! Lade neu...', '#34c759');
+        try { sessionStorage.setItem('reopen-contact-app', 'push-grant'); } catch (e) { }
         setTimeout(() => location.reload(), 1500);
       } else {
         showPushHint('Erlaubnis verweigert', '#ff453a');

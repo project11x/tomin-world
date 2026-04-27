@@ -1930,17 +1930,23 @@
         if (srcLower.includes('mugeddie')) choice = 'eddie';
         else if (srcLower.includes('instagram')) choice = 'instagram';
         try { localStorage.setItem('app-icon-choice', choice); } catch (e) { }
-        try { sessionStorage.setItem('reopen-icon-picker', '1'); } catch (e) { }
+        try { sessionStorage.setItem('reopen-contact-app', 'icon-picker'); } catch (e) { }
         window.location.reload();
       };
 
-      // After reload, restore the icon picker UI so the user can immediately
-      // tap Share → Add to Home Screen with the correct name.
+      // After a forced reload (icon change, push permission grant), reopen
+      // the Contact app and scroll to the relevant section so the user
+      // immediately sees the result of their action.
       (function () {
-        let shouldReopen = false;
-        try { shouldReopen = sessionStorage.getItem('reopen-icon-picker') === '1'; } catch (e) { }
-        if (!shouldReopen) return;
-        try { sessionStorage.removeItem('reopen-icon-picker'); } catch (e) { }
+        let target = null;
+        try { target = sessionStorage.getItem('reopen-contact-app'); } catch (e) { }
+        if (!target) return;
+        try { sessionStorage.removeItem('reopen-contact-app'); } catch (e) { }
+        const SECTION_BY_TARGET = {
+          'icon-picker': 'ios-app-icon-section',
+          'push-grant': 'ios-push-toggle'
+        };
+        const sectionId = SECTION_BY_TARGET[target];
         // Defer until after the rest of app.js has run (iosOpenContact is
         // assigned further down) and the page has fully loaded. Click the dock
         // entry rather than calling iosOpenContact() directly so the icon
@@ -1949,10 +1955,12 @@
           const dockBtn = document.querySelector('.ios-dock-item[onclick*="iosOpenContact"]');
           if (dockBtn) {
             dockBtn.click();
-            setTimeout(() => {
-              const section = document.getElementById('ios-app-icon-section');
-              if (section) section.scrollIntoView({ block: 'center' });
-            }, 350);
+            if (sectionId) {
+              setTimeout(() => {
+                const section = document.getElementById(sectionId);
+                if (section) section.scrollIntoView({ block: 'center' });
+              }, 350);
+            }
           }
         }, { once: true });
       })();
