@@ -305,28 +305,39 @@
 
       try {
         const sub = __osRef.User && __osRef.User.PushSubscription;
-        if (!sub) throw new Error("PushSubscription nicht gefunden.");
+        if (!sub) throw new Error("Subscription-Objekt fehlt.");
 
         const optedIn = !!sub.optedIn;
         const permission = !!(__osRef.Notifications && __osRef.Notifications.permission);
 
-        if (optedIn && permission) {
-          console.log("OS: Opting out...");
-          await sub.optOut();
-        } else if (!permission) {
-          console.log("OS: Requesting permission...");
-          if (typeof Notification === 'undefined') {
-            throw new Error("Benachrichtigungen werden von diesem Browser nicht unterstützt.");
-          }
-          const result = await __osRef.Notifications.requestPermission();
-          console.log("OS: Permission result:", result);
-          if (result) {
+        // Timeout promise
+        const timeout = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("Zeitüberschreitung (10s). Netzwerk stabil?")), 10000)
+        );
+
+        const action = async () => {
+          if (optedIn && permission) {
+            console.log("OS: Opting out...");
+            await sub.optOut();
+          } else if (!permission) {
+            console.log("OS: Requesting permission...");
+            if (typeof Notification === 'undefined') {
+              throw new Error("Browser unterstützt keine Notifications.");
+            }
+            const result = await __osRef.Notifications.requestPermission();
+            if (result === 'granted' || result === true) {
+              await sub.optIn();
+            } else {
+              throw new Error("Erlaubnis vom System verweigert.");
+            }
+          } else {
+            console.log("OS: Opting in...");
             await sub.optIn();
           }
-        } else {
-          console.log("OS: Opting in...");
-          await sub.optIn();
-        }
+        };
+
+        await Promise.race([action(), timeout]);
+
       } catch (e) {
         console.error("OS Toggle Error:", e);
         showPushHint('Fehler: ' + e.message, '#ff453a');
