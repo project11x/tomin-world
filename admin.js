@@ -292,63 +292,54 @@ async function togglePushSubscription() {
   }
 
   if (!__osRef) {
-    const scriptStatus = window.__osScriptStatus || 'unknown';
-    const has = !!window.OneSignal;
-    let msg = `SDK nicht bereit (Status: ${scriptStatus}, geladen: ${has})`;
-    showPushHint(msg, '#ff9f0a');
+    showPushHint('SDK nicht bereit', '#ff9f0a');
     return;
   }
 
-  // Visual feedback
-  toggle.style.opacity = '0.7';
-  showPushHint('Prüfe…');
+  const sub = __osRef.User && __osRef.User.PushSubscription;
+  if (!sub) {
+    showPushHint('Push-Dienst fehlt', '#ff453a');
+    return;
+  }
 
-  let hasError = false;
-  try {
-    const sub = __osRef.User && __osRef.User.PushSubscription;
-    if (!sub) throw new Error("Keine Verbindung zum Push-Dienst.");
+  const permission = !!(__osRef.Notifications && __osRef.Notifications.permission);
+  const optedIn = !!sub.optedIn;
 
-    const optedIn = !!sub.optedIn;
-    const permission = !!(__osRef.Notifications && __osRef.Notifications.permission);
-
-    // Timeout promise
-    const timeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Zeitüberschreitung (10s).")), 10000)
-    );
-
-    const action = async () => {
-      if (optedIn && permission) {
-        showPushHint('Deaktiviere…');
-        await sub.optOut();
-      } else if (!permission) {
-        showPushHint('Frage System…');
-        if (typeof Notification === 'undefined') {
-          throw new Error("Browser blockiert Push.");
-        }
-        const result = await __osRef.Notifications.requestPermission();
-        if (result === 'granted' || result === true) {
-          showPushHint('Speichere…');
-          await sub.optIn();
-        } else {
-          throw new Error("System-Erlaubnis verweigert.");
-        }
-      } else {
-        showPushHint('Aktiviere…');
+  // iOS CRITICAL: requestPermission MUST be called directly in the click handler's 
+  // execution turn to preserve the user gesture.
+  if (!permission) {
+    showPushHint('Frage System…');
+    try {
+      // Use native permission request first to ensure gesture is accepted
+      const result = await Notification.requestPermission();
+      if (result === 'granted') {
+        showPushHint('Speichere…');
         await sub.optIn();
+        refreshPushToggleUI();
+      } else {
+        showPushHint('Erlaubnis verweigert', '#ff453a');
       }
-    };
+    } catch (e) {
+      showPushHint('Fehler: ' + e.message, '#ff453a');
+    }
+    return;
+  }
 
-    await Promise.race([action(), timeout]);
-
+  // If permission already granted, just toggle opt-in state
+  toggle.style.opacity = '0.7';
+  try {
+    if (optedIn) {
+      showPushHint('Deaktiviere…');
+      await sub.optOut();
+    } else {
+      showPushHint('Aktiviere…');
+      await sub.optIn();
+    }
   } catch (e) {
-    console.error("OS Toggle Error:", e);
     showPushHint('Fehler: ' + e.message, '#ff453a');
-    hasError = true;
   } finally {
     toggle.style.opacity = '1';
-    if (!hasError) {
-      setTimeout(refreshPushToggleUI, 500);
-    }
+    refreshPushToggleUI();
   }
 }
 window.togglePushSubscription = togglePushSubscription;
