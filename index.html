@@ -25,7 +25,10 @@
     const oldLog = console.log, oldErr = console.error, oldWarn = console.warn;
     function logToScreen(color, ...args) {
       if(!dc) return;
-      const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
+      const msg = args.map(a => {
+        if (a instanceof Error) return a.message + ' ' + a.stack;
+        return typeof a === 'object' ? JSON.stringify(a) : String(a);
+      }).join(' ');
       dc.innerHTML += `<span style="color:${color}">${msg}</span><br/>`;
       dc.scrollTop = dc.scrollHeight;
     }
@@ -1779,7 +1782,7 @@
     </div>
   </div>
 
-  <script src="admin.js?v=1.8"></script>
+  <script src="admin.js?v=1.9"></script>
 </body>
 
 </html>
