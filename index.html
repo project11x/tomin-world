@@ -159,10 +159,21 @@
     rel="stylesheet" />
   <link rel="stylesheet" href="tailwind.css" />
   <link rel="stylesheet" href="styles.css?v=1.1" />
+  <style>
+    /* Prevent landscape layout issues on mobile/tablets */
+    @media screen and (orientation: landscape) and (max-width: 1180px) {
+      .ios-only-portrait-guard {
+        display: flex !important;
+      }
+      body {
+        overflow: hidden !important;
+      }
+    }
+  </style>
 </head>
 
 <body class="bg-background dark:bg-black text-on-surface h-screen overflow-hidden select-none">
-  <div class="ios-only-portrait-guard fixed inset-0 z-[9999] bg-black text-white hidden flex-col items-center justify-center p-10 text-center">
+  <div class="ios-only-portrait-guard fixed inset-0 z-[9999] bg-black text-white flex-col items-center justify-center p-10 text-center" style="display: none;">
     <span class="material-symbols-outlined mb-4" style="font-size: 48px;">screen_rotation</span>
     <h2 class="text-xl font-bold mb-2">Please Rotate Your Device</h2>
     <p class="text-sm opacity-70">This app is optimized for portrait mode. Please turn your device back to continue.</p>

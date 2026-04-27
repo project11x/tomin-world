@@ -237,27 +237,6 @@
       });
     }
 
-    function checkOrientation() {
-      const guard = document.querySelector('.ios-only-portrait-guard');
-      if (!guard) return;
-      // Use a slightly more robust check for mobile landscape
-      const isLandscape = (window.orientation === 90 || window.orientation === -90) || 
-                          (window.innerWidth > window.innerHeight && window.innerWidth < 1024);
-      
-      console.log('Orientation check:', isLandscape, window.innerWidth, window.innerHeight);
-
-      if (isLandscape) {
-        guard.classList.remove('hidden');
-        guard.classList.add('flex');
-      } else {
-        guard.classList.add('hidden');
-        guard.classList.remove('flex');
-      }
-    }
-    window.addEventListener('resize', checkOrientation);
-    window.addEventListener('orientationchange', checkOrientation);
-    checkOrientation();
-
     function setDarkMode(isDark) {
       const html = document.documentElement;
       const themeToggle = document.getElementById('theme-toggle');
