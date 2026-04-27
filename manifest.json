@@ -1,5 +1,7 @@
 {
-  "id": "tomin-world-pwa",
+  "name": "Shouli",
+  "short_name": "Shouli",
+  "id": "/",
   "description": "Shouli's creative portfolio",
   "start_url": "/",
   "scope": "/",

@@ -1,6 +1,7 @@
 {
   "name": "fuck instagram",
   "short_name": "fuck instagram",
+  "id": "/",
   "description": "Shouli's creative portfolio",
   "start_url": "/",
   "scope": "/",

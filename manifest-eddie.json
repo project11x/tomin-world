@@ -1,6 +1,7 @@
 {
   "name": "Eddie",
   "short_name": "Eddie",
+  "id": "/",
   "description": "Shouli's creative portfolio",
   "start_url": "/",
   "scope": "/",
