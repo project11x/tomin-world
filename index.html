@@ -1263,8 +1263,10 @@
 
     <!-- Video card -->
     <div class="px-4 pb-3 shrink-0" style="background:var(--ios-app-bg);">
-      <div style="border-radius:16px; overflow:hidden; background:#000; position:relative; aspect-ratio:16/9; -webkit-mask-image: -webkit-radial-gradient(white, black); border: 1px solid #000;">
-        <video id="ios-edits-video" class="w-full h-full" style="object-fit:cover; background:#000; outline:none; border:none; transform:scale(1.02);" loop playsinline
+      <div style="border-radius:16px; overflow:hidden; position:relative; aspect-ratio:16/9; -webkit-mask-image: -webkit-radial-gradient(white, black); -webkit-backface-visibility: hidden; -webkit-transform: translate3d(0,0,0);">
+        <!-- Background bleed layer to prevent sub-pixel gaps -->
+        <div style="position:absolute; inset:-2px; background:#000; z-index:0;"></div>
+        <video id="ios-edits-video" class="w-full h-full relative z-10" style="object-fit:cover; background:#000; outline:none; border:none; transform:scale(1.04);" loop playsinline
           preload="none"></video>
         <!-- Beachball injected by JS -->
         <!-- Media controls -->
