@@ -36,8 +36,6 @@
       // Load stored values
       document.getElementById('adm-gh-token').value = localStorage.getItem('gh_token') || '';
       document.getElementById('adm-gh-repo').value = localStorage.getItem('gh_repo') || 'project11x/tomin-world';
-      const keyEl = document.getElementById('adm-onesignal-key');
-      if (keyEl) keyEl.value = localStorage.getItem('onesignal_key') || '';
 
       // EMERGENCY RENDER: Show chips immediately with defaults so they are never empty
       console.log("Admin: Initializing chips with defaults...");
@@ -371,67 +369,3 @@
         if (iconSection) iconSection.style.display = 'none';
       }
     });
-
-    // ==== Admin: Send Push ====
-    async function adminSendPush() {
-      const titleEl = document.getElementById('adm-push-title');
-      const msgEl = document.getElementById('adm-push-message');
-      const urlEl = document.getElementById('adm-push-url');
-      const keyEl = document.getElementById('adm-onesignal-key');
-      const btn = document.getElementById('adm-push-btn');
-      const status = document.getElementById('adm-push-status');
-
-      const title = titleEl.value.trim();
-      const message = msgEl.value.trim();
-      const url = urlEl.value.trim();
-      const key = keyEl.value.trim();
-
-      if (!message || !key) {
-        status.textContent = 'Message und REST API Key sind erforderlich';
-        status.style.color = '#ff453a';
-        return;
-      }
-
-      localStorage.setItem('onesignal_key', key);
-
-      btn.disabled = true;
-      btn.textContent = 'Sending…';
-      status.textContent = '';
-
-      try {
-        const body = {
-          app_id: ONESIGNAL_APP_ID,
-          contents: { en: message },
-          included_segments: ['Subscribed Users'],
-        };
-        if (title) body.headings = { en: title };
-        if (url) body.url = url.startsWith('http') ? url : (location.origin + (url.startsWith('/') ? url : '/' + url));
-
-        const resp = await fetch('https://onesignal.com/api/v1/notifications', {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Basic ' + key,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(body)
-        });
-        const data = await resp.json();
-        if (resp.ok && data.id) {
-          const recipients = typeof data.recipients === 'number' ? data.recipients : '?';
-          status.textContent = `✅ Sent to ${recipients} subscriber(s).`;
-          status.style.color = '#30d158';
-          titleEl.value = '';
-          msgEl.value = '';
-          urlEl.value = '';
-        } else {
-          throw new Error((data.errors && (Array.isArray(data.errors) ? data.errors[0] : data.errors.invalid_player_ids)) || 'Send failed');
-        }
-      } catch (e) {
-        status.textContent = 'Error: ' + e.message;
-        status.style.color = '#ff453a';
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Send Push';
-      }
-    }
-    window.adminSendPush = adminSendPush;
