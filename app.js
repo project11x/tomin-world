@@ -1858,16 +1858,49 @@
 
       function applyIosTheme(isDark) {
         window._iosDark = isDark;
-        // Toggle on body so ALL elements (including app overlays) inherit the variables
+        const html = document.documentElement;
+        
+        // Synchronize with Tailwind and other global styles
         if (isDark) {
+          html.classList.add('dark');
+          html.classList.add('ios-dark');
+          html.classList.remove('light');
           document.body.classList.add('ios-dark');
         } else {
+          html.classList.remove('dark');
+          html.classList.remove('ios-dark');
+          html.classList.add('light');
           document.body.classList.remove('ios-dark');
         }
+
+        // Update the manifest dynamically so the splash screen matches on next launch
+        // Note: This only affects "Add to Home Screen" or future background updates.
+        try {
+          const manifestLink = document.getElementById('pwa-manifest');
+          if (manifestLink && window.__appIcons) {
+            const choice = window.__appIconChoice || 'default';
+            const cfg = window.__appIcons[choice];
+            const pwaColor = isDark ? '#000000' : '#ffffff';
+            const manifest = {
+              name: cfg.name, short_name: cfg.name,
+              description: "Shouli's creative portfolio",
+              start_url: '.', scope: '/', display: 'standalone',
+              orientation: 'portrait', 
+              background_color: pwaColor, 
+              theme_color: pwaColor,
+              icons: [
+                { src: cfg.src, sizes: '256x256', type: 'image/png', purpose: 'any' },
+                { src: cfg.src, sizes: '256x256', type: 'image/png', purpose: 'maskable' }
+              ]
+            };
+            manifestLink.href = 'data:application/json,' + encodeURIComponent(JSON.stringify(manifest));
+          }
+        } catch(e) {}
+
         // Also keep #ios-screen in sync for the dock
         const screen = document.getElementById('ios-screen');
         if (screen) {
-          screen.style.background = 'var(--ios-bg)';
+          screen.style.background = isDark ? '#000000' : '#ffffff';
         }
         // Update status bar color (check if any app is open)
         const anyAppOpen = document.querySelector('.ios-app-overlay[style*="display: flex"], .ios-app-overlay[style*="display:flex"]');
