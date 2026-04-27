@@ -1949,13 +1949,7 @@
           document.head.appendChild(meta);
         }
         document.title = name;
-
-        // Visible feedback for debugging
-        const hint = document.getElementById('ios-share-hint');
-        if (hint) {
-          hint.innerHTML = `Name: <strong style="color:#fff;">${name}</strong><br>Tippe auf <strong style="color:#fff;">Teilen</strong> → <strong style="color:#fff;">Zum Home-Bildschirm</strong>`;
-        }
-
+        
         // Nudge Safari to re-read the page metadata by updating the URL
         try {
           const url = new URL(window.location);
