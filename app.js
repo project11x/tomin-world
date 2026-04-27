@@ -1956,6 +1956,13 @@
           hint.innerHTML = `Name: <strong style="color:#fff;">${name}</strong><br>Tippe auf <strong style="color:#fff;">Teilen</strong> → <strong style="color:#fff;">Zum Home-Bildschirm</strong>`;
         }
 
+        // Nudge Safari to re-read the page metadata by updating the URL
+        try {
+          const url = new URL(window.location);
+          url.searchParams.set('n', name);
+          window.history.replaceState({}, '', url);
+        } catch (e) { }
+
         // Update visible selection state
         document.querySelectorAll('.icon-pick-option').forEach(opt => {
           opt.querySelector('img').style.border = '3px solid transparent';
