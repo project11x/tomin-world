@@ -30,16 +30,24 @@
       try {
         await OneSignal.init({
           appId: "4f713f1a-2daa-4d18-960a-4a98000a3c11",
-          autoResubscribe: false,
+          autoResubscribe: true,
           allowLocalhostAsSecureOrigin: true,
           serviceWorkerPath: "OneSignalSDKWorker.js",
           serviceWorkerParam: { scope: "/" },
           notifyButton: { enable: false },
         });
         window.__oneSignalReady = true;
+
+        // Manual SW Registration for iOS stability
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('/OneSignalSDKWorker.js', { scope: '/' })
+            .then(reg => console.log('SW manual reg success:', reg.scope))
+            .catch(err => console.error('SW manual reg fail:', err));
+        }
         window.dispatchEvent(new Event("onesignal:ready"));
       } catch (e) {
         window.__osInitError = (e && e.message) ? e.message : String(e);
+        console.error("OneSignal Init Error:", e);
       }
     });
   </script>

@@ -316,10 +316,16 @@ async function togglePushSubscription() {
         
         // Timeout for the opt-in process
         const optInTimeout = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Server antwortet nicht (Timeout).")), 15000)
+          setTimeout(() => reject(new Error("Zeitüberschreitung (30s).")), 30000)
         );
 
         try {
+          // Extra check: wait for Service Worker to be active
+          if ('serviceWorker' in navigator) {
+            const ready = await navigator.serviceWorker.ready;
+            console.log("SW is ready:", ready);
+          }
+          
           await Promise.race([sub.optIn(), optInTimeout]);
           showPushHint('Erfolgreich!', '#34c759');
         } catch (err) {
