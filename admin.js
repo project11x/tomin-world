@@ -310,12 +310,23 @@ async function togglePushSubscription() {
   if (!permission) {
     showPushHint('Frage System…');
     try {
-      // Use native permission request first to ensure gesture is accepted
       const result = await Notification.requestPermission();
       if (result === 'granted') {
         showPushHint('Speichere…');
-        await sub.optIn();
-        refreshPushToggleUI();
+        
+        // Timeout for the opt-in process
+        const optInTimeout = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("Server antwortet nicht (Timeout).")), 15000)
+        );
+
+        try {
+          await Promise.race([sub.optIn(), optInTimeout]);
+          showPushHint('Erfolgreich!', '#34c759');
+        } catch (err) {
+          showPushHint('Speicher-Fehler: ' + err.message, '#ff453a');
+        }
+        
+        setTimeout(refreshPushToggleUI, 1000);
       } else {
         showPushHint('Erlaubnis verweigert', '#ff453a');
       }
