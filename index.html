@@ -488,6 +488,21 @@
         </a>
       </div>
 
+      <!-- Desktop Push Toggle -->
+      <div style="background:rgba(255,255,255,0.08); border-radius:14px; padding:12px 16px; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08); backdrop-filter:blur(10px); margin-bottom:14px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+          <p style="color:#fff; font-size:15px; font-weight:600; margin:0;">Benachrichtigungen</p>
+          <button id="desktop-push-toggle" role="switch" aria-checked="false" onclick="togglePushSubscription()"
+            style="position:relative; width:51px; height:31px; border:none; border-radius:31px; background:rgba(120,120,128,0.32); cursor:pointer; padding:0; transition:background 0.2s ease; flex-shrink:0;">
+            <span id="desktop-push-knob"
+              style="position:absolute; top:2px; left:2px; width:27px; height:27px; border-radius:50%; background:#fff; box-shadow:0 3px 8px rgba(0,0,0,0.15), 0 3px 1px rgba(0,0,0,0.06); transition:transform 0.2s ease;"></span>
+          </button>
+        </div>
+        <p id="desktop-push-hint" style="color:rgba(255,255,255,0.6); font-size:12px; line-height:1.4; margin:8px 0 0;">
+          Updates direkt auf den Computer.
+        </p>
+      </div>
+
     </div>
   </div>
 

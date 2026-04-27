@@ -227,36 +227,47 @@ function isStandalonePwa() {
 let __osRef = null;
 
 function showPushHint(text, color) {
-  const hint = document.getElementById('ios-push-hint');
-  if (!hint) return;
-  hint.textContent = text;
-  if (color) hint.style.color = color;
-  else hint.style.color = 'rgba(255,255,255,0.6)';
+  const hints = [document.getElementById('ios-push-hint'), document.getElementById('desktop-push-hint')].filter(h => h);
+  hints.forEach(hint => {
+    hint.textContent = text;
+    if (color) hint.style.color = color;
+    else hint.style.color = 'rgba(255,255,255,0.6)';
+  });
 }
 
 function refreshPushToggleUI() {
   const toggle = document.getElementById('ios-push-toggle');
   const knob = document.getElementById('ios-push-knob');
-  const hint = document.getElementById('ios-push-hint');
-  if (!toggle || !knob || !hint) return;
+  const toggles = [document.getElementById('ios-push-toggle'), document.getElementById('desktop-push-toggle')].filter(t => t);
+  const knobs = [document.getElementById('ios-push-knob'), document.getElementById('desktop-push-knob')].filter(k => k);
+  const hints = [document.getElementById('ios-push-hint'), document.getElementById('desktop-push-hint')].filter(h => h);
+
+  if (toggles.length === 0) return;
 
   const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   if (isIos && !isStandalonePwa()) {
-    toggle.setAttribute('aria-checked', 'false');
-    toggle.style.background = 'rgba(120,120,128,0.32)';
-    knob.style.transform = 'translateX(0px)';
-    toggle.style.opacity = '0.5';
-    toggle.dataset.disabled = 'true';
+    toggles.forEach(t => {
+      t.setAttribute('aria-checked', 'false');
+      t.style.background = 'rgba(120,120,128,0.32)';
+      t.style.opacity = '0.5';
+      t.dataset.disabled = 'true';
+    });
+    knobs.forEach(k => k.style.transform = 'translateX(0px)');
     showPushHint('Füge die Seite zum Home-Bildschirm hinzu, um Benachrichtigungen zu aktivieren.');
     return;
   }
-  toggle.style.opacity = '1';
-  toggle.dataset.disabled = 'false';
+
+  toggles.forEach(t => {
+    t.style.opacity = '1';
+    t.dataset.disabled = 'false';
+  });
 
   if (!__osRef) {
-    toggle.setAttribute('aria-checked', 'false');
-    toggle.style.background = 'rgba(120,120,128,0.32)';
-    knob.style.transform = 'translateX(0px)';
+    toggles.forEach(t => {
+      t.setAttribute('aria-checked', 'false');
+      t.style.background = 'rgba(120,120,128,0.32)';
+    });
+    knobs.forEach(k => k.style.transform = 'translateX(0px)');
     showPushHint('Initialisiere…');
     return;
   }
@@ -266,16 +277,18 @@ function refreshPushToggleUI() {
     const permission = !!(__osRef.Notifications && __osRef.Notifications.permission);
     const on = optedIn && permission;
 
-    toggle.setAttribute('aria-checked', on ? 'true' : 'false');
-    toggle.style.background = on ? '#34c759' : 'rgba(120,120,128,0.32)';
-    knob.style.transform = on ? 'translateX(20px)' : 'translateX(0px)';
+    toggles.forEach(t => {
+      t.setAttribute('aria-checked', on ? 'true' : 'false');
+      t.style.background = on ? '#34c759' : 'rgba(120,120,128,0.32)';
+    });
+    knobs.forEach(k => k.style.transform = on ? 'translateX(20px)' : 'translateX(0px)');
 
     if (!permission && typeof Notification !== 'undefined' && Notification.permission === 'denied') {
-      showPushHint('Erlaubnis verweigert. Aktiviere in iOS Einstellungen → Shouli → Mitteilungen.', '#ff453a');
+      showPushHint('Erlaubnis verweigert. Aktiviere in den System-Einstellungen → Mitteilungen.', '#ff453a');
     } else if (on) {
-      showPushHint('Aktiv. Du bekommst Updates aufs Handy.');
+      showPushHint('Aktiv. Du bekommst Updates.');
     } else {
-      showPushHint('Updates direkt aufs Handy.');
+      showPushHint('Updates direkt auf dieses Gerät.');
     }
   } catch (e) {
     console.error("OS Refresh Error:", e);
@@ -284,8 +297,12 @@ function refreshPushToggleUI() {
 }
 
 async function togglePushSubscription() {
-  const toggle = document.getElementById('ios-push-toggle');
-  if (toggle && toggle.dataset.disabled === 'true') return;
+  const iosToggle = document.getElementById('ios-push-toggle');
+  const desktopToggle = document.getElementById('desktop-push-toggle');
+  
+  if (iosToggle && iosToggle.dataset.disabled === 'true') return;
+  if (desktopToggle && desktopToggle.dataset.disabled === 'true' && !iosToggle) return; // Desktop only fallback
+
 
   if (!__osRef && window.OneSignal && window.OneSignal.User) {
     __osRef = window.OneSignal;
@@ -324,7 +341,8 @@ async function togglePushSubscription() {
   }
 
   // If permission is already granted, toggle opt-in state
-  toggle.style.opacity = '0.7';
+  const allToggles = [iosToggle, desktopToggle].filter(t => t);
+  allToggles.forEach(t => t.style.opacity = '0.7');
   try {
     if (optedIn) {
       showPushHint('Deaktiviere…');
