@@ -50,10 +50,7 @@
     OneSignalDeferred.push(async function (OneSignal) {
       try {
         await OneSignal.init({
-          appId: "4f713f1a-2daa-4d18-960a-4a98000a3c11",
-          autoResubscribe: true,
-          allowLocalhostAsSecureOrigin: true,
-          notifyButton: { enable: false },
+          appId: "4f713f1a-2daa-4d18-960a-4a98000a3c11"
         });
         window.__oneSignalReady = true;
         window.dispatchEvent(new Event("onesignal:ready"));
@@ -1782,7 +1779,7 @@
     </div>
   </div>
 
-  <script src="admin.js?v=1.7"></script>
+  <script src="admin.js?v=1.8"></script>
 </body>
 
 </html>
