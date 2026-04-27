@@ -362,8 +362,12 @@ function bindOneSignal(OneSignal) {
   const permission = !!(OneSignal.Notifications && OneSignal.Notifications.permission);
   const optedIn = !!(OneSignal.User && OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optedIn);
   if (permission && !optedIn && Notification.permission === 'granted') {
-    console.log("Auto-opting in based on granted system permission...");
-    OneSignal.User.PushSubscription.optIn().catch(e => console.error("Auto opt-in failed:", e));
+    showPushHint('Registriere im Hintergrund...', '#ff9f0a');
+    OneSignal.User.PushSubscription.optIn()
+      .then(() => refreshPushToggleUI())
+      .catch(e => {
+        showPushHint('Fataler Fehler beim Hintergrund-Speichern: ' + e.message, '#ff453a');
+      });
   }
 }
 
