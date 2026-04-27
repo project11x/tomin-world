@@ -38,6 +38,13 @@
       background-color: var(--app-bg) !important;
     }
 
+    /* Prevent landscape layout issues on mobile */
+    @media screen and (max-width: 932px) and (orientation: landscape) {
+      .ios-only-portrait-guard {
+        display: flex !important;
+      }
+    }
+
     .folder-gradient {
       background: linear-gradient(180deg, #007aff 0%, #005bc2 100%);
     }
