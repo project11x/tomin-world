@@ -12,9 +12,41 @@
   <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <link rel="icon" type="image/png" href="icons/flavicon.png" />
-  <link rel="apple-touch-icon" id="apple-touch-icon" href="icons/flavicon.png" />
-  <link rel="manifest" href="manifest.json" />
+  <script>
+    // Render icon, title and PWA manifest before Safari parses them so the
+    // "Add to Home Screen" name matches the user's chosen app icon without
+    // any client-side cache games.
+    (function () {
+      var ICONS = {
+        default: { src: 'icons/flavicon.png', name: 'Shouli' },
+        eddie: { src: 'icons/icon%20alts/MugEddie.png', name: 'Eddie' },
+        instagram: { src: 'icons/icon%20alts/fuck%20instagram.png', name: 'fuck instagram' }
+      };
+      var choice;
+      try { choice = localStorage.getItem('app-icon-choice'); } catch (e) { }
+      var cfg = ICONS[choice] || ICONS.default;
+      var manifest = {
+        name: cfg.name, short_name: cfg.name,
+        description: "Shouli's creative portfolio",
+        start_url: '.', scope: '/', display: 'standalone',
+        orientation: 'portrait', background_color: '#ffffff', theme_color: '#ffffff',
+        icons: [
+          { src: cfg.src, sizes: '256x256', type: 'image/png', purpose: 'any' },
+          { src: cfg.src, sizes: '256x256', type: 'image/png', purpose: 'maskable' }
+        ]
+      };
+      document.write(
+        '<link rel="icon" type="image/png" href="' + cfg.src + '">' +
+        '<link rel="apple-touch-icon" id="apple-touch-icon" href="' + cfg.src + '">' +
+        '<link rel="manifest" id="pwa-manifest" href="data:application/json,' +
+        encodeURIComponent(JSON.stringify(manifest)) + '">' +
+        '<meta name="apple-mobile-web-app-title" content="' + cfg.name + '">' +
+        '<title>' + cfg.name + '</title>'
+      );
+      window.__appIcons = ICONS;
+      window.__appIconChoice = choice || 'default';
+    })();
+  </script>
 
   <!-- OneSignal Web Push -->
   <script>
@@ -39,8 +71,6 @@
       }
     });
   </script>
-  <title>Shouli</title>
-  <meta name="apple-mobile-web-app-title" content="Shouli" />
   <meta name="description"
     content="Shouli's creative portfolio — video edits, digital magazines and behind-the-scenes. Discover projects, motion work and more." />
   <meta name="robots" content="index, follow" />

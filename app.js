@@ -1920,35 +1920,76 @@
       })();
 
       // ---- App Icon Picker ----
-      window.setAppIcon = function (src, el) {
-        // 1. Update the apple-touch-icon
-        const iconLink = document.getElementById('apple-touch-icon');
-        if (iconLink) iconLink.href = src;
-
-        // 2. Determine name from icon
-        let name = 'Shouli';
+      // Persist the chosen icon and reload so the inline <head> script can
+      // re-render the manifest before Safari parses it. This is the only
+      // reliable way to make iOS Safari pick up a new "Add to Home Screen"
+      // name — mutating tags after load doesn't work.
+      window.setAppIcon = function (src) {
         const srcLower = src.toLowerCase();
-        if (srcLower.includes('mugeddie')) name = 'Eddie';
-        else if (srcLower.includes('instagram')) name = 'fuck instagram';
-
-        // 3. Update meta tag (Safari reads this for "Add to Home Screen" name)
-        const meta = document.querySelector('meta[name="apple-mobile-web-app-title"]');
-        if (meta) meta.content = name;
-        document.title = name;
-        
-        // Update visible selection state
-        document.querySelectorAll('.icon-pick-option').forEach(opt => {
-          opt.querySelector('img').style.border = '3px solid transparent';
-          const check = opt.querySelector('.icon-pick-check');
-          if (check) check.remove();
-        });
-        el.querySelector('img').style.border = '3px solid #0a84ff';
-        const check = document.createElement('span');
-        check.className = 'icon-pick-check';
-        check.style.cssText = 'position:absolute; bottom:-2px; right:-2px; width:20px; height:20px; background:#0a84ff; border-radius:50%; display:flex; align-items:center; justify-content:center;';
-        check.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px; color:#fff;">check</span>';
-        el.appendChild(check);
+        let choice = 'default';
+        if (srcLower.includes('mugeddie')) choice = 'eddie';
+        else if (srcLower.includes('instagram')) choice = 'instagram';
+        try { localStorage.setItem('app-icon-choice', choice); } catch (e) { }
+        try { sessionStorage.setItem('reopen-icon-picker', '1'); } catch (e) { }
+        window.location.reload();
       };
+
+      // After reload, restore the icon picker UI so the user can immediately
+      // tap Share → Add to Home Screen with the correct name.
+      (function () {
+        let shouldReopen = false;
+        try { shouldReopen = sessionStorage.getItem('reopen-icon-picker') === '1'; } catch (e) { }
+        if (!shouldReopen) return;
+        try { sessionStorage.removeItem('reopen-icon-picker'); } catch (e) { }
+        // Defer until after the rest of app.js has run (iosOpenContact is
+        // assigned further down) and the page has fully loaded. Click the dock
+        // entry rather than calling iosOpenContact() directly so the icon
+        // element is wired up for the view-transition.
+        window.addEventListener('load', () => {
+          const dockBtn = document.querySelector('.ios-dock-item[onclick*="iosOpenContact"]');
+          if (dockBtn) {
+            dockBtn.click();
+            setTimeout(() => {
+              const section = document.getElementById('ios-app-icon-section');
+              if (section) section.scrollIntoView({ block: 'center' });
+            }, 350);
+          }
+        }, { once: true });
+      })();
+
+      // Mark the active icon in the picker on load.
+      (function () {
+        const choice = window.__appIconChoice || 'default';
+        const choiceToSelector = {
+          default: '.icon-pick-option:nth-child(1)',
+          eddie: '.icon-pick-option:nth-child(2)',
+          instagram: '.icon-pick-option:nth-child(3)'
+        };
+        const apply = () => {
+          document.querySelectorAll('.icon-pick-option').forEach(opt => {
+            const img = opt.querySelector('img');
+            if (img) img.style.border = '3px solid transparent';
+            const check = opt.querySelector('.icon-pick-check');
+            if (check) check.remove();
+          });
+          const el = document.querySelector(choiceToSelector[choice]);
+          if (!el) return;
+          const img = el.querySelector('img');
+          if (img) img.style.border = '3px solid #0a84ff';
+          if (!el.querySelector('.icon-pick-check')) {
+            const check = document.createElement('span');
+            check.className = 'icon-pick-check';
+            check.style.cssText = 'position:absolute; bottom:-2px; right:-2px; width:20px; height:20px; background:#0a84ff; border-radius:50%; display:flex; align-items:center; justify-content:center;';
+            check.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px; color:#fff;">check</span>';
+            el.appendChild(check);
+          }
+        };
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', apply, { once: true });
+        } else {
+          apply();
+        }
+      })();
 
       // ---- iOS Contact App ----
       const iosContactApp = document.getElementById('ios-contact-app');
