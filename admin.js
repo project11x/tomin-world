@@ -240,7 +240,7 @@
       const hint = document.getElementById('ios-push-hint');
       if (!toggle || !knob || !hint) return;
 
-      const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       if (isIos && !isStandalonePwa()) {
         toggle.setAttribute('aria-checked', 'false');
         toggle.style.background = 'rgba(120,120,128,0.32)';
@@ -257,7 +257,7 @@
         toggle.setAttribute('aria-checked', 'false');
         toggle.style.background = 'rgba(120,120,128,0.32)';
         knob.style.transform = 'translateX(0px)';
-        showPushHint('Lade…');
+        showPushHint('Initialisiere…');
         return;
       }
 
@@ -265,72 +265,75 @@
         const optedIn = !!(__osRef.User && __osRef.User.PushSubscription && __osRef.User.PushSubscription.optedIn);
         const permission = !!(__osRef.Notifications && __osRef.Notifications.permission);
         const on = optedIn && permission;
+        
         toggle.setAttribute('aria-checked', on ? 'true' : 'false');
         toggle.style.background = on ? '#34c759' : 'rgba(120,120,128,0.32)';
         knob.style.transform = on ? 'translateX(20px)' : 'translateX(0px)';
+        
         if (!permission && typeof Notification !== 'undefined' && Notification.permission === 'denied') {
-          showPushHint('Erlaubnis verweigert. Aktiviere in iOS Einstellungen → Shouli → Mitteilungen.');
+          showPushHint('Erlaubnis verweigert. Aktiviere in iOS Einstellungen → Shouli → Mitteilungen.', '#ff453a');
         } else if (on) {
           showPushHint('Aktiv. Du bekommst Updates aufs Handy.');
         } else {
           showPushHint('Updates direkt aufs Handy.');
         }
       } catch (e) {
+        console.error("OS Refresh Error:", e);
         showPushHint('UI-Fehler: ' + e.message, '#ff453a');
       }
     }
 
-    function togglePushSubscription() {
+    async function togglePushSubscription() {
       const toggle = document.getElementById('ios-push-toggle');
       if (toggle && toggle.dataset.disabled === 'true') return;
 
-      // Last-resort: try to grab the SDK directly if Deferred queue never fired.
       if (!__osRef && window.OneSignal && window.OneSignal.User) {
         __osRef = window.OneSignal;
       }
 
       if (!__osRef) {
         const scriptStatus = window.__osScriptStatus || 'unknown';
-        const initErr = window.__osInitError;
         const has = !!window.OneSignal;
-        const hasUser = !!(window.OneSignal && window.OneSignal.User);
-        let msg;
-        if (scriptStatus === 'error') msg = 'CDN unreachable — Netzwerk blockt OneSignal?';
-        else if (scriptStatus === 'pending') msg = 'SDK lädt noch (Netz langsam) — kurz warten.';
-        else if (initErr) msg = 'Init-Fehler: ' + initErr;
-        else if (has && !hasUser) msg = 'SDK geladen aber Init unfertig.';
-        else msg = `SDK nicht bereit (script:${scriptStatus} loaded:${has} user:${hasUser})`;
+        let msg = `SDK nicht bereit (Status: ${scriptStatus}, geladen: ${has})`;
         showPushHint(msg, '#ff9f0a');
         return;
       }
 
+      // Visual feedback
+      toggle.style.opacity = '0.7';
+      showPushHint('Verarbeite…');
+
       try {
         const sub = __osRef.User && __osRef.User.PushSubscription;
-        const optedIn = !!(sub && sub.optedIn);
+        if (!sub) throw new Error("PushSubscription nicht gefunden.");
+
+        const optedIn = !!sub.optedIn;
         const permission = !!(__osRef.Notifications && __osRef.Notifications.permission);
 
         if (optedIn && permission) {
-          // Synchronous call — preserves user gesture.
-          sub.optOut();
+          console.log("OS: Opting out...");
+          await sub.optOut();
         } else if (!permission) {
-          // First-time permission request: must be inline in the user gesture.
-          const p = __osRef.Notifications.requestPermission();
-          if (p && typeof p.then === 'function') {
-            p.then(() => {
-              try { sub && sub.optIn(); } catch (e) { showPushHint('OptIn-Fehler: ' + e.message, '#ff453a'); }
-              setTimeout(refreshPushToggleUI, 300);
-            }).catch((e) => showPushHint('Permission-Fehler: ' + e.message, '#ff453a'));
-          } else {
-            try { sub && sub.optIn(); } catch (e) { showPushHint('OptIn-Fehler: ' + e.message, '#ff453a'); }
+          console.log("OS: Requesting permission...");
+          if (typeof Notification === 'undefined') {
+            throw new Error("Benachrichtigungen werden von diesem Browser nicht unterstützt.");
+          }
+          const result = await __osRef.Notifications.requestPermission();
+          console.log("OS: Permission result:", result);
+          if (result) {
+            await sub.optIn();
           }
         } else {
-          // Permission already granted, just opt in
-          sub.optIn();
+          console.log("OS: Opting in...");
+          await sub.optIn();
         }
       } catch (e) {
-        showPushHint('Toggle-Fehler: ' + e.message, '#ff453a');
+        console.error("OS Toggle Error:", e);
+        showPushHint('Fehler: ' + e.message, '#ff453a');
+      } finally {
+        toggle.style.opacity = '1';
+        refreshPushToggleUI();
       }
-      setTimeout(refreshPushToggleUI, 400);
     }
     window.togglePushSubscription = togglePushSubscription;
 
