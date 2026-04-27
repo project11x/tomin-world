@@ -1263,8 +1263,8 @@
 
     <!-- Video card -->
     <div class="px-4 pb-3 shrink-0" style="background:var(--ios-app-bg);">
-      <div style="border-radius:16px; overflow:hidden; background:#000; position:relative; aspect-ratio:16/9;">
-        <video id="ios-edits-video" class="w-full h-full" style="object-fit:contain; background:#000;" loop playsinline
+      <div style="border-radius:16px; overflow:hidden; background:#000; position:relative; aspect-ratio:16/9; -webkit-mask-image: -webkit-radial-gradient(white, black);">
+        <video id="ios-edits-video" class="w-full h-full" style="object-fit:contain; background:#000; outline:none; border:none;" loop playsinline
           preload="none"></video>
         <!-- Beachball injected by JS -->
         <!-- Media controls -->
@@ -1722,8 +1722,8 @@
       <!-- RIGHT GLASS CARD: Video — width driven by aspect ratio, height = parent height -->
       <div class="flex-1 flex items-center h-full">
         <div id="edits-right-card" class="edits-glass-card rounded-[18px] overflow-hidden relative group"
-          style="height:100%; aspect-ratio:16/9; max-width:calc(100vw - 360px); min-width:280px;">
-          <video id="edits-video" class="w-full h-full" style="object-fit:fill; display:block;" loop playsinline
+          style="height:100%; aspect-ratio:16/9; max-width:calc(100vw - 360px); min-width:280px; -webkit-mask-image: -webkit-radial-gradient(white, black);">
+          <video id="edits-video" class="w-full h-full" style="object-fit:fill; display:block; outline:none; border:none;" loop playsinline
             preload="none"></video>
           <div id="edits-empty"
             class="absolute inset-0 flex items-center justify-center text-slate-200 dark:text-white/10 text-sm tracking-widest uppercase pointer-events-none">
