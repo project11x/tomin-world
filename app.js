@@ -237,6 +237,23 @@
       });
     }
 
+    function checkOrientation() {
+      const guard = document.querySelector('.ios-only-portrait-guard');
+      if (!guard) return;
+      // Show guard only on smaller screens (mobile/tablet) in landscape
+      const isLandscape = window.innerWidth > window.innerHeight && window.innerWidth < 1024;
+      if (isLandscape) {
+        guard.classList.remove('hidden');
+        guard.classList.add('flex');
+      } else {
+        guard.classList.add('hidden');
+        guard.classList.remove('flex');
+      }
+    }
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+    checkOrientation();
+
     function setDarkMode(isDark) {
       const html = document.documentElement;
       const themeToggle = document.getElementById('theme-toggle');
