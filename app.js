@@ -1924,7 +1924,7 @@
       const APP_ICON_NAMES = {
         'icons/flavicon.png': 'Shouli',
         'icons/icon%20alts/MugEddie.png': 'Eddie',
-        'icons/icon%20alts/fuck%20instagram.png': 'F*CK instagram',
+        'icons/icon%20alts/fuck%20instagram.png': 'fuck instagram',
       };
 
       window.setAppIcon = function (src, el) {
@@ -1934,6 +1934,7 @@
         // Update the homescreen name shown beneath the icon
         const name = APP_ICON_NAMES[src] || 'Shouli';
         document.querySelector('meta[name="apple-mobile-web-app-title"]').content = name;
+        document.title = name;
 
         // Update visible selection state
         document.querySelectorAll('.icon-pick-option').forEach(opt => {
