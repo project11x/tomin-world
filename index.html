@@ -14,6 +14,32 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <link rel="icon" type="image/png" href="icons/flavicon.png" />
   <link rel="apple-touch-icon" id="apple-touch-icon" href="icons/flavicon.png" />
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- OneSignal Web Push -->
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    window.__osScriptStatus = 'pending';
+    window.__osInitError = null;
+  </script>
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer
+    onload="window.__osScriptStatus='loaded'"
+    onerror="window.__osScriptStatus='error'"></script>
+  <script>
+    OneSignalDeferred.push(async function (OneSignal) {
+      try {
+        await OneSignal.init({
+          appId: "4f713f1a-2daa-4d18-960a-4a98000a3c11",
+          autoResubscribe: true,
+          notifyButton: { enable: false },
+        });
+        window.__oneSignalReady = true;
+        window.dispatchEvent(new Event("onesignal:ready"));
+      } catch (e) {
+        window.__osInitError = (e && e.message) ? e.message : String(e);
+      }
+    });
+  </script>
   <title>fuck instagram</title>
   <meta name="apple-mobile-web-app-title" content="Shouli" />
   <meta name="description"
@@ -1363,6 +1389,21 @@
             </div>
           </div>
 
+          <!-- Benachrichtigungen (push toggle) -->
+          <div style="padding:6px 16px 14px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+              <p style="color:#fff; font-size:15px; font-weight:600; margin:0;">Benachrichtigungen</p>
+              <button id="ios-push-toggle" role="switch" aria-checked="false" onclick="togglePushSubscription()"
+                style="position:relative; width:51px; height:31px; border:none; border-radius:31px; background:rgba(120,120,128,0.32); cursor:pointer; padding:0; transition:background 0.2s ease; -webkit-tap-highlight-color:transparent; flex-shrink:0;">
+                <span id="ios-push-knob"
+                  style="position:absolute; top:2px; left:2px; width:27px; height:27px; border-radius:50%; background:#fff; box-shadow:0 3px 8px rgba(0,0,0,0.15), 0 3px 1px rgba(0,0,0,0.06); transition:transform 0.2s ease;"></span>
+              </button>
+            </div>
+            <p id="ios-push-hint" style="color:rgba(255,255,255,0.6); font-size:13px; line-height:1.45; margin:8px 0 0;">
+              Updates direkt aufs Handy.
+            </p>
+          </div>
+
           <!-- App Icon Picker -->
           <div style="padding:6px 16px 16px;">
             <p style="color:#fff; font-size:15px; font-weight:600; margin:0 0 6px;">App Icon</p>
@@ -1715,6 +1756,17 @@
 
       <button id="adm-save-btn" class="admin-btn" onclick="adminSave()">Push to Cloud</button>
       <div id="adm-status" style="font-size:11px; margin-top:10px; text-align:center; opacity:0.8;"></div>
+
+      <div style="height:1px; background:rgba(255,255,255,0.1); margin:20px 0;"></div>
+
+      <div class="admin-label">Send Notification</div>
+      <input type="text" id="adm-push-title" class="admin-field" placeholder="Title (z.B. Shouli)">
+      <input type="text" id="adm-push-message" class="admin-field" placeholder="Message">
+      <input type="text" id="adm-push-url" class="admin-field" placeholder="Link (optional, default: /)">
+      <input type="password" id="adm-onesignal-key" class="admin-field" placeholder="OneSignal REST API Key">
+
+      <button id="adm-push-btn" class="admin-btn" onclick="adminSendPush()" style="background:rgba(255,69,58,0.85);">Send Push</button>
+      <div id="adm-push-status" style="font-size:11px; margin-top:10px; text-align:center; opacity:0.8;"></div>
     </div>
   </div>
 
