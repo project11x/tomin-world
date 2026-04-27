@@ -7,7 +7,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -343,13 +343,18 @@
     class="app-window hidden fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[360px] rounded-xl shadow-2xl flex flex-col overflow-hidden z-50 ring-1 ring-black/20 bg-white/80 dark:bg-slate-900/90 glass-panel"
     style="height: 460px;">
     <!-- Title bar — identical to Finder sidebar -->
-    <div class="h-10 shrink-0 flex items-center px-4 border-b border-slate-200/20 dark:border-white/5 bg-slate-100/40 dark:bg-black/20 backdrop-blur-lg draggable-handle">
+    <div
+      class="h-10 shrink-0 flex items-center px-4 border-b border-slate-200/20 dark:border-white/5 bg-slate-100/40 dark:bg-black/20 backdrop-blur-lg draggable-handle">
       <div class="flex space-x-2">
         <div id="btn-close-about"
           class="w-3 h-3 relative rounded-full bg-red-500 hover:bg-red-600 transition-colors shadow-sm cursor-pointer before:absolute before:-inset-1.5 before:content-['']"
           title="Close"></div>
-        <div class="w-3 h-3 relative rounded-full bg-yellow-500 hover:bg-yellow-600 transition-colors shadow-sm before:absolute before:-inset-1.5 before:content-['']"></div>
-        <div class="w-3 h-3 relative rounded-full bg-green-500 hover:bg-green-600 transition-colors shadow-sm before:absolute before:-inset-1.5 before:content-['']"></div>
+        <div
+          class="w-3 h-3 relative rounded-full bg-yellow-500 hover:bg-yellow-600 transition-colors shadow-sm before:absolute before:-inset-1.5 before:content-['']">
+        </div>
+        <div
+          class="w-3 h-3 relative rounded-full bg-green-500 hover:bg-green-600 transition-colors shadow-sm before:absolute before:-inset-1.5 before:content-['']">
+        </div>
       </div>
       <span class="flex-1 text-center text-[12px] font-semibold text-slate-500 dark:text-slate-400 mr-8">Contact</span>
     </div>
@@ -358,7 +363,8 @@
     <div class="flex-1 overflow-y-auto px-4 py-5" style="scrollbar-width: none; background: #1a1410;">
       <!-- Profile photo -->
       <div class="flex justify-center mb-3">
-        <div style="width:110px; height:110px; border-radius:50%; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+        <div
+          style="width:110px; height:110px; border-radius:50%; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
           <img src="icons/profilepicture.png" draggable="false" style="width:100%; height:100%; object-fit:cover;" />
         </div>
       </div>
@@ -380,7 +386,8 @@
       </div>
 
       <!-- Info card: email + instagram -->
-      <div style="background:rgba(255,255,255,0.08); border-radius:14px; overflow:hidden; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08); margin-bottom:14px; backdrop-filter:blur(10px);">
+      <div
+        style="background:rgba(255,255,255,0.08); border-radius:14px; overflow:hidden; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08); margin-bottom:14px; backdrop-filter:blur(10px);">
         <a href="mailto:eddie@shouli.de" class="ios-contact-row">
           <div style="flex:1; min-width:0;">
             <div class="ios-contact-label" style="color:rgba(255,255,255,0.6);">email</div>
@@ -394,7 +401,8 @@
             <div class="ios-contact-label" style="color:rgba(255,255,255,0.6);">instagram</div>
             <div class="ios-contact-value" style="color:#fff;">@edpz</div>
           </div>
-          <span class="material-symbols-outlined ios-contact-trailing" style="color:rgba(255,255,255,0.6);">open_in_new</span>
+          <span class="material-symbols-outlined ios-contact-trailing"
+            style="color:rgba(255,255,255,0.6);">open_in_new</span>
         </a>
       </div>
 
@@ -564,7 +572,8 @@
                 <div id="iww-wind" style="color:rgba(255,255,255,0.42); font-size:10px; margin-bottom:6px;">💨 – km/h
                 </div>
                 <div style="display:flex; align-items:center; gap:6px; justify-content:flex-end;">
-                  <span id="iww-status-tag" style="color:rgba(255,255,255,0.55); font-size:10px; letter-spacing:0.03em;">✂️ Cutting</span>
+                  <span id="iww-status-tag"
+                    style="color:rgba(255,255,255,0.55); font-size:10px; letter-spacing:0.03em;">✂️ Cutting</span>
                   <div id="iww-live-dot"
                     style="width:6px; height:6px; border-radius:50%; background:#4ade80; flex-shrink:0;"></div>
                 </div>
@@ -959,8 +968,10 @@
                 <span id="iwe-status-emoji" style="font-size:30px; line-height:1;">✂️</span>
                 <div>
                   <div id="iwe-status-title"
-                    style="color:#fff; font-size:20px; font-weight:600; letter-spacing:-0.01em; line-height:1.1;">✂️ Post</div>
-                  <div id="iwe-status-project" style="color:rgba(255,255,255,0.55); font-size:13px; margin-top:3px;">Milano BTS · Day 3</div>
+                    style="color:#fff; font-size:20px; font-weight:600; letter-spacing:-0.01em; line-height:1.1;">✂️
+                    Post</div>
+                  <div id="iwe-status-project" style="color:rgba(255,255,255,0.55); font-size:13px; margin-top:3px;">
+                    Milano BTS · Day 3</div>
                 </div>
               </div>
               <p id="iwe-status-note"
@@ -986,8 +997,10 @@
                 <div
                   style="color:rgba(255,255,255,0.4); font-size:10px; letter-spacing:0.14em; font-weight:700; text-transform:uppercase; margin-bottom:8px;">
                   Working on</div>
-                <div id="iwe-working-title" style="color:#fff; font-size:17px; font-weight:600; letter-spacing:-0.01em;">New layout</div>
-                <div id="iwe-working-note" style="color:rgba(255,255,255,0.42); font-size:11.5px; margin-top:4px;">🎬 last:
+                <div id="iwe-working-title"
+                  style="color:#fff; font-size:17px; font-weight:600; letter-spacing:-0.01em;">New layout</div>
+                <div id="iwe-working-note" style="color:rgba(255,255,255,0.42); font-size:11.5px; margin-top:4px;">🎬
+                  last:
                   2d ago</div>
               </div>
             </div>
