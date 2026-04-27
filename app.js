@@ -1920,8 +1920,22 @@
       })();
 
       // ---- App Icon Picker ----
+      // Each icon gets its own homescreen name so the bookmark label matches.
+      const APP_ICON_NAMES = {
+        'icons/flavicon.png': 'Shouli',
+        'icons/icon%20alts/MugEddie.png': 'Eddie',
+        'icons/icon%20alts/fuck%20instagram.png': 'F*CK instagram',
+      };
+
       window.setAppIcon = function (src, el) {
+        // Update the touch icon the browser reads on "Add to Home Screen"
         document.getElementById('apple-touch-icon').href = src;
+
+        // Update the homescreen name shown beneath the icon
+        const name = APP_ICON_NAMES[src] || 'Shouli';
+        document.querySelector('meta[name="apple-mobile-web-app-title"]').content = name;
+
+        // Update visible selection state
         document.querySelectorAll('.icon-pick-option').forEach(opt => {
           opt.querySelector('img').style.border = '3px solid transparent';
           const check = opt.querySelector('.icon-pick-check');
