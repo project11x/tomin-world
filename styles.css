@@ -1,5 +1,11 @@
     body {
       font-family: 'Inter', sans-serif;
+      background: var(--app-bg);
+      color: #2e3336;
+      transition: background-color 0.3s ease;
+    }
+    .dark body {
+      color: #ffffff;
     }
 
     .material-symbols-outlined {
@@ -11,13 +17,25 @@
       -webkit-backdrop-filter: blur(40px);
     }
 
+    :root {
+      --app-bg: #f9f9fb;
+    }
+    .dark {
+      --app-bg: #000000;
+    }
+
     .desktop-bg {
       position: relative;
+      background: transparent;
       overflow: hidden;
     }
 
     .ambient-shadow {
       box-shadow: 0px 20px 50px rgba(12, 14, 16, 0.08);
+    }
+
+    .bg-background {
+      background-color: var(--app-bg) !important;
     }
 
     .folder-gradient {
@@ -55,6 +73,13 @@
     }
 
     /* Glass card for edits viewer */
+    #edits-viewer, #magazine-reader {
+      background: #f5f5f7;
+    }
+    .dark #edits-viewer, .dark #magazine-reader {
+      background: #000000;
+    }
+
     .edits-glass-card {
       background: rgba(255, 255, 255, 0.78);
       backdrop-filter: blur(40px) saturate(180%);
@@ -339,7 +364,7 @@
     }
 
     /* iOS Theme Variables — Dark */
-    body.ios-dark {
+    .ios-dark {
       --ios-bg: #000000;
       --ios-app-bg: #1c1c1e;
       --ios-text: #ffffff;
@@ -404,7 +429,7 @@
       --sstack-outline: rgba(0, 0, 0, 0.14);
     }
 
-    body.ios-dark {
+    .ios-dark {
       --sstack-outline: rgba(255, 255, 255, 0.22);
     }
 
@@ -505,7 +530,7 @@
       --sstack-dot-ring: rgba(255, 255, 255, 0.7);
     }
 
-    body.ios-dark {
+    .ios-dark {
       --sstack-dot-active: rgba(255, 255, 255, 0.95);
       --sstack-dot-inactive: rgba(255, 255, 255, 0.4);
       --sstack-dot-ring: rgba(0, 0, 0, 0.35);
@@ -898,7 +923,7 @@
       pointer-events: none;
     }
 
-    body.ios-dark .ios-screen-blurred {
+    .ios-dark .ios-screen-blurred {
       filter: blur(12px) brightness(0.7);
     }
 
@@ -925,10 +950,17 @@
     .admin-card {
       width: 90%;
       max-width: 400px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(0, 0, 0, 0.1);
       border-radius: 30px;
       padding: 30px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+      color: #000;
+    }
+
+    .dark .admin-card {
+      background: rgba(20, 22, 28, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
       color: #fff;
     }

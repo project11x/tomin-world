@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<html class="light" lang="en">
+<html lang="en">
 
 <head>
   <meta charset="utf-8" />
@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <script>
     // Render icon, title and PWA manifest before Safari parses them so the
     // "Add to Home Screen" name matches the user's chosen app icon without
@@ -22,14 +22,41 @@
         eddie: { src: 'icons/icon%20alts/MugEddie.png', name: 'Eddie' },
         instagram: { src: 'icons/icon%20alts/fuck%20instagram.png', name: 'fuck instagram' }
       };
-      var choice;
-      try { choice = localStorage.getItem('app-icon-choice'); } catch (e) { }
+      var choice, theme;
+      try { 
+        choice = localStorage.getItem('app-icon-choice'); 
+        theme = localStorage.getItem('ios-theme') || 'auto';
+      } catch (e) { }
+
+      // Determine if we should use dark splash screen colors
+      var isDark = false;
+      if (theme === 'dark') {
+        isDark = true;
+      } else if (theme === 'auto' || !theme) {
+        isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      }
+
+      // Pre-apply theme classes to <html> to prevent white flashes
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.add('ios-dark');
+        document.documentElement.classList.remove('light');
+      } else {
+        document.documentElement.classList.add('light');
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.remove('ios-dark');
+      }
+
       var cfg = ICONS[choice] || ICONS.default;
+      var pwaColor = isDark ? '#000000' : '#ffffff';
+
       var manifest = {
         name: cfg.name, short_name: cfg.name,
         description: "Shouli's creative portfolio",
         start_url: '.', scope: '/', display: 'standalone',
-        orientation: 'portrait', background_color: '#ffffff', theme_color: '#ffffff',
+        orientation: 'portrait', 
+        background_color: pwaColor, 
+        theme_color: pwaColor,
         icons: [
           { src: cfg.src, sizes: '256x256', type: 'image/png', purpose: 'any' },
           { src: cfg.src, sizes: '256x256', type: 'image/png', purpose: 'maskable' }
@@ -127,7 +154,7 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 
-<body class="bg-background text-on-surface h-screen overflow-hidden select-none">
+<body class="bg-background dark:bg-black text-on-surface h-screen overflow-hidden select-none">
   <!-- TopAppBar -->
   <header
     class="fixed top-0 left-0 w-full z-50 flex items-center h-8 px-4 justify-between bg-white/40 dark:bg-black/40 backdrop-blur-2xl border-b border-white/30 dark:border-white/8 transition-colors duration-150 ease-in-out">
@@ -195,7 +222,7 @@
   </header>
   <!-- Desktop Canvas -->
   <main id="desktop-main" class="desktop-bg w-full h-full pt-8 flex relative origin-left"
-    style="background: #ffffff; transition: transform 480ms cubic-bezier(0.25,1,0.5,1);">
+    style="transition: transform 480ms cubic-bezier(0.25,1,0.5,1);">
 
     <!-- Dark Mode Gradient Overlay for seamless transition -->
     <div class="absolute inset-0 opacity-0 dark:opacity-100 transition-opacity duration-300 pointer-events-none z-0"
@@ -1599,7 +1626,7 @@
 
   <!-- Magazine Reader Workspace -->
   <section id="magazine-reader" class="fixed inset-0 z-[100] pointer-events-none overflow-hidden"
-    style="background:#f5f5f7; transform: translateX(100%); transition: transform 480ms cubic-bezier(0.25,1,0.5,1);">
+    style="transform: translateX(100%); transition: transform 480ms cubic-bezier(0.25,1,0.5,1);">
 
     <!-- Dark mode bg overlay -->
     <div class="absolute inset-0 opacity-0 dark:opacity-100 transition-opacity duration-300 pointer-events-none z-0"
@@ -1655,7 +1682,7 @@
   <!-- Edits Viewer: full-screen "desktop space", slides in from LEFT (edits is left of desktop) -->
   <section id="edits-viewer"
     class="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center gap-5 p-8 overflow-hidden"
-    style="background:#f5f5f7; transform: translateX(-100%); transition: transform 480ms cubic-bezier(0.25,1,0.5,1);">
+    style="transform: translateX(-100%); transition: transform 480ms cubic-bezier(0.25,1,0.5,1);">
 
     <!-- Dark mode bg overlay -->
     <div class="absolute inset-0 opacity-0 dark:opacity-100 transition-opacity duration-300 pointer-events-none"
