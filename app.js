@@ -1928,12 +1928,29 @@
       };
 
       window.setAppIcon = function (src, el) {
-        // Update the touch icon the browser reads on "Add to Home Screen"
-        document.getElementById('apple-touch-icon').href = src;
+        // Update the touch icon
+        const iconLink = document.getElementById('apple-touch-icon');
+        if (iconLink) {
+          iconLink.href = src;
+          // Nudge Safari to re-read the link tag
+          document.head.appendChild(iconLink);
+        }
 
-        // Update the homescreen name shown beneath the icon
-        const name = APP_ICON_NAMES[src] || 'Shouli';
-        document.querySelector('meta[name="apple-mobile-web-app-title"]').content = name;
+        // Update the homescreen name
+        let name = 'Shouli';
+        for (const [key, val] of Object.entries(APP_ICON_NAMES)) {
+          if (src.includes(key) || decodeURIComponent(src).includes(key)) {
+            name = val;
+            break;
+          }
+        }
+
+        const meta = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+        if (meta) {
+          meta.content = name;
+          // Nudge Safari to re-read the meta tag
+          document.head.appendChild(meta);
+        }
         document.title = name;
 
         // Update visible selection state
