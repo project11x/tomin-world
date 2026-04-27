@@ -1938,20 +1938,23 @@
 
         // Update the homescreen name
         let name = 'Shouli';
-        for (const [key, val] of Object.entries(APP_ICON_NAMES)) {
-          if (src.includes(key) || decodeURIComponent(src).includes(key)) {
-            name = val;
-            break;
-          }
-        }
+        const srcLower = src.toLowerCase();
+        if (srcLower.includes('mugeddie')) name = 'Eddie';
+        else if (srcLower.includes('instagram')) name = 'fuck instagram';
+        else name = 'Shouli';
 
         const meta = document.querySelector('meta[name="apple-mobile-web-app-title"]');
         if (meta) {
           meta.content = name;
-          // Nudge Safari to re-read the meta tag
           document.head.appendChild(meta);
         }
         document.title = name;
+
+        // Visible feedback for debugging
+        const hint = document.getElementById('ios-share-hint');
+        if (hint) {
+          hint.innerHTML = `Name: <strong style="color:#fff;">${name}</strong><br>Tippe auf <strong style="color:#fff;">Teilen</strong> → <strong style="color:#fff;">Zum Home-Bildschirm</strong>`;
+        }
 
         // Update visible selection state
         document.querySelectorAll('.icon-pick-option').forEach(opt => {
