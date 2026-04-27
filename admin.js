@@ -320,6 +320,14 @@ async function togglePushSubscription() {
         );
 
         const saveAction = async () => {
+          // 0. Pre-check: Can we even fetch the worker file?
+          try {
+            const check = await fetch('OneSignalSDKWorker.js');
+            if (!check.ok) throw new Error("Datei OneSignalSDKWorker.js nicht gefunden!");
+          } catch(e) {
+            throw new Error("Dateizugriff Fehler: " + e.message);
+          }
+
           // 1. Ensure Service Worker is registered and ready
           if ('serviceWorker' in navigator) {
             console.log("Waiting for SW...");

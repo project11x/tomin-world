@@ -40,7 +40,7 @@
 
         // Manual SW Registration for iOS stability
         if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.register('/OneSignalSDKWorker.js', { scope: '/' })
+          navigator.serviceWorker.register('OneSignalSDKWorker.js', { scope: './' })
             .then(reg => console.log('SW manual reg success:', reg.scope))
             .catch(err => console.error('SW manual reg fail:', err));
         }
