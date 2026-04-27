@@ -311,14 +311,21 @@ async function togglePushSubscription() {
     try {
       const result = await Notification.requestPermission();
       if (result === 'granted') {
-        showPushHint('Erlaubnis erteilt! Lade neu...', '#34c759');
-        setTimeout(() => location.reload(), 1500);
+        showPushHint('Aktiviere...', '#ff9f0a');
+        try {
+          const optInTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout beim Verbinden.")), 15000));
+          await Promise.race([__osRef.User.PushSubscription.optIn(), optInTimeout]);
+          showPushHint('Aktiviert!', '#34c759');
+        } catch (e) {
+          showPushHint('Verbindung fehlgeschlagen: ' + e.message + ' (Bitte App neu starten)', '#ff453a');
+        }
       } else {
         showPushHint('Erlaubnis verweigert', '#ff453a');
       }
     } catch (e) {
       showPushHint('Fehler: ' + e.message, '#ff453a');
     }
+    refreshPushToggleUI();
     return;
   }
 
