@@ -1919,34 +1919,19 @@
         });
       })();
 
-      // Map each icon to its manifest file
-      const APP_ICON_MANIFESTS = {
-        'icons/flavicon.png': 'manifest.json',
-        'icons/icon%20alts/MugEddie.png': 'manifest-eddie.json',
-        'icons/icon%20alts/fuck%20instagram.png': 'manifest-instagram.json',
-      };
-
+      // ---- App Icon Picker ----
       window.setAppIcon = function (src, el) {
         // 1. Update the apple-touch-icon
         const iconLink = document.getElementById('apple-touch-icon');
         if (iconLink) iconLink.href = src;
 
-        // 2. Update the favicon
-        const favicon = document.querySelector('link[rel="icon"]');
-        if (favicon) favicon.href = src;
-
-        // 3. Determine name and manifest
+        // 2. Determine name from icon
         let name = 'Shouli';
-        let manifestFile = 'manifest.json';
         const srcLower = src.toLowerCase();
-        if (srcLower.includes('mugeddie')) { name = 'Eddie'; manifestFile = 'manifest-eddie.json'; }
-        else if (srcLower.includes('instagram')) { name = 'fuck instagram'; manifestFile = 'manifest-instagram.json'; }
+        if (srcLower.includes('mugeddie')) name = 'Eddie';
+        else if (srcLower.includes('instagram')) name = 'fuck instagram';
 
-        // 4. Swap the manifest link to the correct static file
-        const manifestLink = document.getElementById('pwa-manifest');
-        if (manifestLink) manifestLink.href = manifestFile;
-
-        // 5. Update meta tag and title as well
+        // 3. Update meta tag (Safari reads this for "Add to Home Screen" name)
         const meta = document.querySelector('meta[name="apple-mobile-web-app-title"]');
         if (meta) meta.content = name;
         document.title = name;
