@@ -1949,28 +1949,7 @@
           document.head.appendChild(meta);
         }
         document.title = name;
-
-        // Dynamic Manifest for Safari (supports both dynamic names and notifications)
-        const manifest = {
-          "name": name,
-          "short_name": name,
-          "description": "Shouli's creative portfolio",
-          "start_url": ".",
-          "scope": "/",
-          "display": "standalone",
-          "orientation": "portrait",
-          "background_color": "#ffffff",
-          "theme_color": "#ffffff",
-          "icons": [
-            { "src": src, "sizes": "256x256", "type": "image/png", "purpose": "any" },
-            { "src": src, "sizes": "256x256", "type": "image/png", "purpose": "maskable" }
-          ]
-        };
-        const manifestLink = document.getElementById('ios-manifest');
-        if (manifestLink) {
-          manifestLink.setAttribute('href', 'data:application/json,' + encodeURIComponent(JSON.stringify(manifest)));
-        }
-
+        
         // Update visible selection state
         document.querySelectorAll('.icon-pick-option').forEach(opt => {
           opt.querySelector('img').style.border = '3px solid transparent';
