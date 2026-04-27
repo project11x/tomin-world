@@ -1,0 +1,25 @@
+{
+  "name": "fuck instagram",
+  "short_name": "fuck instagram",
+  "description": "Shouli's creative portfolio",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "icons/icon%20alts/fuck%20instagram.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon%20alts/fuck%20instagram.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

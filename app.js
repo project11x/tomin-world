@@ -1919,35 +1919,36 @@
         });
       })();
 
-      // ---- App Icon Picker ----
-      // Each icon gets its own homescreen name so the bookmark label matches.
-      const APP_ICON_NAMES = {
-        'icons/flavicon.png': 'Shouli',
-        'icons/icon%20alts/MugEddie.png': 'Eddie',
-        'icons/icon%20alts/fuck%20instagram.png': 'fuck instagram',
+      // Map each icon to its manifest file
+      const APP_ICON_MANIFESTS = {
+        'icons/flavicon.png': 'manifest.json',
+        'icons/icon%20alts/MugEddie.png': 'manifest-eddie.json',
+        'icons/icon%20alts/fuck%20instagram.png': 'manifest-instagram.json',
       };
 
       window.setAppIcon = function (src, el) {
-        // Update the touch icon
+        // 1. Update the apple-touch-icon
         const iconLink = document.getElementById('apple-touch-icon');
-        if (iconLink) {
-          iconLink.href = src;
-          // Nudge Safari to re-read the link tag
-          document.head.appendChild(iconLink);
-        }
+        if (iconLink) iconLink.href = src;
 
-        // Update the homescreen name
+        // 2. Update the favicon
+        const favicon = document.querySelector('link[rel="icon"]');
+        if (favicon) favicon.href = src;
+
+        // 3. Determine name and manifest
         let name = 'Shouli';
+        let manifestFile = 'manifest.json';
         const srcLower = src.toLowerCase();
-        if (srcLower.includes('mugeddie')) name = 'Eddie';
-        else if (srcLower.includes('instagram')) name = 'fuck instagram';
-        else name = 'Shouli';
+        if (srcLower.includes('mugeddie')) { name = 'Eddie'; manifestFile = 'manifest-eddie.json'; }
+        else if (srcLower.includes('instagram')) { name = 'fuck instagram'; manifestFile = 'manifest-instagram.json'; }
 
+        // 4. Swap the manifest link to the correct static file
+        const manifestLink = document.getElementById('pwa-manifest');
+        if (manifestLink) manifestLink.href = manifestFile;
+
+        // 5. Update meta tag and title as well
         const meta = document.querySelector('meta[name="apple-mobile-web-app-title"]');
-        if (meta) {
-          meta.content = name;
-          document.head.appendChild(meta);
-        }
+        if (meta) meta.content = name;
         document.title = name;
         
         // Update visible selection state
