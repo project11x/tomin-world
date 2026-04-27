@@ -16,11 +16,32 @@
   <link rel="apple-touch-icon" id="apple-touch-icon" href="icons/flavicon.png" />
   <link rel="manifest" href="manifest.json" />
 
+  <!-- Temporary On-Screen Debug Console -->
+  <div id="debug-console" style="position:fixed; top:0; left:0; width:100%; height:40vh; background:rgba(0,0,0,0.85); color:#0f0; font-family:monospace; font-size:10px; overflow-y:auto; z-index:99999; padding:10px; pointer-events:auto;">
+    <button onclick="document.getElementById('debug-console').style.display='none'" style="margin-bottom:10px;">Close Console</button><br>
+  </div>
+  <script>
+    const dc = document.getElementById('debug-console');
+    const oldLog = console.log, oldErr = console.error, oldWarn = console.warn;
+    function logToScreen(color, ...args) {
+      if(!dc) return;
+      const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
+      dc.innerHTML += `<span style="color:${color}">${msg}</span><br/>`;
+      dc.scrollTop = dc.scrollHeight;
+    }
+    console.log = function(...args) { oldLog.apply(console, args); logToScreen('#0f0', ...args); };
+    console.warn = function(...args) { oldWarn.apply(console, args); logToScreen('#ff0', ...args); };
+    console.error = function(...args) { oldErr.apply(console, args); logToScreen('#f00', ...args); };
+  </script>
+
   <!-- OneSignal Web Push -->
   <script>
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     window.__osScriptStatus = 'pending';
     window.__osInitError = null;
+    OneSignalDeferred.push(function(OneSignal) {
+      if (OneSignal.Debug) OneSignal.Debug.setLogLevel('trace');
+    });
   </script>
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer
     onload="window.__osScriptStatus='loaded'"
@@ -1761,7 +1782,7 @@
     </div>
   </div>
 
-  <script src="admin.js?v=1.6"></script>
+  <script src="admin.js?v=1.7"></script>
 </body>
 
 </html>
