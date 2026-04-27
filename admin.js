@@ -335,7 +335,8 @@ async function togglePushSubscription() {
       await sub.optOut();
     } else {
       showPushHint('Aktiviere…');
-      await sub.optIn();
+      const optInTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout beim Verbinden.")), 15000));
+      await Promise.race([sub.optIn(), optInTimeout]);
     }
   } catch (e) {
     showPushHint('Fehler: ' + e.message, '#ff453a');
@@ -349,13 +350,21 @@ window.togglePushSubscription = togglePushSubscription;
 function bindOneSignal(OneSignal) {
   if (__osRef || !OneSignal || !OneSignal.User) return;
   __osRef = OneSignal;
+  
   try {
     OneSignal.User.PushSubscription.addEventListener('change', refreshPushToggleUI);
-  } catch (e) { /* listener may not exist */ }
-  try {
     OneSignal.Notifications.addEventListener('permissionChange', refreshPushToggleUI);
   } catch (e) { /* listener may not exist */ }
+  
   refreshPushToggleUI();
+
+  // Auto-recovery: If system permission is granted but OneSignal isn't opted in, force it in the background
+  const permission = !!(OneSignal.Notifications && OneSignal.Notifications.permission);
+  const optedIn = !!(OneSignal.User && OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optedIn);
+  if (permission && !optedIn && Notification.permission === 'granted') {
+    console.log("Auto-opting in based on granted system permission...");
+    OneSignal.User.PushSubscription.optIn().catch(e => console.error("Auto opt-in failed:", e));
+  }
 }
 
 // Primary path: deferred queue fires when SDK initializes
