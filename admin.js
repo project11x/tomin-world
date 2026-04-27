@@ -364,7 +364,13 @@
       if (__osPolls > 60) clearInterval(__osInterval); // give up after ~30s
     }, 500);
 
-    document.addEventListener('DOMContentLoaded', () => setTimeout(refreshPushToggleUI, 800));
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(refreshPushToggleUI, 800);
+      if (isStandalonePwa()) {
+        const iconSection = document.getElementById('ios-app-icon-section');
+        if (iconSection) iconSection.style.display = 'none';
+      }
+    });
 
     // ==== Admin: Send Push ====
     async function adminSendPush() {
