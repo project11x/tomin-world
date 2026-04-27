@@ -310,43 +310,14 @@ async function togglePushSubscription() {
   if (!permission) {
     showPushHint('Frage System…');
     try {
+      // Use native permission request first to ensure gesture is accepted
       const result = await Notification.requestPermission();
       if (result === 'granted') {
-        showPushHint('Speichere…');
+        showPushHint('Erlaubnis erteilt! Lade neu...', '#34c759');
         
-        // Timeout for the entire saving process (including SW check)
-        const totalTimeout = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Zeitüberschreitung (30s).")), 30000)
-        );
-
-        const saveAction = async () => {
-          // 0. Pre-check: Can we even fetch the worker file?
-          try {
-            const check = await fetch('OneSignalSDKWorker.js');
-            if (!check.ok) throw new Error("Datei OneSignalSDKWorker.js nicht gefunden!");
-          } catch(e) {
-            throw new Error("Dateizugriff Fehler: " + e.message);
-          }
-
-          // 1. Ensure Service Worker is registered and ready
-          if ('serviceWorker' in navigator) {
-            console.log("Waiting for SW...");
-            await navigator.serviceWorker.ready;
-          }
-          // 2. Perform the actual opt-in
-          console.log("Calling optIn...");
-          return await sub.optIn();
-        };
-
-        try {
-          await Promise.race([saveAction(), totalTimeout]);
-          showPushHint('Erfolgreich!', '#34c759');
-        } catch (err) {
-          console.error("Save Error:", err);
-          showPushHint('Speicher-Fehler: ' + err.message, '#ff453a');
-        }
-        
-        setTimeout(refreshPushToggleUI, 1000);
+        // OneSignal's autoResubscribe will handle the actual backend registration
+        // perfectly on the next page load, avoiding all the iOS Service Worker hangs.
+        setTimeout(() => location.reload(), 1500);
       } else {
         showPushHint('Erlaubnis verweigert', '#ff453a');
       }
