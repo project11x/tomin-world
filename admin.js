@@ -302,21 +302,16 @@ async function togglePushSubscription() {
     return;
   }
 
-  const permission = !!(__osRef.Notifications && __osRef.Notifications.permission);
+  const nativePerm = typeof Notification !== 'undefined' ? Notification.permission : 'default';
   const optedIn = !!sub.optedIn;
 
-  // iOS CRITICAL: requestPermission MUST be called directly in the click handler's 
-  // execution turn to preserve the user gesture.
-  if (!permission) {
+  // If system hasn't granted permission yet
+  if (nativePerm !== 'granted') {
     showPushHint('Frage System…');
     try {
-      // Use native permission request first to ensure gesture is accepted
       const result = await Notification.requestPermission();
       if (result === 'granted') {
         showPushHint('Erlaubnis erteilt! Lade neu...', '#34c759');
-        
-        // OneSignal's autoResubscribe will handle the actual backend registration
-        // perfectly on the next page load, avoiding all the iOS Service Worker hangs.
         setTimeout(() => location.reload(), 1500);
       } else {
         showPushHint('Erlaubnis verweigert', '#ff453a');
@@ -327,16 +322,17 @@ async function togglePushSubscription() {
     return;
   }
 
-  // If permission already granted, just toggle opt-in state
+  // If permission is already granted, toggle opt-in state
   toggle.style.opacity = '0.7';
   try {
     if (optedIn) {
       showPushHint('Deaktiviere…');
       await sub.optOut();
     } else {
-      showPushHint('Aktiviere…');
+      showPushHint('Aktiviere (System-Erlaubnis liegt vor)…', '#ff9f0a');
       const optInTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout beim Verbinden.")), 15000));
       await Promise.race([sub.optIn(), optInTimeout]);
+      showPushHint('Aktiviert!', '#34c759');
     }
   } catch (e) {
     showPushHint('Fehler: ' + e.message, '#ff453a');
@@ -358,15 +354,17 @@ function bindOneSignal(OneSignal) {
   
   refreshPushToggleUI();
 
-  // Auto-recovery: If system permission is granted but OneSignal isn't opted in, force it in the background
-  const permission = !!(OneSignal.Notifications && OneSignal.Notifications.permission);
+  // Auto-recovery
+  const nativePerm = typeof Notification !== 'undefined' ? Notification.permission : 'default';
   const optedIn = !!(OneSignal.User && OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optedIn);
-  if (permission && !optedIn && Notification.permission === 'granted') {
-    showPushHint('Registriere im Hintergrund...', '#ff9f0a');
-    OneSignal.User.PushSubscription.optIn()
+  
+  if (nativePerm === 'granted' && !optedIn) {
+    showPushHint('Auto-Start...', '#ff9f0a');
+    const optInTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout beim Verbinden.")), 15000));
+    Promise.race([OneSignal.User.PushSubscription.optIn(), optInTimeout])
       .then(() => refreshPushToggleUI())
       .catch(e => {
-        showPushHint('Fataler Fehler beim Hintergrund-Speichern: ' + e.message, '#ff453a');
+        showPushHint('Hintergrund-Fehler: ' + e.message, '#ff453a');
       });
   }
 }
