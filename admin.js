@@ -233,7 +233,7 @@
       if (!hint) return;
       hint.textContent = text;
       if (color) hint.style.color = color;
-      else hint.style.color = '';
+      else hint.style.color = 'rgba(255,255,255,0.6)';
     }
 
     function refreshPushToggleUI() {
