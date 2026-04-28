@@ -1,4 +1,329 @@
     // ═════════════════════════════════════════════════════════════════════
+    // Shared widget morph helper — FLIP-style expand/collapse
+    // ─────────────────────────────────────────────────────────────────────
+    // Identical content between compact and expanded layouts (LIVE label,
+    // time, badge, temperature, …) glides smoothly between positions while
+    // the widget itself resizes. The user perceives a single growing widget
+    // instead of "another window opening on top of the small one".
+    //
+    // Mechanics:
+    //  1. Measure each shared `to` element's destination rect at the FINAL
+    //     card size, then snap the card back to the compact rect.
+    //  2. Lock `contentEl` to absolute positioning at the final dimensions
+    //     so layouts inside don't reflow during the grow — destination
+    //     rects stay stable and the FLIP math holds.
+    //  3. Apply translate+scale on each shared expanded element so it
+    //     visually overlaps its compact counterpart (which is hidden under
+    //     the opaque card).
+    //  4. Animate: the card grows, FLIP transforms ease back to identity,
+    //     and non-shared content fades + slides into place a tick later.
+    //  5. Close reverses: shared elements morph back to compact rects while
+    //     the card shrinks; non-shared content fades out first.
+    // ═════════════════════════════════════════════════════════════════════
+    const __MORPH_SPRING = 'cubic-bezier(0.32, 0.72, 0, 1)';
+    const __MORPH_DUR = 480; // ms — Apple Springboard widget expand cadence
+
+    function __morphResolve(elOrSel, root) {
+      if (!elOrSel) return null;
+      if (typeof elOrSel === 'string') return (root || document).querySelector(elOrSel);
+      return elOrSel;
+    }
+
+    function createWidgetMorph(cfg) {
+      const widget = __morphResolve(cfg.widget);
+      const expanded = __morphResolve(cfg.expanded);
+      const expCard = __morphResolve(cfg.expCard);
+      const contentEl = __morphResolve(cfg.contentEl);
+      if (!widget || !expanded || !expCard) {
+        return { open() { }, close() { }, attachDrag() { }, isOpen: () => false };
+      }
+      const getTarget = cfg.getTarget;
+      const compactRadius = cfg.compactRadius != null ? cfg.compactRadius : 20;
+      const onBeforeOpen = cfg.onBeforeOpen;
+      const onAfterOpen = cfg.onAfterOpen;
+      const onBeforeClose = cfg.onBeforeClose;
+      const onAfterClose = cfg.onAfterClose;
+
+      let isOpen = false;
+      const stash = {};
+
+      function resolvePairs() {
+        const raw = (typeof cfg.getSharedPairs === 'function')
+          ? cfg.getSharedPairs()
+          : (cfg.sharedPairs || []);
+        return raw
+          .map(p => ({ from: __morphResolve(p.from), to: __morphResolve(p.to) }))
+          .filter(p => p.from && p.to);
+      }
+
+      function resolveFadeEls() {
+        const raw = (typeof cfg.getFadeEls === 'function')
+          ? cfg.getFadeEls()
+          : (cfg.fadeEls || []);
+        return raw.map(el => __morphResolve(el)).filter(Boolean);
+      }
+
+      // Lock contentEl to absolute positioning at the final target size so
+      // its children don't reflow as the card grows / shrinks. This keeps
+      // every shared element's destination rect stable during the morph.
+      function lockContent(target) {
+        if (!contentEl) return;
+        stash.position = contentEl.style.position || '';
+        stash.top = contentEl.style.top || '';
+        stash.left = contentEl.style.left || '';
+        stash.right = contentEl.style.right || '';
+        stash.bottom = contentEl.style.bottom || '';
+        stash.width = contentEl.style.width || '';
+        stash.height = contentEl.style.height || '';
+        stash.flex = contentEl.style.flex || '';
+        stash.opacity = contentEl.style.opacity || '';
+        stash.transition = contentEl.style.transition || '';
+        stash.transform = contentEl.style.transform || '';
+        contentEl.style.position = 'absolute';
+        contentEl.style.top = '0';
+        contentEl.style.left = '0';
+        contentEl.style.right = 'auto';
+        contentEl.style.bottom = 'auto';
+        contentEl.style.width = target.width + 'px';
+        contentEl.style.height = target.height + 'px';
+        contentEl.style.flex = 'none';
+        contentEl.style.opacity = '1';
+        contentEl.style.transition = 'none';
+        contentEl.style.transform = 'none';
+      }
+      function unlockContent() {
+        if (!contentEl) return;
+        contentEl.style.position = stash.position;
+        contentEl.style.top = stash.top;
+        contentEl.style.left = stash.left;
+        contentEl.style.right = stash.right;
+        contentEl.style.bottom = stash.bottom;
+        contentEl.style.width = stash.width;
+        contentEl.style.height = stash.height;
+        contentEl.style.flex = stash.flex;
+        contentEl.style.opacity = stash.opacity;
+        contentEl.style.transition = stash.transition;
+        contentEl.style.transform = stash.transform;
+      }
+
+      function setCardRect(rect, radius, transition) {
+        expCard.style.transition = transition || 'none';
+        expCard.style.top = rect.top + 'px';
+        expCard.style.left = rect.left + 'px';
+        expCard.style.width = rect.width + 'px';
+        expCard.style.height = rect.height + 'px';
+        expCard.style.borderRadius = (radius != null ? radius : compactRadius) + 'px';
+        expCard.style.transform = 'translateY(0)';
+      }
+
+      function flipTransform(toEl, fromRect, toRect) {
+        const dx = fromRect.left - toRect.left;
+        const dy = fromRect.top - toRect.top;
+        const sx = toRect.width ? fromRect.width / toRect.width : 1;
+        const sy = toRect.height ? fromRect.height / toRect.height : 1;
+        toEl.style.transition = 'none';
+        toEl.style.transformOrigin = '0 0';
+        toEl.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+        toEl.style.willChange = 'transform';
+      }
+      function clearFlip(el) {
+        el.style.transition = '';
+        el.style.transform = '';
+        el.style.transformOrigin = '';
+        el.style.willChange = '';
+      }
+
+      const cardTransProps = `top ${__MORPH_DUR}ms ${__MORPH_SPRING}, ` +
+        `left ${__MORPH_DUR}ms ${__MORPH_SPRING}, ` +
+        `width ${__MORPH_DUR}ms ${__MORPH_SPRING}, ` +
+        `height ${__MORPH_DUR}ms ${__MORPH_SPRING}, ` +
+        `border-radius ${__MORPH_DUR}ms ${__MORPH_SPRING}, ` +
+        `transform ${__MORPH_DUR}ms ${__MORPH_SPRING}`;
+
+      function open() {
+        if (isOpen) return;
+        isOpen = true;
+        if (onBeforeOpen) onBeforeOpen();
+        expanded.style.display = 'block';
+
+        const target = getTarget();
+        // 1. Lock the inner layout to its final size (so destinations stay put).
+        lockContent(target);
+        // 2. Place the card at its final size to MEASURE shared destinations.
+        setCardRect(target, target.radius, 'none');
+        void expCard.offsetWidth;
+        const pairs = resolvePairs().map(p => ({
+          from: p.from, to: p.to, dst: p.to.getBoundingClientRect()
+        }));
+        // 3. Snap the card back to the compact widget's rect — instant, no flicker
+        //    because the browser hasn't painted yet (still inside the same task).
+        const r0 = widget.getBoundingClientRect();
+        setCardRect(r0, compactRadius, 'none');
+
+        // 4. Fade-in elements start hidden + slightly offset.
+        const fadeEls = resolveFadeEls();
+        fadeEls.forEach(el => {
+          el.style.transition = 'none';
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(8px)';
+        });
+
+        // 5. FLIP shared expanded elements onto their compact counterparts.
+        pairs.forEach(p => {
+          const src = p.from.getBoundingClientRect();
+          flipTransform(p.to, src, p.dst);
+          // Above any non-shared neighbours.
+          if (!p.to.style.zIndex) p.to.style.zIndex = '4';
+        });
+
+        void expCard.offsetWidth;
+
+        // 6. Animate.
+        requestAnimationFrame(() => {
+          if (!isOpen) return;
+          const t = getTarget();
+          setCardRect(t, t.radius, cardTransProps);
+
+          pairs.forEach(p => {
+            p.to.style.transition = `transform ${__MORPH_DUR}ms ${__MORPH_SPRING}`;
+            p.to.style.transform = '';
+          });
+
+          // Fade in non-shared content slightly later — gives the morph a
+          // chance to anchor the new layout before details appear.
+          setTimeout(() => {
+            if (!isOpen) return;
+            fadeEls.forEach(el => {
+              el.style.transition = `opacity 360ms ease, transform 420ms ${__MORPH_SPRING}`;
+              el.style.opacity = '1';
+              el.style.transform = '';
+            });
+          }, Math.round(__MORPH_DUR * 0.18));
+
+          // Cleanup once the morph completes.
+          setTimeout(() => {
+            if (!isOpen) return;
+            pairs.forEach(p => {
+              clearFlip(p.to);
+              if (p.to.style.zIndex === '4') p.to.style.zIndex = '';
+            });
+            fadeEls.forEach(el => {
+              el.style.transition = '';
+              el.style.transform = '';
+            });
+            if (onAfterOpen) onAfterOpen();
+          }, __MORPH_DUR + 40);
+        });
+      }
+
+      function close() {
+        if (!isOpen) return;
+        isOpen = false;
+        if (onBeforeClose) onBeforeClose();
+
+        // Capture current expanded rects + compact destination rects.
+        const pairs = resolvePairs().map(p => ({
+          from: p.from,
+          to: p.to,
+          src: p.to.getBoundingClientRect(),     // current expanded position
+          dst: p.from.getBoundingClientRect(),   // compact position to land on
+        }));
+
+        const fadeEls = resolveFadeEls();
+        fadeEls.forEach(el => {
+          el.style.transition = `opacity 220ms ease, transform 280ms ease`;
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(8px)';
+        });
+
+        requestAnimationFrame(() => {
+          if (isOpen) return;
+          const r = widget.getBoundingClientRect();
+          setCardRect(r, compactRadius, cardTransProps);
+
+          pairs.forEach(p => {
+            const dx = p.dst.left - p.src.left;
+            const dy = p.dst.top - p.src.top;
+            const sx = p.src.width ? p.dst.width / p.src.width : 1;
+            const sy = p.src.height ? p.dst.height / p.src.height : 1;
+            p.to.style.transition = `transform ${__MORPH_DUR}ms ${__MORPH_SPRING}`;
+            p.to.style.transformOrigin = '0 0';
+            p.to.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+            p.to.style.willChange = 'transform';
+            if (!p.to.style.zIndex) p.to.style.zIndex = '4';
+          });
+        });
+
+        setTimeout(() => {
+          if (isOpen) return;
+          expanded.style.display = 'none';
+          unlockContent();
+          pairs.forEach(p => {
+            clearFlip(p.to);
+            if (p.to.style.zIndex === '4') p.to.style.zIndex = '';
+          });
+          fadeEls.forEach(el => {
+            el.style.transition = '';
+            el.style.opacity = '';
+            el.style.transform = '';
+          });
+          if (onAfterClose) onAfterClose();
+        }, __MORPH_DUR + 60);
+      }
+
+      // iOS-style drag-down to dismiss. The `excludeContains` predicate lets
+      // callers say "if the gesture starts inside this scrollable list, defer
+      // to native scroll instead of starting a drag-to-close".
+      function attachDrag(opts) {
+        opts = opts || {};
+        let dragging = false, startY = 0, startT = 0, moved = 0, pendingId = null;
+        expCard.addEventListener('pointerdown', (e) => {
+          if (!isOpen || (e.pointerType === 'mouse' && e.button !== 0)) return;
+          if (opts.excludeContains && opts.excludeContains(e.target)) return;
+          pendingId = e.pointerId; startY = e.clientY; startT = Date.now(); moved = 0; dragging = false;
+        });
+        expCard.addEventListener('pointermove', (e) => {
+          if (pendingId !== e.pointerId) return;
+          const dy = e.clientY - startY;
+          if (!dragging) {
+            if (dy > 6) {
+              dragging = true;
+              try { expCard.setPointerCapture(e.pointerId); } catch (_) { }
+              expCard.style.transition = 'none';
+            } else if (dy < -6) {
+              pendingId = null; return;
+            } else return;
+          }
+          moved = dy;
+          expCard.style.transform = 'translateY(' + (dy > 0 ? dy : dy * 0.2) + 'px)';
+          if (contentEl) {
+            contentEl.style.transition = 'none';
+            contentEl.style.opacity = String(Math.max(0, 1 - Math.max(0, dy) / 200));
+          }
+        });
+        const endDrag = (e) => {
+          if (pendingId !== e.pointerId) return;
+          pendingId = null;
+          if (!dragging) return;
+          dragging = false;
+          try { expCard.releasePointerCapture(e.pointerId); } catch (_) { }
+          const velocity = moved / Math.max(1, Date.now() - startT);
+          if (moved > 110 || (velocity > 0.6 && moved > 30)) {
+            close();
+          } else {
+            expCard.style.transition = 'transform 0.35s ' + __MORPH_SPRING;
+            expCard.style.transform = 'translateY(0)';
+            if (contentEl) { contentEl.style.transition = 'opacity 0.2s ease'; contentEl.style.opacity = '1'; }
+          }
+        };
+        expCard.addEventListener('pointerup', endDrag);
+        expCard.addEventListener('pointercancel', endDrag);
+      }
+
+      return { open, close, attachDrag, isOpen: () => isOpen };
+    }
+
+    // ═════════════════════════════════════════════════════════════════════
     // Changelog widget — live feed of the repo's recent commits
     // ─────────────────────────────────────────────────────────────────────
     // Primary data source: GitHub REST API (repo is public, 60 req/hr per IP
@@ -128,31 +453,16 @@
       setInterval(fetchLive, 5 * 60 * 1000);
 
       // ───────────────────────────────────────────────────────────────────
-      // Expanded changelog — iOS-style "grow from widget" expansion.
-      //
-      // Open: position the expanded card at the widget's current bounding
-      // rect, force a reflow, then transition to the inset-fullscreen
-      // target layout. Uses the iOS spring easing.
-      // Close: reverse — animate back to the widget's rect and hide.
-      // Drag: pointer on the top grab zone; drag down → translate, release
-      // past a threshold (or fast flick) closes the sheet.
+      // Expanded changelog — uses the shared FLIP morph helper so the LIVE /
+      // CHANGELOG eyebrow labels at the top glide into place between the
+      // compact and expanded layouts. Non-shared content (the "Latest
+      // commits" title and scrollable list) fades in slightly delayed.
       // ───────────────────────────────────────────────────────────────────
       const widget = document.getElementById('ios-system-pulse');
       const expanded = document.getElementById('ios-changelog-expanded');
       const expCard = document.getElementById('ios-changelog-card');
       const contentEl = document.getElementById('ios-changelog-content');
       const listEl = document.getElementById('sys-commits-list');
-      // iOS widget expand easing — tuned to match Springboard's feel:
-      // a slightly over-damped spring that settles without overshoot.
-      const SPRING = 'cubic-bezier(0.32, 0.72, 0, 1)';
-      const DUR = 0.48; // seconds — Apple widget expand is ~460–500ms
-      const ANIM_PROPS = `top ${DUR}s ${SPRING}, left ${DUR}s ${SPRING}, ` +
-        `width ${DUR}s ${SPRING}, height ${DUR}s ${SPRING}, ` +
-        `border-radius ${DUR}s ${SPRING}, transform ${DUR}s ${SPRING}`;
-      // Content transition — scale + fade move together, ease-out on entry,
-      // slightly steeper ease-in on exit so it "pulls back" into the widget.
-      const CONTENT_IN = 'opacity 0.32s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.42s cubic-bezier(0.2, 0.7, 0.2, 1)';
-      const CONTENT_OUT = 'opacity 0.22s cubic-bezier(0.6, 0, 0.8, 0.2), transform 0.30s cubic-bezier(0.5, 0, 0.75, 0)';
 
       // Render the scrollable list of commits inside the expanded card.
       function renderList() {
@@ -200,195 +510,45 @@
         };
       }
 
-      // Set the card's absolute frame instantly (no transition).
-      function setCardFrame(rect, radius) {
-        expCard.style.transition = 'none';
-        expCard.style.top = rect.top + 'px';
-        expCard.style.left = rect.left + 'px';
-        expCard.style.width = rect.width + 'px';
-        expCard.style.height = rect.height + 'px';
-        expCard.style.borderRadius = (radius != null ? radius : 20) + 'px';
-        expCard.style.transform = 'translateY(0)';
-      }
+      // The header row that holds the LIVE dot + LIVE/CHANGELOG eyebrows.
+      // We need its non-shared children (the dot) in fadeEls so it doesn't
+      // peek through at the compact rect during the morph.
+      const headerLiveDot = expCard
+        ? expCard.querySelector('#ios-changelog-content > div:nth-of-type(2) > div > div')
+        : null;
+      // The "Latest commits" title block (third direct child of contentEl).
+      const titleBlock = expCard
+        ? expCard.querySelector('#ios-changelog-content > div:nth-of-type(3)')
+        : null;
 
-      let isOpen = false;
+      const morph = createWidgetMorph({
+        widget, expanded, expCard, contentEl,
+        getTarget: getExpandedTarget,
+        sharedPairs: [
+          { from: '#sys-live-label', to: '#icl-live-label' },
+          { from: '#sys-eyebrow', to: '#icl-eyebrow' },
+        ],
+        fadeEls: [
+          '#ios-changelog-grab',
+          headerLiveDot,
+          titleBlock,
+          '#sys-commits-list',
+        ],
+        onBeforeOpen: () => {
+          renderList();
+          requestAnimationFrame(updateScrollFade);
+        },
+      });
 
-      function openChangelog() {
-        if (isOpen) return;
-        isOpen = true;
-        renderList();
-        requestAnimationFrame(updateScrollFade);
-        const r = widget.getBoundingClientRect();
-        expanded.style.display = 'block';
-        // Content starts collapsed toward the widget — small scale + offset so it
-        // feels like it's emerging from the card rather than popping on top.
-        if (contentEl) {
-          contentEl.style.transition = 'none';
-          contentEl.style.opacity = '0';
-          contentEl.style.transform = 'scale(0.94) translateY(6px)';
-          contentEl.style.transformOrigin = '50% 20%';
-        }
-        setCardFrame({ top: r.top, left: r.left, width: r.width, height: r.height }, 20);
-        void expCard.offsetWidth;
-        // Card expands; content fades/scales in with overlapping timing so
-        // the two motions feel like one continuous morph.
-        requestAnimationFrame(() => {
-          const t = getExpandedTarget();
-          expCard.style.transition = ANIM_PROPS;
-          expCard.style.top = t.top + 'px';
-          expCard.style.left = t.left + 'px';
-          expCard.style.width = t.width + 'px';
-          expCard.style.height = t.height + 'px';
-          expCard.style.borderRadius = t.radius + 'px';
-          // Start content reveal at ~35% through the card animation — the
-          // card is already clearly growing, content catches up on the way.
-          setTimeout(() => {
-            if (!isOpen) return;
-            if (contentEl) {
-              contentEl.style.transition = CONTENT_IN;
-              contentEl.style.opacity = '1';
-              contentEl.style.transform = 'scale(1) translateY(0)';
-            }
-          }, Math.round(DUR * 1000 * 0.18));
-        });
-      }
-
-      function closeChangelog() {
-        if (!isOpen) return;
-        isOpen = false;
-        // Content retreats — scale + fade together, anchored near the top
-        // so it visually collapses toward where the widget will settle.
-        if (contentEl) {
-          contentEl.style.transition = CONTENT_OUT;
-          contentEl.style.opacity = '0';
-          contentEl.style.transform = 'scale(0.92) translateY(-4px)';
-          contentEl.style.transformOrigin = '50% 20%';
-        }
-        // Prime the widget's own children: hide them instantly so we can
-        // fade them back in while the card is still shrinking. This gives
-        // the close a cross-fade feel — user sees the widget text emerging
-        // well before the card fully lands.
-        const widgetKids = Array.from(widget.children);
-        widgetKids.forEach(el => {
-          el.style.transition = 'none';
-          el.style.opacity = '0';
-          el.style.transform = 'translateY(3px) scale(0.985)';
-          // Force the hidden style to commit before we set the fade-in.
-          void el.offsetWidth;
-        });
-        // Card begins shrinking almost immediately, and simultaneously
-        // fades its own opacity — revealing the widget beneath.
-        requestAnimationFrame(() => {
-          if (isOpen) return;
-          const r = widget.getBoundingClientRect();
-          expCard.style.transition = ANIM_PROPS + `, opacity ${DUR * 0.65}s cubic-bezier(0.4, 0, 0.7, 0.2) ${DUR * 0.3}s`;
-          expCard.style.top = r.top + 'px';
-          expCard.style.left = r.left + 'px';
-          expCard.style.width = r.width + 'px';
-          expCard.style.height = r.height + 'px';
-          expCard.style.borderRadius = '20px';
-          expCard.style.transform = 'translateY(0)';
-          expCard.style.opacity = '0';
-        });
-        // At ~30% of the shrink, start the widget's own reveal. The user
-        // sees widget text fading up *through* the dissolving card.
-        setTimeout(() => {
-          if (isOpen) return;
-          widgetKids.forEach(el => {
-            el.style.transition = 'opacity 0.42s cubic-bezier(0.2, 0.7, 0.2, 1), transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1)';
-            el.style.opacity = '1';
-            el.style.transform = 'translateY(0) scale(1)';
-          });
-        }, Math.round(DUR * 1000 * 0.3));
-        // Hide overlay + clean up widget inline styles once everything settles.
-        setTimeout(() => {
-          if (isOpen) return;
-          expanded.style.display = 'none';
-          expCard.style.opacity = '1';
-          widgetKids.forEach(el => {
-            el.style.transition = '';
-            el.style.opacity = '';
-            el.style.transform = '';
-          });
-        }, Math.round(DUR * 1000) + 80);
-      }
+      morph.attachDrag({
+        excludeContains: (target) => listEl && listEl.contains(target),
+      });
 
       window.iosChangelogOpen = (e) => {
         if (e && e.stopPropagation) e.stopPropagation();
-        openChangelog();
+        morph.open();
       };
-      window.iosChangelogClose = closeChangelog;
-
-      // ─── Drag-to-close from outside the scrollable list ───────────────
-      // iOS-style sheet: a downward drag on the header/grab bar dismisses
-      // the sheet. Inside the commit list we always defer to native
-      // scrolling so the user can browse older commits without the sheet
-      // collapsing on them.
-      if (expCard) {
-        let dragging = false;
-        let startY = 0;
-        let startT = 0;
-        let moved = 0;
-        let pendingPointerId = null;
-
-        expCard.addEventListener('pointerdown', (e) => {
-          if (!isOpen) return;
-          if (e.pointerType === 'mouse' && e.button !== 0) return;
-          // Inside the list → always scroll, never drag-to-close.
-          if (listEl && listEl.contains(e.target)) return;
-          pendingPointerId = e.pointerId;
-          startY = e.clientY;
-          startT = Date.now();
-          moved = 0;
-          dragging = false; // activate only once movement crosses threshold
-        });
-        expCard.addEventListener('pointermove', (e) => {
-          if (pendingPointerId !== e.pointerId) return;
-          const dy = e.clientY - startY;
-          if (!dragging) {
-            // Threshold: wait for a clear downward intent so normal taps /
-            // vertical scroll nudges inside the list still work.
-            if (dy > 6) {
-              dragging = true;
-              try { expCard.setPointerCapture(e.pointerId); } catch (_) { }
-              expCard.style.transition = 'none';
-            } else if (dy < -6) {
-              // Upward motion — abandon drag intent; let scroll take over.
-              pendingPointerId = null;
-              return;
-            } else {
-              return;
-            }
-          }
-          moved = dy;
-          const y = dy > 0 ? dy : dy * 0.2;
-          expCard.style.transform = 'translateY(' + y + 'px)';
-          // Fade content out as the card is pulled down
-          if (contentEl) {
-            const fade = Math.max(0, 1 - Math.max(0, dy) / 200);
-            contentEl.style.transition = 'none';
-            contentEl.style.opacity = String(fade);
-          }
-        });
-        const endDrag = (e) => {
-          if (pendingPointerId !== e.pointerId) return;
-          pendingPointerId = null;
-          if (!dragging) return;
-          dragging = false;
-          try { expCard.releasePointerCapture(e.pointerId); } catch (_) { }
-          const dt = Date.now() - startT;
-          const velocity = moved / Math.max(1, dt);
-          if (moved > 110 || (velocity > 0.6 && moved > 30)) {
-            closeChangelog();
-          } else {
-            expCard.style.transition = 'transform 0.35s ' + SPRING;
-            expCard.style.transform = 'translateY(0)';
-            if (contentEl) { contentEl.style.transition = 'opacity 0.2s ease'; contentEl.style.opacity = '1'; }
-          }
-        };
-        expCard.addEventListener('pointerup', endDrag);
-        expCard.addEventListener('pointercancel', endDrag);
-      }
+      window.iosChangelogClose = () => morph.close();
 
       // Dynamic scroll-fade: top edge appears when scrolled, bottom fades when more content below.
       function updateScrollFade() {
@@ -407,13 +567,13 @@
 
       // Keep the expanded list fresh: re-render "Xm ago" labels and any
       // new commits the fetch picked up, every 30 s while open.
-      setInterval(() => { if (isOpen) renderList(); }, 30000);
+      setInterval(() => { if (morph.isOpen()) renderList(); }, 30000);
       // Initial pass so openChangelog has data immediately.
       renderList();
     })();
 
     // ═════════════════════════════════════════════════════════════════════
-    // Portfolio Guide — iOS-style expand/collapse, same animation as Changelog.
+    // Portfolio Guide — iOS-style expand/collapse, FLIP-morphed shared bits.
     // ═════════════════════════════════════════════════════════════════════
     (function () {
       const widget = document.getElementById('ios-live-activity');
@@ -423,14 +583,6 @@
       const badgeEl = document.getElementById('ios-portfolio-badge');
       const srcBadge = document.getElementById('ila-badge');
       if (!widget || !expanded || !expCard) return;
-
-      const SPRING = 'cubic-bezier(0.32, 0.72, 0, 1)';
-      const DUR = 0.48;
-      const ANIM_PROPS = `top ${DUR}s ${SPRING}, left ${DUR}s ${SPRING}, ` +
-        `width ${DUR}s ${SPRING}, height ${DUR}s ${SPRING}, ` +
-        `border-radius ${DUR}s ${SPRING}, transform ${DUR}s ${SPRING}`;
-      const CONTENT_IN = 'opacity 0.32s cubic-bezier(0.2,0.7,0.2,1), transform 0.42s cubic-bezier(0.2,0.7,0.2,1)';
-      const CONTENT_OUT = 'opacity 0.22s cubic-bezier(0.6,0,0.8,0.2), transform 0.30s cubic-bezier(0.5,0,0.75,0)';
 
       // Build a scaled-up version of the widget's progress timeline inside the
       // expanded card. Pulls live state from window.ilaGetState() so the dots
@@ -514,153 +666,58 @@
         return { top: sr.top + 32, left: sr.left + 14, width: sr.width - 28, height: sr.height - 60, radius: 32 };
       }
 
-      function setCardFrame(rect, radius) {
-        expCard.style.transition = 'none';
-        expCard.style.top = rect.top + 'px';
-        expCard.style.left = rect.left + 'px';
-        expCard.style.width = rect.width + 'px';
-        expCard.style.height = rect.height + 'px';
-        expCard.style.borderRadius = (radius ?? 20) + 'px';
-        expCard.style.transform = 'translateY(0)';
-      }
+      // Children of #ios-portfolio-content that are NOT part of any shared
+      // pair — they fade/slide in after the morph anchors.
+      // Order in DOM: 1=grab, 2=header (badge+eyebrow are shared), 3=title,
+      // 4=timeline, 5=tips list.
+      const titleBlock = expCard.querySelector('#ios-portfolio-content > div:nth-of-type(3)');
+      const timelineWrap = expCard.querySelector('#ios-portfolio-timeline');
+      const tipsList = expCard.querySelector('#ios-portfolio-content > div:nth-of-type(5)');
 
-      let isOpen = false;
-
-      function openPortfolio() {
-        if (isOpen) return;
-        isOpen = true;
-        // Sync badge from widget
-        if (badgeEl && srcBadge) {
-          badgeEl.textContent = srcBadge.textContent;
-          badgeEl.style.background = srcBadge.style.background || '#e0e0e0';
-          badgeEl.style.color = srcBadge.style.color || '#1a1a1a';
-        }
-        // Render a properly sized timeline for the expanded view — the widget
-        // version is too tiny when scaled up, so we build a cleaner one here.
-        renderExpandedTimeline();
-        // Sync the explored count subtitle
-        const srcSub = document.getElementById('ila-sub');
-        const expSub = document.getElementById('ios-portfolio-sub');
-        if (srcSub && expSub) expSub.textContent = srcSub.textContent;
-        const r = widget.getBoundingClientRect();
-        expanded.style.display = 'block';
-        if (contentEl) {
-          contentEl.style.transition = 'none';
-          contentEl.style.opacity = '0';
-          contentEl.style.transform = 'scale(0.94) translateY(6px)';
-          contentEl.style.transformOrigin = '50% 20%';
-        }
-        setCardFrame({ top: r.top, left: r.left, width: r.width, height: r.height }, 20);
-        void expCard.offsetWidth;
-        requestAnimationFrame(() => {
-          const t = getExpandedTarget();
-          expCard.style.transition = ANIM_PROPS;
-          expCard.style.top = t.top + 'px';
-          expCard.style.left = t.left + 'px';
-          expCard.style.width = t.width + 'px';
-          expCard.style.height = t.height + 'px';
-          expCard.style.borderRadius = t.radius + 'px';
-          setTimeout(() => {
-            if (!isOpen) return;
-            if (contentEl) {
-              contentEl.style.transition = CONTENT_IN;
-              contentEl.style.opacity = '1';
-              contentEl.style.transform = 'scale(1) translateY(0)';
-            }
-          }, Math.round(DUR * 1000 * 0.18));
-        });
-      }
-
-      function closePortfolio() {
-        if (!isOpen) return;
-        isOpen = false;
-        if (window.ilaResumeAdvance) window.ilaResumeAdvance();
-        if (contentEl) {
-          contentEl.style.transition = CONTENT_OUT;
-          contentEl.style.opacity = '0';
-          contentEl.style.transform = 'scale(0.92) translateY(-4px)';
-          contentEl.style.transformOrigin = '50% 20%';
-        }
-        const widgetKids = Array.from(widget.children);
-        widgetKids.forEach(el => {
-          el.style.transition = 'none';
-          el.style.opacity = '0';
-          el.style.transform = 'translateY(3px) scale(0.985)';
-          void el.offsetWidth;
-        });
-        requestAnimationFrame(() => {
-          if (isOpen) return;
-          const r = widget.getBoundingClientRect();
-          expCard.style.transition = ANIM_PROPS + `, opacity ${DUR * 0.65}s cubic-bezier(0.4,0,0.7,0.2) ${DUR * 0.3}s`;
-          expCard.style.top = r.top + 'px';
-          expCard.style.left = r.left + 'px';
-          expCard.style.width = r.width + 'px';
-          expCard.style.height = r.height + 'px';
-          expCard.style.borderRadius = '20px';
-          expCard.style.transform = 'translateY(0)';
-          expCard.style.opacity = '0';
-        });
-        setTimeout(() => {
-          if (isOpen) return;
-          widgetKids.forEach(el => {
-            el.style.transition = 'opacity 0.42s cubic-bezier(0.2,0.7,0.2,1), transform 0.5s cubic-bezier(0.2,0.7,0.2,1)';
-            el.style.opacity = '1';
-            el.style.transform = 'translateY(0) scale(1)';
-          });
-        }, Math.round(DUR * 1000 * 0.3));
-        setTimeout(() => {
-          if (isOpen) return;
-          expanded.style.display = 'none';
-          expCard.style.opacity = '1';
-          widgetKids.forEach(el => { el.style.transition = ''; el.style.opacity = ''; el.style.transform = ''; });
-        }, Math.round(DUR * 1000) + 80);
-      }
-
-      window.iosPortfolioOpen = (e) => { if (e) e.stopPropagation(); openPortfolio(); };
-      window.iosPortfolioClose = closePortfolio;
-      window.iosPortfolioIsOpen = () => isOpen;
-
-      // Drag-to-close from anywhere on the card
-      if (expCard) {
-        let dragging = false, startY = 0, startT = 0, moved = 0, pendingId = null;
-        expCard.addEventListener('pointerdown', (e) => {
-          if (!isOpen || (e.pointerType === 'mouse' && e.button !== 0)) return;
-          pendingId = e.pointerId; startY = e.clientY; startT = Date.now(); moved = 0; dragging = false;
-        });
-        expCard.addEventListener('pointermove', (e) => {
-          if (pendingId !== e.pointerId) return;
-          const dy = e.clientY - startY;
-          if (!dragging) {
-            if (dy > 6) { dragging = true; try { expCard.setPointerCapture(e.pointerId); } catch (_) { } expCard.style.transition = 'none'; }
-            else if (dy < -6) { pendingId = null; return; }
-            else return;
+      const morph = createWidgetMorph({
+        widget, expanded, expCard, contentEl,
+        getTarget: getExpandedTarget,
+        sharedPairs: [
+          { from: '#ila-badge', to: '#ios-portfolio-badge' },
+          { from: '#ila-eyebrow', to: '#ipe-eyebrow' },
+        ],
+        fadeEls: [
+          '#ios-portfolio-grab',
+          titleBlock,
+          timelineWrap,
+          tipsList,
+        ],
+        onBeforeOpen: () => {
+          // Sync badge content + colors from the compact widget.
+          if (badgeEl && srcBadge) {
+            badgeEl.textContent = srcBadge.textContent;
+            badgeEl.style.background = srcBadge.style.background || '#e0e0e0';
+            badgeEl.style.color = srcBadge.style.color || '#1a1a1a';
           }
-          moved = dy;
-          expCard.style.transform = 'translateY(' + (dy > 0 ? dy : dy * 0.2) + 'px)';
-          if (contentEl) { contentEl.style.transition = 'none'; contentEl.style.opacity = String(Math.max(0, 1 - Math.max(0, dy) / 200)); }
-        });
-        const endDrag = (e) => {
-          if (pendingId !== e.pointerId) return;
-          pendingId = null;
-          if (!dragging) return;
-          dragging = false;
-          try { expCard.releasePointerCapture(e.pointerId); } catch (_) { }
-          const velocity = moved / Math.max(1, Date.now() - startT);
-          if (moved > 110 || (velocity > 0.6 && moved > 30)) {
-            closePortfolio();
-          } else {
-            expCard.style.transition = 'transform 0.35s ' + SPRING;
-            expCard.style.transform = 'translateY(0)';
-            if (contentEl) { contentEl.style.transition = 'opacity 0.2s ease'; contentEl.style.opacity = '1'; }
-          }
-        };
-        expCard.addEventListener('pointerup', endDrag);
-        expCard.addEventListener('pointercancel', endDrag);
-      }
+          // Render the scaled-up timeline.
+          renderExpandedTimeline();
+          // Sync the "X of N explored" subtitle.
+          const srcSub = document.getElementById('ila-sub');
+          const expSub = document.getElementById('ios-portfolio-sub');
+          if (srcSub && expSub) expSub.textContent = srcSub.textContent;
+        },
+        onBeforeClose: () => {
+          if (window.ilaResumeAdvance) window.ilaResumeAdvance();
+        },
+      });
+
+      morph.attachDrag();
+
+      window.iosPortfolioOpen = (e) => { if (e) e.stopPropagation(); morph.open(); };
+      window.iosPortfolioClose = () => morph.close();
+      window.iosPortfolioIsOpen = () => morph.isOpen();
     })();
 
     // ═════════════════════════════════════════════════════════════════════
-    // Weather / Berlin Status — iOS-style expand/collapse, same animation as Portfolio.
+    // Weather / Berlin Status — iOS-style expand/collapse, FLIP-morphed.
+    // The time, temperature, icon, wind and city/eyebrow labels glide into
+    // their expanded positions; the arc, status cards and detail blocks
+    // fade in once the morph anchors.
     // ═════════════════════════════════════════════════════════════════════
     (function () {
       const widget = document.getElementById('ios-weather-widget');
@@ -669,18 +726,6 @@
       const contentEl = document.getElementById('ios-weather-content');
       const scrollEl = document.getElementById('ios-weather-scroll');
       if (!widget || !expanded || !expCard) return;
-
-      const SPRING = 'cubic-bezier(0.32, 0.72, 0, 1)';
-      const DUR = 0.48;
-      const ANIM_PROPS = `top ${DUR}s ${SPRING}, left ${DUR}s ${SPRING}, ` +
-        `width ${DUR}s ${SPRING}, height ${DUR}s ${SPRING}, ` +
-        `border-radius ${DUR}s ${SPRING}, transform ${DUR}s ${SPRING}`;
-      const CONTENT_IN = 'opacity 0.32s cubic-bezier(0.2,0.7,0.2,1), transform 0.42s cubic-bezier(0.2,0.7,0.2,1)';
-      const CONTENT_OUT = 'opacity 0.22s cubic-bezier(0.6,0,0.8,0.2), transform 0.30s cubic-bezier(0.5,0,0.75,0)';
-
-      function applyStatus() {
-        // Redundant - now handled by populateStatus() from status.json
-      }
 
       // ─── Mirror compact widget data into the expanded view ────────────
       function syncFromCompact() {
@@ -696,14 +741,11 @@
           const d = document.getElementById(dst);
           if (s && d) d.textContent = s.textContent;
         });
-        // Date
         const dateEl = document.getElementById('iwe-date');
         if (dateEl) {
           const now = new Date();
           dateEl.textContent = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
         }
-        // Sunrise/Sunset (read from open-meteo cache via Date objects rebuilt)
-        // We re-fetch the times from the compact widget's exposed state if available.
         if (window.iwwGetSunTimes) {
           const t = window.iwwGetSunTimes();
           if (t && t.sunrise && t.sunset) {
@@ -771,158 +813,65 @@
         return { top: sr.top + 32, left: sr.left + 14, width: sr.width - 28, height: sr.height - 60, radius: 32 };
       }
 
-      function setCardFrame(rect, radius) {
-        expCard.style.transition = 'none';
-        expCard.style.top = rect.top + 'px';
-        expCard.style.left = rect.left + 'px';
-        expCard.style.width = rect.width + 'px';
-        expCard.style.height = rect.height + 'px';
-        expCard.style.borderRadius = (radius ?? 20) + 'px';
-        expCard.style.transform = 'translateY(0)';
-      }
-
-      let isOpen = false;
       let liveSyncTimer = null;
 
-      function openWeather() {
-        if (isOpen) return;
-        isOpen = true;
-        applyStatus();
-        syncFromCompact();
-        if (liveSyncTimer) clearInterval(liveSyncTimer);
-        liveSyncTimer = setInterval(syncFromCompact, 30000);
-        const r = widget.getBoundingClientRect();
-        expanded.style.display = 'block';
-        if (contentEl) {
-          contentEl.style.transition = 'none';
-          contentEl.style.opacity = '0';
-          contentEl.style.transform = 'scale(0.94) translateY(6px)';
-          contentEl.style.transformOrigin = '50% 20%';
-        }
-        setCardFrame({ top: r.top, left: r.left, width: r.width, height: r.height }, 20);
-        void expCard.offsetWidth;
-        requestAnimationFrame(() => {
-          const t = getExpandedTarget();
-          expCard.style.transition = ANIM_PROPS;
-          expCard.style.top = t.top + 'px';
-          expCard.style.left = t.left + 'px';
-          expCard.style.width = t.width + 'px';
-          expCard.style.height = t.height + 'px';
-          expCard.style.borderRadius = t.radius + 'px';
-          setTimeout(() => {
-            if (!isOpen) return;
-            if (contentEl) {
-              contentEl.style.transition = CONTENT_IN;
-              contentEl.style.opacity = '1';
-              contentEl.style.transform = 'scale(1) translateY(0)';
-            }
-          }, Math.round(DUR * 1000 * 0.18));
-          // Place arc marker AFTER card has fully expanded, so getBoundingClientRect() is accurate.
-          setTimeout(() => {
-            if (!isOpen) return;
-            requestAnimationFrame(syncFromCompact);
-          }, Math.round(DUR * 1000) + 40);
-        });
-      }
+      // Non-shared elements that should fade/slide in: grab bar, the big
+      // time-and-weather block (only the date + sub-rows are not shared —
+      // the time/temp/etc. inside ARE shared and stay visible), the
+      // scrollable detail panel, and the decorative SVG arc.
+      const grabBar = expCard.querySelector('#ios-weather-grab');
+      const detailScroll = expCard.querySelector('#ios-weather-scroll');
+      const arcSvg = expCard.querySelector('#iwe-arc-svg');
+      const dateLabel = expCard.querySelector('#iwe-date');
 
-      function closeWeather() {
-        if (!isOpen) return;
-        isOpen = false;
-        if (liveSyncTimer) { clearInterval(liveSyncTimer); liveSyncTimer = null; }
-        if (contentEl) {
-          contentEl.style.transition = CONTENT_OUT;
-          contentEl.style.opacity = '0';
-          contentEl.style.transform = 'scale(0.92) translateY(-4px)';
-          contentEl.style.transformOrigin = '50% 20%';
-        }
-        // Exclude sun/glow/moon HTML overlays from the close animation —
-        // they use transform:translate(-50%,-50%) for centering which would
-        // be overwritten, causing them to jump on re-open.
-        const excludeIds = new Set(['iww-sun-dot-html', 'iww-sun-glow-html', 'iww-moon-html']);
-        const widgetKids = Array.from(widget.children).filter(el => !excludeIds.has(el.id));
-        widgetKids.forEach(el => {
-          el.style.transition = 'none';
-          el.style.opacity = '0';
-          el.style.transform = 'translateY(3px) scale(0.985)';
-          void el.offsetWidth;
-        });
-        requestAnimationFrame(() => {
-          if (isOpen) return;
-          const r = widget.getBoundingClientRect();
-          expCard.style.transition = ANIM_PROPS + `, opacity ${DUR * 0.65}s cubic-bezier(0.4,0,0.7,0.2) ${DUR * 0.3}s`;
-          expCard.style.top = r.top + 'px';
-          expCard.style.left = r.left + 'px';
-          expCard.style.width = r.width + 'px';
-          expCard.style.height = r.height + 'px';
-          expCard.style.borderRadius = '20px';
-          expCard.style.transform = 'translateY(0)';
-          expCard.style.opacity = '0';
-        });
-        setTimeout(() => {
-          if (isOpen) return;
-          widgetKids.forEach(el => {
-            el.style.transition = 'opacity 0.42s cubic-bezier(0.2,0.7,0.2,1), transform 0.5s cubic-bezier(0.2,0.7,0.2,1)';
-            el.style.opacity = '1';
-            el.style.transform = 'translateY(0) scale(1)';
-          });
-        }, Math.round(DUR * 1000 * 0.3));
-        setTimeout(() => {
-          if (isOpen) return;
-          expanded.style.display = 'none';
-          expCard.style.opacity = '1';
-          widgetKids.forEach(el => { el.style.transition = ''; el.style.opacity = ''; el.style.transform = ''; });
-          // Re-place the compact arc marker now that widget children are restored.
-          // Wait one frame so the cleared transforms/transitions are fully committed
-          // before placeAt() reads the SVG geometry — otherwise the sun/glow can
-          // land at a stale position from the in-progress fade-in animation.
+      const morph = createWidgetMorph({
+        widget, expanded, expCard, contentEl,
+        getTarget: getExpandedTarget,
+        sharedPairs: [
+          { from: '#iww-eyebrow-city', to: '#iwe-trigger-admin' },
+          { from: '#iww-eyebrow-label', to: '#iwe-eyebrow-label' },
+          { from: '#iww-time', to: '#iwe-time' },
+          { from: '#iww-icon', to: '#iwe-icon' },
+          { from: '#iww-temp', to: '#iwe-temp' },
+          { from: '#iww-wind', to: '#iwe-wind' },
+          { from: '#iww-desc', to: '#iwe-desc' },
+        ],
+        fadeEls: [
+          grabBar,
+          dateLabel,
+          detailScroll,
+          arcSvg,
+        ],
+        onBeforeOpen: () => {
+          syncFromCompact();
+          if (liveSyncTimer) clearInterval(liveSyncTimer);
+          liveSyncTimer = setInterval(syncFromCompact, 30000);
+        },
+        onAfterOpen: () => {
+          // Place arc marker AFTER card has fully expanded — getBoundingClientRect()
+          // is now accurate.
+          requestAnimationFrame(syncFromCompact);
+        },
+        onBeforeClose: () => {
+          if (liveSyncTimer) { clearInterval(liveSyncTimer); liveSyncTimer = null; }
+        },
+        onAfterClose: () => {
+          // Re-place the compact arc marker now that the widget is visible
+          // again. Wait one frame so any cleared transforms commit before
+          // the SVG geometry is read.
           requestAnimationFrame(() => {
             if (window.iwwRefreshArc) window.iwwRefreshArc();
           });
-        }, Math.round(DUR * 1000) + 80);
-      }
+        },
+      });
 
-      window.iosWeatherOpen = (e) => { if (e) e.stopPropagation(); openWeather(); };
-      window.iosWeatherClose = closeWeather;
-      window.iosWeatherIsOpen = () => isOpen;
+      morph.attachDrag({
+        excludeContains: (target) => scrollEl && scrollEl.contains(target),
+      });
 
-      // Drag-to-close — same pattern as fixed changelog: skip when started inside scrollable list.
-      if (expCard) {
-        let dragging = false, startY = 0, startT = 0, moved = 0, pendingId = null;
-        expCard.addEventListener('pointerdown', (e) => {
-          if (!isOpen || (e.pointerType === 'mouse' && e.button !== 0)) return;
-          if (scrollEl && scrollEl.contains(e.target)) return;
-          pendingId = e.pointerId; startY = e.clientY; startT = Date.now(); moved = 0; dragging = false;
-        });
-        expCard.addEventListener('pointermove', (e) => {
-          if (pendingId !== e.pointerId) return;
-          const dy = e.clientY - startY;
-          if (!dragging) {
-            if (dy > 6) { dragging = true; try { expCard.setPointerCapture(e.pointerId); } catch (_) { } expCard.style.transition = 'none'; }
-            else if (dy < -6) { pendingId = null; return; }
-            else return;
-          }
-          moved = dy;
-          expCard.style.transform = 'translateY(' + (dy > 0 ? dy : dy * 0.2) + 'px)';
-          if (contentEl) { contentEl.style.transition = 'none'; contentEl.style.opacity = String(Math.max(0, 1 - Math.max(0, dy) / 200)); }
-        });
-        const endDrag = (e) => {
-          if (pendingId !== e.pointerId) return;
-          pendingId = null;
-          if (!dragging) return;
-          dragging = false;
-          try { expCard.releasePointerCapture(e.pointerId); } catch (_) { }
-          const velocity = moved / Math.max(1, Date.now() - startT);
-          if (moved > 110 || (velocity > 0.6 && moved > 30)) {
-            closeWeather();
-          } else {
-            expCard.style.transition = 'transform 0.35s ' + SPRING;
-            expCard.style.transform = 'translateY(0)';
-            if (contentEl) { contentEl.style.transition = 'opacity 0.2s ease'; contentEl.style.opacity = '1'; }
-          }
-        };
-        expCard.addEventListener('pointerup', endDrag);
-        expCard.addEventListener('pointercancel', endDrag);
-      }
+      window.iosWeatherOpen = (e) => { if (e) e.stopPropagation(); morph.open(); };
+      window.iosWeatherClose = () => morph.close();
+      window.iosWeatherIsOpen = () => morph.isOpen();
     })();
 
     // ═════════════════════════════════════════════════════════════════════
