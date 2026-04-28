@@ -145,6 +145,9 @@
         isOpen = true;
         if (onBeforeOpen) onBeforeOpen();
         expanded.style.display = 'block';
+        // A previous close may have left the card semi-transparent (it cross-
+        // fades out so the compact text shows through earlier). Reset.
+        expCard.style.opacity = '1';
 
         const target = getTarget();
         // 1. Lock the inner layout to its final size (so destinations stay put).
@@ -229,17 +232,30 @@
           dst: p.from.getBoundingClientRect(),   // compact position to land on
         }));
 
+        // Non-shared content fades out a touch faster so it's gone before
+        // the compact widget starts peeking through — keeps the cross-fade
+        // visually clean.
         const fadeEls = resolveFadeEls();
         fadeEls.forEach(el => {
-          el.style.transition = `opacity 220ms ease, transform 280ms ease`;
+          el.style.transition = `opacity 180ms ease, transform 240ms ease`;
           el.style.opacity = '0';
-          el.style.transform = 'translateY(8px)';
+          el.style.transform = 'translateY(6px)';
         });
+
+        // Cross-fade the card itself: starts opaque, fades to transparent in
+        // the back half of the shrink. This lets the compact widget (which
+        // sits underneath the overlay) "auftauchen" early and softly instead
+        // of popping in only when the overlay is finally hidden.
+        const fadeStart = Math.round(__MORPH_DUR * 0.22);
+        const fadeDur = Math.round(__MORPH_DUR * 0.55);
+        const closeCardTrans = cardTransProps +
+          `, opacity ${fadeDur}ms cubic-bezier(0.4, 0, 0.7, 0.2) ${fadeStart}ms`;
 
         requestAnimationFrame(() => {
           if (isOpen) return;
           const r = widget.getBoundingClientRect();
-          setCardRect(r, compactRadius, cardTransProps);
+          setCardRect(r, compactRadius, closeCardTrans);
+          expCard.style.opacity = '0';
 
           pairs.forEach(p => {
             const dx = p.dst.left - p.src.left;
@@ -257,6 +273,7 @@
         setTimeout(() => {
           if (isOpen) return;
           expanded.style.display = 'none';
+          expCard.style.opacity = '1';
           unlockContent();
           pairs.forEach(p => {
             clearFlip(p.to);
