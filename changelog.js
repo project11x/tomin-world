@@ -140,10 +140,8 @@
       const widget = document.getElementById('ios-system-pulse');
       const expanded = document.getElementById('ios-changelog-expanded');
       const expCard = document.getElementById('ios-changelog-card');
-      const backdrop = document.getElementById('ios-changelog-backdrop');
       const contentEl = document.getElementById('ios-changelog-content');
       const listEl = document.getElementById('sys-commits-list');
-      const grabEl = document.getElementById('ios-changelog-grab');
       // iOS widget expand easing — tuned to match Springboard's feel:
       // a slightly over-damped spring that settles without overshoot.
       const SPRING = 'cubic-bezier(0.32, 0.72, 0, 1)';
@@ -422,7 +420,6 @@
       const expanded = document.getElementById('ios-portfolio-expanded');
       const expCard = document.getElementById('ios-portfolio-card');
       const contentEl = document.getElementById('ios-portfolio-content');
-      const grabEl = document.getElementById('ios-portfolio-grab');
       const badgeEl = document.getElementById('ios-portfolio-badge');
       const srcBadge = document.getElementById('ila-badge');
       if (!widget || !expanded || !expCard) return;
@@ -980,5 +977,20 @@
           idx = 1;
         }
       }, 2200);
+    })();
+
+    // Smart-stack card click bindings (replaces inline onclick handlers).
+    (function () {
+      const bind = (id, key) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('click', (e) => {
+          const fn = window[key];
+          if (fn) fn(e);
+        });
+      };
+      bind('ios-weather-widget', 'iosWeatherOpen');
+      bind('ios-live-activity', 'iosPortfolioOpen');
+      bind('ios-system-pulse', 'iosChangelogOpen');
     })();
 

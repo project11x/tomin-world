@@ -4,6 +4,13 @@
     {
       "name": "tomin-world",
       "runtimeExecutable": "npx",
+      "runtimeArgs": ["vite", "--port", "5173"],
+      "port": 5173,
+      "autoPort": true
+    },
+    {
+      "name": "tomin-world-static",
+      "runtimeExecutable": "npx",
       "runtimeArgs": ["http-server", "/Volumes/T7/tomin.world", "-c-1"],
       "port": 8080,
       "autoPort": true

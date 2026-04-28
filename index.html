@@ -151,7 +151,7 @@
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="tailwind.css" />
-  <link rel="stylesheet" href="styles.css?v=1.1" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body class="bg-background dark:bg-black text-on-surface h-screen overflow-hidden select-none">
@@ -159,8 +159,7 @@
   <header
     class="fixed top-0 left-0 w-full z-50 flex items-center h-8 px-4 justify-between bg-white/40 dark:bg-black/40 backdrop-blur-2xl border-b border-white/30 dark:border-white/8 transition-colors duration-150 ease-in-out">
     <div class="flex items-center space-x-4">
-      <span class="text-[14px] font-bold text-slate-900 dark:text-slate-100 px-2 tracking-normal cursor-pointer"
-        onclick="location.reload()"
+      <span id="top-eddie" class="text-[14px] font-bold text-slate-900 dark:text-slate-100 px-2 tracking-normal cursor-pointer"
         style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">EDDIE</span>
       <nav class="hidden md:flex items-center space-x-1">
         <a class="text-slate-900 dark:text-white font-semibold hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded px-2 py-0.5 text-[13px] tracking-tight transition-colors"
@@ -178,20 +177,20 @@
               <span>Themes</span>
               <span class="submenu-arrow">▶</span>
               <div class="submenu">
-                <div class="dropdown-item" id="theme-item-light" onclick="setDarkMode(false)">
+                <div class="dropdown-item" id="theme-item-light">
                   <span>Light Mode</span>
                 </div>
-                <div class="dropdown-item" id="theme-item-dark" onclick="setDarkMode(true)">
+                <div class="dropdown-item" id="theme-item-dark">
                   <span>Dark Mode</span>
                 </div>
                 <div class="dropdown-separator"></div>
-                <div class="dropdown-item" id="theme-item-default" onclick="setTheme('default')">
+                <div class="dropdown-item" id="theme-item-default">
                   <span>Aero Blue</span>
                 </div>
-                <div class="dropdown-item" id="theme-item-glass" onclick="setTheme('glass')">
+                <div class="dropdown-item" id="theme-item-glass">
                   <span>Glass</span>
                 </div>
-                <div class="dropdown-item" id="theme-item-pink" onclick="setTheme('pink')">
+                <div class="dropdown-item" id="theme-item-pink">
                   <span>Pink</span>
                 </div>
               </div>
@@ -400,11 +399,10 @@
             </div>
             <!-- View Toggle Buttons -->
             <div class="flex items-center bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg">
-              <button id="btn-view-grid" class="p-1 px-3 flex items-center justify-center transition-all duration-200">
+              <button id="btn-view-grid" class="view-tab-btn" data-active="true">
                 <span class="material-symbols-outlined text-[18px]">grid_view</span>
               </button>
-              <button id="btn-view-list"
-                class="p-1 px-3 flex items-center justify-center transition-all duration-200 text-slate-400">
+              <button id="btn-view-list" class="view-tab-btn" data-active="false">
                 <span class="material-symbols-outlined text-[18px]">format_list_bulleted</span>
               </button>
             </div>
@@ -492,7 +490,7 @@
       <div style="background:rgba(255,255,255,0.08); border-radius:14px; padding:12px 16px; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08); backdrop-filter:blur(10px); margin-bottom:14px;">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
           <p style="color:#fff; font-size:15px; font-weight:600; margin:0;">Benachrichtigungen</p>
-          <button id="desktop-push-toggle" role="switch" aria-checked="false" onclick="togglePushSubscription()"
+          <button id="desktop-push-toggle" role="switch" aria-checked="false"
             style="position:relative; width:51px; height:31px; border:none; border-radius:31px; background:rgba(120,120,128,0.32); cursor:pointer; padding:0; transition:background 0.2s ease; flex-shrink:0;">
             <span id="desktop-push-knob"
               style="position:absolute; top:2px; left:2px; width:27px; height:27px; border-radius:50%; background:#fff; box-shadow:0 3px 8px rgba(0,0,0,0.15), 0 3px 1px rgba(0,0,0,0.06); transition:transform 0.2s ease;"></span>
@@ -549,7 +547,7 @@
       <!-- Edits -->
       <div
         class="dock-item relative flex flex-col items-center cursor-pointer transition-all duration-200 ease-out hover:scale-125 hover:-translate-y-3 group"
-        title="Edits" onclick="openEditsViewer()">
+        title="Edits" data-dock="edits">
         <div class="w-14 h-14 drop-shadow-lg group-hover:drop-shadow-xl transition-all">
           <img src="icons/edits.png" class="w-full h-full object-contain" draggable="false" />
         </div>
@@ -560,7 +558,7 @@
       <!-- Finder -->
       <div
         class="dock-item relative flex flex-col items-center cursor-pointer transition-all duration-200 ease-out hover:scale-125 hover:-translate-y-3 group"
-        title="Finder" onclick="handleFinderClick()">
+        title="Finder" data-dock="finder">
         <div class="w-14 h-14 drop-shadow-lg group-hover:drop-shadow-xl transition-all">
           <img src="icons/finder.png" class="w-full h-full object-contain" draggable="false" />
         </div>
@@ -571,7 +569,7 @@
       <!-- Contact -->
       <div
         class="dock-item relative flex flex-col items-center cursor-pointer transition-all duration-200 ease-out hover:scale-125 hover:-translate-y-3 group"
-        title="Contact" onclick="openAboutMeModal()">
+        title="Contact" data-dock="contact">
         <div class="w-14 h-14 drop-shadow-lg group-hover:drop-shadow-xl transition-all">
           <img src="icons/contact.png" class="w-full h-full object-contain" draggable="false" />
         </div>
@@ -615,7 +613,7 @@
         style="position:relative; height:168px; border-radius:20px; overflow:hidden; touch-action:none; cursor:grab; user-select:none;">
 
         <!-- Card 0: Time & Weather -->
-        <div id="ios-weather-widget" class="sstack-card" onclick="iosWeatherOpen(event)"
+        <div id="ios-weather-widget" class="sstack-card"
           style="position:absolute; top:0; left:0; width:100%; height:100%; background:#16213e; overflow:hidden; will-change:transform,opacity; cursor:pointer;">
           <svg id="iww-arc-svg" viewBox="-5 -22 115 72" preserveAspectRatio="none" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;
                    -webkit-mask-image:linear-gradient(to right,transparent 0%,black 11%,black 89%,transparent 100%);
@@ -680,7 +678,7 @@
         </div>
 
         <!-- Card 1: Portfolio Exploration (transit-style, slot-based for smart reordering) -->
-        <div id="ios-live-activity" class="sstack-card" onclick="iosPortfolioOpen(event)" style="position:absolute; top:0; left:0; width:100%; height:100%;
+        <div id="ios-live-activity" class="sstack-card" style="position:absolute; top:0; left:0; width:100%; height:100%;
                  background:linear-gradient(135deg,#2a1420 0%,#1a1018 100%);
                  display:flex; flex-direction:column; padding:13px 16px 14px; box-sizing:border-box; will-change:transform,opacity;
                  cursor:pointer;">
@@ -744,7 +742,7 @@
         <!-- Card 2: System Pulse — live feed of recent commits from the GitHub
              repo. Terminal-inspired dark look; a comet on the rail shows how
              fresh the latest push is (right = just now, left = stale). -->
-        <div id="ios-system-pulse" class="sstack-card" onclick="iosChangelogOpen(event)" style="position:absolute; top:0; left:0; width:100%; height:100%;
+        <div id="ios-system-pulse" class="sstack-card" style="position:absolute; top:0; left:0; width:100%; height:100%;
                  background:linear-gradient(135deg,#0a1820 0%,#0d0f14 55%,#0a0c10 100%);
                  display:flex; flex-direction:column; padding:13px 16px 14px; box-sizing:border-box; will-change:transform,opacity;
                  overflow:hidden; cursor:pointer;">
@@ -1146,35 +1144,35 @@
         style="background:var(--ios-dock-bg); backdrop-filter:blur(40px) saturate(180%); -webkit-backdrop-filter:blur(40px) saturate(180%); border:1px solid var(--ios-dock-border); max-width:calc(100vw - 32px);">
 
         <!-- Edits -->
-        <div class="ios-dock-item ios-intro-item cursor-pointer" onclick="iosOpenEdits(event)">
+        <div class="ios-dock-item ios-intro-item cursor-pointer" data-ios-app="edits">
           <div class="w-[62px] h-[62px] drop-shadow-md">
             <img src="icons/edits.png" class="w-full h-full object-contain" draggable="false" />
           </div>
         </div>
 
         <!-- Magazines -->
-        <div class="ios-dock-item ios-intro-item cursor-pointer" onclick="iosOpenMagazines(event)">
+        <div class="ios-dock-item ios-intro-item cursor-pointer" data-ios-app="magazines">
           <div class="w-[62px] h-[62px] drop-shadow-md">
             <img src="icons/magazine.png" class="w-full h-full object-contain" draggable="false" />
           </div>
         </div>
 
         <!-- BTS -->
-        <div class="ios-dock-item ios-intro-item cursor-pointer" onclick="iosOpenBts(event)">
+        <div class="ios-dock-item ios-intro-item cursor-pointer" data-ios-app="bts">
           <div class="w-[62px] h-[62px] drop-shadow-md">
             <img src="icons/bts.png" class="w-full h-full object-contain" draggable="false" />
           </div>
         </div>
 
         <!-- Contact -->
-        <div class="ios-dock-item ios-intro-item cursor-pointer" onclick="iosOpenContact(event)">
+        <div class="ios-dock-item ios-intro-item cursor-pointer" data-ios-app="contact">
           <div class="w-[62px] h-[62px] drop-shadow-md">
             <img src="icons/contact.png" class="w-full h-full object-contain" draggable="false" />
           </div>
         </div>
 
         <!-- Mail -->
-        <div class="ios-dock-item ios-intro-item cursor-pointer" onclick="iosOpenMail(event)" style="display: none;">
+        <div class="ios-dock-item ios-intro-item cursor-pointer" data-ios-app="mail" style="display: none;">
           <div class="w-[62px] h-[62px] drop-shadow-md">
             <img src="icons/mail.png" class="w-full h-full object-contain" draggable="false" />
           </div>
@@ -1194,7 +1192,7 @@
       <div class="shrink-0 px-5 flex items-center justify-between"
         style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:16px;">
         <h1 class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text)">Magazines</h1>
-        <button onclick="iosCloseMagazines()"
+        <button data-ios-close="magazines"
           class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
           style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
           <span class="material-symbols-outlined"
@@ -1216,7 +1214,7 @@
         style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:16px;">
         <h1 id="ios-mag-reader-title" class="font-bold text-[22px] tracking-tight" style="color:var(--ios-text)">
           Magazine</h1>
-        <button onclick="iosCloseReader()"
+        <button data-ios-close="reader"
           class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
           style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
           <span class="material-symbols-outlined"
@@ -1253,7 +1251,7 @@
     <div class="shrink-0 px-5 flex items-center justify-between"
       style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:16px;">
       <h1 class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text)">Edits</h1>
-      <button onclick="iosCloseEdits()"
+      <button data-ios-close="edits"
         class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
         style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
         <span class="material-symbols-outlined"
@@ -1302,7 +1300,7 @@
       <div class="shrink-0 px-5 flex items-center justify-between"
         style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:16px;">
         <h1 class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text)">Behind the Scenes</h1>
-        <button onclick="iosCloseBts()"
+        <button data-ios-close="bts"
           class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
           style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
           <span class="material-symbols-outlined"
@@ -1321,7 +1319,7 @@
         style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:16px;">
         <h1 id="ios-bts-folder-title" class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text)">Folder
         </h1>
-        <button onclick="iosBtsBackToFolders()"
+        <button data-ios-close="bts-back"
           class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
           style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
           <span class="material-symbols-outlined"
@@ -1340,7 +1338,7 @@
       <div class="shrink-0 px-5 flex items-center justify-between"
         style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:16px;">
         <h1 id="ios-bts-viewer-title" class="font-bold text-[22px] tracking-tight" style="color:var(--ios-text)"></h1>
-        <button onclick="iosBtsCloseViewer()"
+        <button data-ios-close="bts-viewer"
           class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
           style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
           <span class="material-symbols-outlined"
@@ -1374,7 +1372,7 @@
     <!-- Floating buttons: stay pinned on top, content scrolls beneath -->
     <div class="px-5 flex items-center justify-between"
       style="padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:12px; position:absolute; top:0; left:0; right:0; z-index:10; pointer-events:none;">
-      <button onclick="iosCloseContact()"
+      <button data-ios-close="contact"
         class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
         style="background:rgba(0,0,0,0.28); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); -webkit-tap-highlight-color:transparent; pointer-events:auto;">
         <span class="material-symbols-outlined" style="font-size:22px; color:#fff;">chevron_left</span>
@@ -1451,11 +1449,11 @@
             <p style="color:#fff; font-size:15px; font-weight:600; margin:0 0 10px;">Darstellung</p>
             <div id="ios-theme-toggle"
               style="display:flex; gap:2px; border-radius:9px; padding:2px; background:rgba(255,255,255,0.1);">
-              <button onclick="setIosTheme('auto')" id="ios-theme-auto"
+              <button data-ios-theme="auto" id="ios-theme-auto"
                 style="flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:rgba(255,255,255,0.5); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Auto</button>
-              <button onclick="setIosTheme('light')" id="ios-theme-light"
+              <button data-ios-theme="light" id="ios-theme-light"
                 style="flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:rgba(255,255,255,0.5); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Light</button>
-              <button onclick="setIosTheme('dark')" id="ios-theme-dark"
+              <button data-ios-theme="dark" id="ios-theme-dark"
                 style="flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:rgba(255,255,255,0.5); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Dark</button>
             </div>
           </div>
@@ -1464,7 +1462,7 @@
           <div style="padding:6px 16px 14px;">
             <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
               <p style="color:#fff; font-size:15px; font-weight:600; margin:0;">Benachrichtigungen</p>
-              <button id="ios-push-toggle" role="switch" aria-checked="false" onclick="togglePushSubscription()"
+              <button id="ios-push-toggle" role="switch" aria-checked="false"
                 style="position:relative; width:51px; height:31px; border:none; border-radius:31px; background:rgba(120,120,128,0.32); cursor:pointer; padding:0; transition:background 0.2s ease; -webkit-tap-highlight-color:transparent; flex-shrink:0;">
                 <span id="ios-push-knob"
                   style="position:absolute; top:2px; left:2px; width:27px; height:27px; border-radius:50%; background:#fff; box-shadow:0 3px 8px rgba(0,0,0,0.15), 0 3px 1px rgba(0,0,0,0.06); transition:transform 0.2s ease;"></span>
@@ -1481,7 +1479,7 @@
             <p style="color:rgba(255,255,255,0.6); font-size:13px; line-height:1.5; margin:0 0 14px;">Wähle ein Icon
               aus, dann speichere die Seite zum Home-Bildschirm.</p>
             <div id="icon-picker" style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:14px;">
-              <div class="icon-pick-option" onclick="setAppIcon('icons/flavicon.png', this)"
+              <div class="icon-pick-option" data-app-icon="icons/flavicon.png"
                 style="cursor:pointer; position:relative; -webkit-tap-highlight-color:transparent;">
                 <img src="icons/flavicon.png"
                   style="width:60px; height:60px; border-radius:14px; border:3px solid #0a84ff;" />
@@ -1490,12 +1488,12 @@
                   <span class="material-symbols-outlined" style="font-size:14px; color:#fff;">check</span>
                 </span>
               </div>
-              <div class="icon-pick-option" onclick="setAppIcon('icons/icon%20alts/MugEddie.png', this)"
+              <div class="icon-pick-option" data-app-icon="icons/icon%20alts/MugEddie.png"
                 style="cursor:pointer; position:relative; -webkit-tap-highlight-color:transparent;">
                 <img src="icons/icon%20alts/MugEddie.png"
                   style="width:60px; height:60px; border-radius:14px; border:3px solid transparent;" />
               </div>
-              <div class="icon-pick-option" onclick="setAppIcon('icons/icon%20alts/fuck%20instagram.png', this)"
+              <div class="icon-pick-option" data-app-icon="icons/icon%20alts/fuck%20instagram.png"
                 style="cursor:pointer; position:relative; -webkit-tap-highlight-color:transparent;">
                 <img src="icons/icon%20alts/fuck%20instagram.png"
                   style="width:60px; height:60px; border-radius:14px; border:3px solid transparent;" />
@@ -1520,7 +1518,7 @@
     <div id="ios-mail-screen-list" class="flex flex-col flex-1 min-h-0 relative">
       <!-- Back button -->
       <div class="shrink-0 px-5" style="padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:12px;">
-        <button onclick="iosCloseMail()"
+        <button data-ios-close="mail"
           class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
           style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
           <span class="material-symbols-outlined" style="font-size:22px; color:var(--ios-text);">chevron_left</span>
@@ -1533,7 +1531,7 @@
         <div style="height:1px; background:var(--ios-list-border);"></div>
 
         <!-- Message row -->
-        <div class="ios-mail-row" onclick="iosMailOpenMessage()">
+        <div class="ios-mail-row" data-action="mail-open">
           <!-- Avatar bubble -->
           <div
             style="width:44px; height:44px; border-radius:50%; background:var(--ios-segmented-bg); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:13px; font-weight:600; color:var(--ios-text-secondary); letter-spacing:0.05em;">
@@ -1569,7 +1567,7 @@
       style="display:none; background:var(--ios-app-bg);">
       <!-- Back button -->
       <div class="shrink-0 px-5" style="padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:12px;">
-        <button onclick="iosMailBackToList()"
+        <button data-ios-close="mail-back"
           class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
           style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
           <span class="material-symbols-outlined" style="font-size:22px; color:var(--ios-text);">chevron_left</span>
@@ -1748,8 +1746,7 @@
     </div>
   </section>
 
-  <script src="data.js"></script>
-  <script src="app.js?v=1.3"></script>
+  <script type="module" src="app.js"></script>
 
   <!-- ═══════════════════════════════════════════════════════════════════
          System Pulse commit feed — regenerate with:
@@ -1769,68 +1766,8 @@
 ]
     </script>
 
-  <script src="changelog.js"></script>
-  <!-- Hidden Admin Overlay -->
-  <div id="ios-admin-overlay">
-    <!-- Passcode View -->
-    <div id="admin-passcode-view" class="admin-card" style="text-align:center;">
-      <h2 style="font-size:20px; margin-bottom:10px;">Enter Passcode</h2>
-      <div style="display:flex; justify-content:center; margin:20px 0;">
-        <div class="passcode-dot"></div>
-        <div class="passcode-dot"></div>
-        <div class="passcode-dot"></div>
-        <div class="passcode-dot"></div>
-      </div>
-      <div class="numpad">
-        <div class="num-btn" onclick="adminType(1)">1</div>
-        <div class="num-btn" onclick="adminType(2)">2</div>
-        <div class="num-btn" onclick="adminType(3)">3</div>
-        <div class="num-btn" onclick="adminType(4)">4</div>
-        <div class="num-btn" onclick="adminType(5)">5</div>
-        <div class="num-btn" onclick="adminType(6)">6</div>
-        <div class="num-btn" onclick="adminType(7)">7</div>
-        <div class="num-btn" onclick="adminType(8)">8</div>
-        <div class="num-btn" onclick="adminType(9)">9</div>
-        <div></div>
-        <div class="num-btn" onclick="adminType(0)">0</div>
-        <div class="num-btn" onclick="adminClose()" style="font-size:14px;">Cancel</div>
-      </div>
-    </div>
-
-    <!-- Panel View -->
-    <div id="admin-panel-view" class="admin-card" style="display:none; max-height:85vh; overflow-y:auto;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2 style="font-size:20px; margin:0;">Cloud Status</h2>
-        <span class="material-symbols-outlined" onclick="adminClose()" style="cursor:pointer; opacity:0.6;">close</span>
-      </div>
-
-      <div class="admin-label">Doing (Phase)</div>
-      <div id="adm-doing-chips" class="admin-chips"></div>
-
-      <div class="admin-label">Project / Note</div>
-      <input type="text" id="adm-rn-note" class="admin-field" placeholder="Milano BTS · Day 3">
-
-      <div class="admin-label">Status Description</div>
-      <input type="text" id="adm-rn-detail" class="admin-field" placeholder="Deep in the edit. Coffee on the desk...">
-
-      <div class="admin-label">Vibe / Energy</div>
-      <div id="adm-vibe-chips" class="admin-chips"></div>
-
-      <div class="admin-label">Working on</div>
-      <input type="text" id="adm-working-on" class="admin-field" placeholder="Short description (optional)">
-
-      <div style="height:1px; background:rgba(255,255,255,0.1); margin:20px 0;"></div>
-
-      <div class="admin-label">GitHub Integration</div>
-      <input type="password" id="adm-gh-token" class="admin-field" placeholder="GitHub PAT Token">
-      <input type="text" id="adm-gh-repo" class="admin-field" placeholder="Repo (user/repo)">
-
-      <button id="adm-save-btn" class="admin-btn" onclick="adminSave()">Push to Cloud</button>
-      <div id="adm-status" style="font-size:11px; margin-top:10px; text-align:center; opacity:0.8;"></div>
-    </div>
-  </div>
-
-  <script src="admin.js?v=1.12"></script>
+  <script type="module" src="changelog.js"></script>
+  <script type="module" src="push.js"></script>
 </body>
 
 </html>

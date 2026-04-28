@@ -1,413 +1,177 @@
-// Admin Logic
-let adminTapCount = 0;
-let adminTapTimer = null;
-const adminTrigger = document.getElementById('iwe-trigger-admin');
-const adminOverlay = document.getElementById('ios-admin-overlay');
-const passcodeView = document.getElementById('admin-passcode-view');
-const panelView = document.getElementById('admin-panel-view');
-let currentPasscode = "";
-const MASTER_PASSCODE = "7777"; // CHANGE THIS
+// @ts-check
+// Admin Cloud Status Panel
+// Standalone page at /admin.html — protected by Cloudflare Access.
+// No passcode logic: if you can load this page, you are authenticated.
 
-if (adminTrigger) {
-  adminTrigger.addEventListener('click', () => {
-    adminTapCount++;
-    clearTimeout(adminTapTimer);
-    if (adminTapCount >= 3) {
-      adminOpen();
-      adminTapCount = 0;
-    } else {
-      adminTapTimer = setTimeout(() => { adminTapCount = 0; }, 500);
-    }
-  });
-}
+/**
+ * @typedef {Object} StatusFile
+ * @property {{ title: string, note: string, statusDetail: string }} rightNow
+ * @property {{ title: string }} vibe
+ * @property {string} workingOn
+ * @property {string[]} availableDoing
+ * @property {string[]} availableVibes
+ */
 
+/** @type {StatusFile | null} */
 let loadedStatus = null;
-let selectedDoing = "";
-let selectedVibe = "";
+let selectedDoing = '';
+let selectedVibe = '';
 
-function adminOpen() {
-  adminOverlay.style.display = 'flex';
-  setTimeout(() => adminOverlay.classList.add('visible'), 10);
-  currentPasscode = "";
-  updatePasscodeDots();
-  passcodeView.style.display = 'block';
-  panelView.style.display = 'none';
+const DEFAULT_DOING = ['🎬 Pre-Production', '🎥 Shooting', '✂️ Post', '✅ Published'];
+const DEFAULT_VIBES = ['hyperfocus', 'referencing', 'stuck', 'shipping'];
 
-  // Load stored values
-  document.getElementById('adm-gh-token').value = localStorage.getItem('gh_token') || '';
-  document.getElementById('adm-gh-repo').value = localStorage.getItem('gh_repo') || 'project11x/tomin-world';
-
-  // EMERGENCY RENDER: Show chips immediately with defaults so they are never empty
-  console.log("Admin: Initializing chips with defaults...");
-  const defaultDoing = ["🎬 Pre-Production", "🎥 Shooting", "✂️ Post", "✅ Published"];
-  const defaultVibes = ["hyperfocus", "referencing", "stuck", "shipping"];
-  renderAdminChips('adm-doing-chips', defaultDoing, "", (val) => { selectedDoing = val; });
-  renderAdminChips('adm-vibe-chips', defaultVibes, "", (val) => { selectedVibe = val; });
-
-  // Pre-fill fields from current status
-  fetch('status.json').then(r => r.json()).then(d => {
-    console.log("Admin: Status data loaded successfully", d);
-    loadedStatus = d;
-    document.getElementById('adm-rn-note').value = d.rightNow?.note || '';
-    document.getElementById('adm-rn-detail').value = d.rightNow?.statusDetail || '';
-    document.getElementById('adm-working-on').value = d.workingOn || '';
-
-    selectedDoing = d.rightNow?.title || '';
-    selectedVibe = d.vibe?.title || '';
-
-    // Update chips with actual data and active states
-    renderAdminChips('adm-doing-chips', d.availableDoing || defaultDoing, selectedDoing, (val) => { selectedDoing = val; });
-    renderAdminChips('adm-vibe-chips', d.availableVibes || defaultVibes, selectedVibe, (val) => { selectedVibe = val; });
-  }).catch(e => {
-    console.error("Admin: Failed to load status.json", e);
-  });
+/** @returns {HTMLInputElement} */
+function $input(id) {
+  const el = document.getElementById(id);
+  if (!(el instanceof HTMLInputElement)) throw new Error(`#${id} is not an <input>`);
+  return el;
+}
+/** @returns {HTMLButtonElement} */
+function $button(id) {
+  const el = document.getElementById(id);
+  if (!(el instanceof HTMLButtonElement)) throw new Error(`#${id} is not a <button>`);
+  return el;
 }
 
-function renderAdminChips(containerId, list, activeVal, onSelect) {
+/**
+ * @param {string} containerId
+ * @param {string[]} list
+ * @param {string} activeVal
+ */
+function renderAdminChips(containerId, list, activeVal) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
   const safeList = Array.isArray(list) ? list : [];
-  let html = safeList.map(item => `
-        <div class="admin-chip ${item === activeVal ? 'active' : ''}" 
-             onclick="selectAdminChip(this, '${containerId}', '${item}')">${item}</div>
-      `).join('');
+  container.innerHTML = '';
 
-  html += `<div class="admin-chip-add" onclick="addAdminChip('${containerId}')">+ New</div>`;
-  container.innerHTML = html;
-  onSelect(activeVal);
+  safeList.forEach((item) => {
+    const chip = document.createElement('div');
+    chip.className = 'admin-chip' + (item === activeVal ? ' active' : '');
+    chip.textContent = item;
+    chip.addEventListener('click', () => selectChip(containerId, item));
+    container.appendChild(chip);
+  });
+
+  const addBtn = document.createElement('div');
+  addBtn.className = 'admin-chip-add';
+  addBtn.textContent = '+ New';
+  addBtn.addEventListener('click', () => addChip(containerId));
+  container.appendChild(addBtn);
 }
 
-window.selectAdminChip = function (el, containerId, val) {
-  el.parentElement.querySelectorAll('.admin-chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
+function selectChip(containerId, val) {
   if (containerId === 'adm-doing-chips') selectedDoing = val;
   else selectedVibe = val;
-};
+  const list =
+    containerId === 'adm-doing-chips'
+      ? loadedStatus?.availableDoing || DEFAULT_DOING
+      : loadedStatus?.availableVibes || DEFAULT_VIBES;
+  renderAdminChips(containerId, list, val);
+}
 
-window.addAdminChip = function (containerId) {
-  const val = prompt("Enter new tag name:");
+/** @returns {StatusFile} */
+function emptyStatus() {
+  return {
+    rightNow: { title: '', note: '', statusDetail: '' },
+    vibe: { title: '' },
+    workingOn: '',
+    availableDoing: [...DEFAULT_DOING],
+    availableVibes: [...DEFAULT_VIBES],
+  };
+}
+
+/** @param {string} containerId */
+function addChip(containerId) {
+  const val = prompt('Enter new tag name:');
   if (!val) return;
+
+  if (!loadedStatus) loadedStatus = emptyStatus();
 
   if (containerId === 'adm-doing-chips') {
     if (!loadedStatus.availableDoing.includes(val)) loadedStatus.availableDoing.push(val);
     selectedDoing = val;
-    renderAdminChips(containerId, loadedStatus.availableDoing, selectedDoing, (v) => { selectedDoing = v; });
+    renderAdminChips(containerId, loadedStatus.availableDoing, selectedDoing);
   } else {
     if (!loadedStatus.availableVibes.includes(val)) loadedStatus.availableVibes.push(val);
     selectedVibe = val;
-    renderAdminChips(containerId, loadedStatus.availableVibes, selectedVibe, (v) => { selectedVibe = v; });
+    renderAdminChips(containerId, loadedStatus.availableVibes, selectedVibe);
   }
-};
-
-function adminClose() {
-  adminOverlay.classList.remove('visible');
-  setTimeout(() => { adminOverlay.style.display = 'none'; }, 400);
-}
-
-function adminType(num) {
-  if (currentPasscode.length < 4) {
-    currentPasscode += num;
-    updatePasscodeDots();
-    if (currentPasscode.length === 4) {
-      if (currentPasscode === MASTER_PASSCODE) {
-        passcodeView.style.display = 'none';
-        panelView.style.display = 'block';
-      } else {
-        // Shake effect or just reset
-        currentPasscode = "";
-        setTimeout(updatePasscodeDots, 200);
-      }
-    }
-  }
-}
-
-function updatePasscodeDots() {
-  const dots = document.querySelectorAll('.passcode-dot');
-  dots.forEach((dot, i) => {
-    if (i < currentPasscode.length) dot.classList.add('filled');
-    else dot.classList.remove('filled');
-  });
 }
 
 async function adminSave() {
-  const btn = document.getElementById('adm-save-btn');
+  const btn = $button('adm-save-btn');
   const status = document.getElementById('adm-status');
-  const token = document.getElementById('adm-gh-token').value;
-  const repo = document.getElementById('adm-gh-repo').value;
-
-  if (!token || !repo) {
-    status.textContent = "Error: Token and Repo required";
-    status.style.color = "#ff453a";
-    return;
-  }
-
-  localStorage.setItem('gh_token', token);
-  localStorage.setItem('gh_repo', repo);
+  if (!status) return;
 
   btn.disabled = true;
-  btn.textContent = "Pushing...";
-  status.textContent = "Connecting to GitHub...";
-  status.style.color = "#fff";
+  btn.textContent = 'Pushing...';
+  status.textContent = 'Pushing to /api/status…';
+  status.style.color = '#fff';
 
   const newStatus = {
     rightNow: {
       title: selectedDoing,
-      note: document.getElementById('adm-rn-note').value,
-      statusDetail: document.getElementById('adm-rn-detail').value
+      note: $input('adm-rn-note').value,
+      statusDetail: $input('adm-rn-detail').value,
     },
-    vibe: {
-      title: selectedVibe
-    },
-    workingOn: document.getElementById('adm-working-on').value,
-    availableDoing: (loadedStatus && loadedStatus.availableDoing) ? loadedStatus.availableDoing : ["🎬 Pre-Production", "🎥 Shooting", "✂️ Post", "✅ Published"],
-    availableVibes: (loadedStatus && loadedStatus.availableVibes) ? loadedStatus.availableVibes : ["hyperfocus", "referencing", "stuck", "shipping"]
+    vibe: { title: selectedVibe },
+    workingOn: $input('adm-working-on').value,
+    availableDoing: loadedStatus?.availableDoing || DEFAULT_DOING,
+    availableVibes: loadedStatus?.availableVibes || DEFAULT_VIBES,
   };
 
   try {
-    // 1. Get file SHA
-    const fileUrl = `https://api.github.com/repos/${repo}/contents/status.json`;
-    const getResp = await fetch(fileUrl, {
-      headers: { 'Authorization': `token ${token}` }
-    });
-
-    if (!getResp.ok) throw new Error("Could not find status.json on GitHub");
-    const fileData = await getResp.json();
-    const sha = fileData.sha;
-
-    // 2. Update file
-    const updateResp = await fetch(fileUrl, {
+    // Hits the Pages Function at /api/status. The function holds the GitHub
+    // PAT as a server-side secret; the browser only forwards the Cloudflare
+    // Access cookie, never a token of its own.
+    const resp = await fetch('/api/status', {
       method: 'PUT',
-      headers: {
-        'Authorization': `token ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        message: "Update status.json via mobile admin",
-        content: btoa(unescape(encodeURIComponent(JSON.stringify(newStatus, null, 2)))),
-        sha: sha
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newStatus),
     });
-
-    if (updateResp.ok) {
-      status.textContent = "✅ Success! Site will update in a moment.";
-      status.style.color = "#30d158";
-
-      // Force immediate UI update on the page so user sees it locally
-      if (window.populateStatusManually) {
-        window.populateStatusManually(newStatus);
-      } else {
-        // Fallback if global function not exposed yet
-        location.reload();
-      }
-      setTimeout(() => { adminClose(); }, 1500);
-    } else {
-      const err = await updateResp.json();
-      throw new Error(err.message || "Push failed");
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error || `Push failed (${resp.status})`);
     }
-  } catch (e) {
-    status.textContent = "Error: " + e.message;
-    status.style.color = "#ff453a";
+    status.textContent = '✅ Success! Site will update shortly.';
+    status.style.color = '#30d158';
+  } catch (/** @type {any} */ e) {
+    status.textContent = 'Error: ' + (e?.message ?? String(e));
+    status.style.color = '#ff453a';
   } finally {
     btn.disabled = false;
-    btn.textContent = "Push to Cloud";
+    btn.textContent = 'Push to Cloud';
   }
 }
 
-// ==== OneSignal Push Notifications ====
-const ONESIGNAL_APP_ID = "4f713f1a-2daa-4d18-960a-4a98000a3c11";
+function init() {
+  $button('adm-save-btn').addEventListener('click', adminSave);
 
-function isStandalonePwa() {
-  return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
-    || window.navigator.standalone === true;
-}
+  renderAdminChips('adm-doing-chips', DEFAULT_DOING, '');
+  renderAdminChips('adm-vibe-chips', DEFAULT_VIBES, '');
 
-// Cache the SDK reference once init resolves, so the click handler
-// can call optIn() synchronously and preserve the iOS user-gesture.
-let __osRef = null;
+  fetch('status.json')
+    .then((r) => r.json())
+    .then(/** @param {StatusFile} d */ (d) => {
+      loadedStatus = d;
+      $input('adm-rn-note').value = d.rightNow?.note || '';
+      $input('adm-rn-detail').value = d.rightNow?.statusDetail || '';
+      $input('adm-working-on').value = d.workingOn || '';
 
-function showPushHint(text, color) {
-  const hints = [document.getElementById('ios-push-hint'), document.getElementById('desktop-push-hint')].filter(h => h);
-  hints.forEach(hint => {
-    hint.textContent = text;
-    if (color) hint.style.color = color;
-    else hint.style.color = 'rgba(255,255,255,0.6)';
-  });
-}
+      selectedDoing = d.rightNow?.title || '';
+      selectedVibe = d.vibe?.title || '';
 
-function refreshPushToggleUI() {
-  const toggle = document.getElementById('ios-push-toggle');
-  const knob = document.getElementById('ios-push-knob');
-  const toggles = [document.getElementById('ios-push-toggle'), document.getElementById('desktop-push-toggle')].filter(t => t);
-  const knobs = [document.getElementById('ios-push-knob'), document.getElementById('desktop-push-knob')].filter(k => k);
-  const hints = [document.getElementById('ios-push-hint'), document.getElementById('desktop-push-hint')].filter(h => h);
-
-  if (toggles.length === 0) return;
-
-  const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  if (isIos && !isStandalonePwa()) {
-    toggles.forEach(t => {
-      t.setAttribute('aria-checked', 'false');
-      t.style.background = 'rgba(120,120,128,0.32)';
-      t.style.opacity = '0.5';
-      t.dataset.disabled = 'true';
+      renderAdminChips('adm-doing-chips', d.availableDoing || DEFAULT_DOING, selectedDoing);
+      renderAdminChips('adm-vibe-chips', d.availableVibes || DEFAULT_VIBES, selectedVibe);
+    })
+    .catch((e) => {
+      console.error('Failed to load status.json', e);
     });
-    knobs.forEach(k => k.style.transform = 'translateX(0px)');
-    showPushHint('Füge die Seite zum Home-Bildschirm hinzu, um Benachrichtigungen zu aktivieren.');
-    return;
-  }
-
-  toggles.forEach(t => {
-    t.style.opacity = '1';
-    t.dataset.disabled = 'false';
-  });
-
-  if (!__osRef) {
-    toggles.forEach(t => {
-      t.setAttribute('aria-checked', 'false');
-      t.style.background = 'rgba(120,120,128,0.32)';
-    });
-    knobs.forEach(k => k.style.transform = 'translateX(0px)');
-    showPushHint('Initialisiere…');
-    return;
-  }
-
-  try {
-    const optedIn = !!(__osRef.User && __osRef.User.PushSubscription && __osRef.User.PushSubscription.optedIn);
-    const permission = !!(__osRef.Notifications && __osRef.Notifications.permission);
-    const on = optedIn && permission;
-
-    toggles.forEach(t => {
-      t.setAttribute('aria-checked', on ? 'true' : 'false');
-      t.style.background = on ? '#34c759' : 'rgba(120,120,128,0.32)';
-    });
-    knobs.forEach(k => k.style.transform = on ? 'translateX(20px)' : 'translateX(0px)');
-
-    if (!permission && typeof Notification !== 'undefined' && Notification.permission === 'denied') {
-      showPushHint('Erlaubnis verweigert. Aktiviere in den System-Einstellungen → Mitteilungen.', '#ff453a');
-    } else if (on) {
-      showPushHint('Aktiv. Du bekommst Updates.');
-    } else {
-      showPushHint('Updates direkt auf dieses Gerät.');
-    }
-  } catch (e) {
-    console.error("OS Refresh Error:", e);
-    showPushHint('UI-Fehler: ' + e.message, '#ff453a');
-  }
 }
 
-async function togglePushSubscription() {
-  const iosToggle = document.getElementById('ios-push-toggle');
-  const desktopToggle = document.getElementById('desktop-push-toggle');
-  
-  if (iosToggle && iosToggle.dataset.disabled === 'true') return;
-  if (desktopToggle && desktopToggle.dataset.disabled === 'true' && !iosToggle) return; // Desktop only fallback
-
-
-  if (!__osRef && window.OneSignal && window.OneSignal.User) {
-    __osRef = window.OneSignal;
-  }
-
-  if (!__osRef) {
-    showPushHint('SDK nicht bereit', '#ff9f0a');
-    return;
-  }
-
-  const sub = __osRef.User && __osRef.User.PushSubscription;
-  if (!sub) {
-    showPushHint('Push-Dienst fehlt', '#ff453a');
-    return;
-  }
-
-  const nativePerm = typeof Notification !== 'undefined' ? Notification.permission : 'default';
-  const optedIn = !!sub.optedIn;
-
-  // If system hasn't granted permission yet
-  if (nativePerm !== 'granted') {
-    showPushHint('Frage System…');
-    try {
-      const result = await Notification.requestPermission();
-      if (result === 'granted') {
-        showPushHint('Erlaubnis erteilt! Lade neu...', '#34c759');
-        try { sessionStorage.setItem('reopen-contact-app', 'push-grant'); } catch (e) { }
-        setTimeout(() => location.reload(), 1500);
-      } else {
-        showPushHint('Erlaubnis verweigert', '#ff453a');
-      }
-    } catch (e) {
-      showPushHint('Fehler: ' + e.message, '#ff453a');
-    }
-    return;
-  }
-
-  // If permission is already granted, toggle opt-in state
-  const allToggles = [iosToggle, desktopToggle].filter(t => t);
-  allToggles.forEach(t => t.style.opacity = '0.7');
-  try {
-    if (optedIn) {
-      showPushHint('Deaktiviere…');
-      await sub.optOut();
-    } else {
-      showPushHint('Aktiviere (System-Erlaubnis liegt vor)…', '#ff9f0a');
-      const optInTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout beim Verbinden.")), 15000));
-      await Promise.race([sub.optIn(), optInTimeout]);
-      showPushHint('Aktiviert!', '#34c759');
-    }
-  } catch (e) {
-    showPushHint('Fehler: ' + e.message, '#ff453a');
-  } finally {
-    toggle.style.opacity = '1';
-    refreshPushToggleUI();
-  }
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
 }
-window.togglePushSubscription = togglePushSubscription;
-
-function bindOneSignal(OneSignal) {
-  if (__osRef || !OneSignal || !OneSignal.User) return;
-  __osRef = OneSignal;
-  
-  try {
-    OneSignal.User.PushSubscription.addEventListener('change', refreshPushToggleUI);
-    OneSignal.Notifications.addEventListener('permissionChange', refreshPushToggleUI);
-  } catch (e) { /* listener may not exist */ }
-  
-  refreshPushToggleUI();
-
-  // Auto-recovery
-  const nativePerm = typeof Notification !== 'undefined' ? Notification.permission : 'default';
-  const optedIn = !!(OneSignal.User && OneSignal.User.PushSubscription && OneSignal.User.PushSubscription.optedIn);
-  
-  if (nativePerm === 'granted' && !optedIn) {
-    showPushHint('Auto-Start...', '#ff9f0a');
-    const optInTimeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout beim Verbinden.")), 15000));
-    Promise.race([OneSignal.User.PushSubscription.optIn(), optInTimeout])
-      .then(() => refreshPushToggleUI())
-      .catch(e => {
-        showPushHint('Hintergrund-Fehler: ' + e.message, '#ff453a');
-      });
-  }
-}
-
-// Primary path: deferred queue fires when SDK initializes
-window.OneSignalDeferred = window.OneSignalDeferred || [];
-window.OneSignalDeferred.push(bindOneSignal);
-
-// Fallback: poll for window.OneSignal in case init() failed but SDK is loaded
-let __osPolls = 0;
-const __osInterval = setInterval(() => {
-  __osPolls++;
-  if (__osRef) { clearInterval(__osInterval); return; }
-  if (window.OneSignal && window.OneSignal.User) {
-    bindOneSignal(window.OneSignal);
-    clearInterval(__osInterval);
-  }
-  if (__osPolls > 60) clearInterval(__osInterval); // give up after ~30s
-}, 500);
-
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(refreshPushToggleUI, 800);
-  if (isStandalonePwa()) {
-    const iconSection = document.getElementById('ios-app-icon-section');
-    if (iconSection) iconSection.style.display = 'none';
-  }
-});

@@ -1,0 +1,27 @@
+# Hashed assets — content-addressed by filename, never change.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# HTML — points to the current asset hashes, must revalidate on every visit.
+/
+  Cache-Control: public, max-age=0, must-revalidate
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+/admin.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Live status — stale up to 60s at the edge, fresh on origin.
+/status.json
+  Cache-Control: public, max-age=0, s-maxage=60, must-revalidate
+
+# Service worker must always be fresh.
+/OneSignalSDKWorker.js
+  Cache-Control: no-cache
+
+# PWA manifests — short cache, rarely change.
+/manifest.json
+  Cache-Control: public, max-age=300
+/manifest-eddie.json
+  Cache-Control: public, max-age=300
+/manifest-instagram.json
+  Cache-Control: public, max-age=300

@@ -1,0 +1,9 @@
+node_modules
+data.js
+tailwind.css
+package-lock.json
+test-results
+playwright-report
+dist
+._*
+**/._*

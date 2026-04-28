@@ -26,3 +26,13 @@ reference.png
 node_modules/
 package-lock.json
 
+# Build output
+dist/
+
+# Test output
+test-results/
+playwright-report/
+
+# Folder typo (renamed)
+5am in munich/
+

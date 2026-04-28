@@ -8,6 +8,29 @@
       color: #ffffff;
     }
 
+    /* Finder view-mode segmented tabs.
+       Active state is driven by data-active="true|false" set by JS,
+       not by toggling six Tailwind classes. */
+    .view-tab-btn {
+      padding: 0.25rem 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.375rem;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      color: #94a3b8;
+    }
+    .dark .view-tab-btn { color: #64748b; }
+    .view-tab-btn[data-active="true"] {
+      background: #ffffff;
+      color: var(--md-sys-color-primary, #005bc2);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+    .dark .view-tab-btn[data-active="true"] {
+      background: #475569;
+      color: #ffffff;
+    }
+
     .material-symbols-outlined {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
