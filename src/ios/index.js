@@ -1,7 +1,6 @@
 // ====== iOS Homescreen Logic ======
 import { portfolioData } from '../../data.js';
 import { safePlayVideo, killOtherVideos, attachBeachball } from '../utils/video.js';
-import { attachPinchZoom } from '../utils/pinch-zoom.js';
 
 (function () {
   const iosScreen = document.getElementById('ios-screen');
@@ -223,13 +222,6 @@ import { attachPinchZoom } from '../utils/pinch-zoom.js';
 
     iosMagReaderPages.scrollLeft = 0;
     setTimeout(iosMagUpdatePageIndicator, 50);
-
-    // Pinch-to-zoom on each page image. The carousel reference lets the
-    // helper freeze horizontal scroll-snap while zoomed so panning doesn't
-    // accidentally flip pages.
-    iosMagReaderPages.querySelectorAll('img').forEach(img => {
-      attachPinchZoom(img, { scrollContainer: iosMagReaderPages });
-    });
 
     // Play only visible video, pause others
     const iosMagVideos = iosMagReaderPages.querySelectorAll('video');
@@ -854,12 +846,6 @@ import { attachPinchZoom } from '../utils/pinch-zoom.js';
     requestAnimationFrame(() => {
       iosBtsViewerPages.scrollLeft = index * iosBtsViewerPages.clientWidth;
       iosBtsUpdateViewerCounter();
-    });
-
-    // Pinch-to-zoom on each photo. While zoomed, the carousel's horizontal
-    // scroll-snap is frozen so panning the image doesn't flip pages.
-    iosBtsViewerPages.querySelectorAll('img').forEach(img => {
-      attachPinchZoom(img, { scrollContainer: iosBtsViewerPages });
     });
 
     // Seamless video loop + play only visible video (others unloaded)
