@@ -22,18 +22,27 @@ That's it — every subsequent upload to that bucket is visible on the
 next page load (≤5 min on Cloudflare's edge cache, served stale-while-
 revalidate so the user never blocks on the listing).
 
-## Latency
+## Behaviour: additive only
 
-| Action                      | Visible after            |
-| --------------------------- | ------------------------ |
-| New upload to R2            | ≤5 min (edge cache TTL)  |
-| Delete in R2                | ≤5 min                   |
-| Folder rename               | ≤5 min                   |
-| Local `npm run sync` change | next deploy (unchanged)  |
+The frontend merge is **strictly additive** — it adds folders / files
+the baked `data.js` doesn't know about, and never deletes or rewrites
+anything that already shipped with the build. That means:
 
-If you need an instant flush, hit `/api/portfolio?cache=skip` from a
-browser — well, that's not implemented yet. Today's escape hatch is
-to purge the Pages cache manually from the dashboard.
+| Action                      | Visible after                              |
+| --------------------------- | ------------------------------------------ |
+| New upload to R2            | ≤5 min (edge cache TTL)                    |
+| Delete in R2                | requires a redeploy of `data.js`           |
+| Folder rename               | requires a redeploy of `data.js`           |
+| Local `npm run sync` change | next deploy (unchanged)                    |
+
+Why: an earlier version replaced the local snapshot wholesale and got
+caught out the moment the R2 listing was incomplete or structured
+differently — the page rendered with no edits at all. The current
+behaviour treats the live listing as a *supplement*, not a replacement,
+so it can never break what's already on the site.
+
+If you need an instant flush after an upload, purge the Pages cache
+from the Cloudflare dashboard.
 
 ## Without the binding
 

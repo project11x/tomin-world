@@ -52,22 +52,43 @@ async function fetchAndMerge(baseUrl) {
 
   let changed = false;
 
-  // Replace each folder if its contents differ from the baked snapshot.
-  for (const key of Object.keys(remote)) {
-    const remoteList = remote[key];
+  // STRICTLY ADDITIVE merge. The earlier version did a full replace +
+  // delete-missing, which wiped the baked snapshot the moment the R2
+  // listing was incomplete or differently structured. We never touch
+  // folders or files that already exist; we only add new ones. The
+  // baked data.js stays the source of truth for everything that was
+  // shipped with the build.
+  for (const folderKey of Object.keys(remote)) {
+    const remoteList = remote[folderKey];
     if (!Array.isArray(remoteList)) continue;
-    const local = portfolioData[key];
-    if (!local || !sameItems(local, remoteList)) {
-      portfolioData[key] = remoteList;
-      changed = true;
-    }
-  }
 
-  // Drop folders that no longer exist in R2 — keeps the Finder honest if
-  // the user deletes something straight from the bucket.
-  for (const key of Object.keys(portfolioData)) {
-    if (!(key in remote)) {
-      delete portfolioData[key];
+    if (!(folderKey in portfolioData)) {
+      // Brand-new folder seen on R2 — surface it.
+      portfolioData[folderKey] = remoteList.slice();
+      changed = true;
+      continue;
+    }
+
+    // Existing folder: append any names that aren't already in the
+    // baked list. Order is preserved for the existing items; new items
+    // get sorted in afterwards (videos first, then alphabetical) to
+    // match the rest of the UI.
+    const existing = portfolioData[folderKey];
+    const existingNames = new Set(existing.map((it) => it.name));
+    let folderChanged = false;
+    for (const item of remoteList) {
+      if (item && item.name && !existingNames.has(item.name)) {
+        existing.push(item);
+        existingNames.add(item.name);
+        folderChanged = true;
+      }
+    }
+    if (folderChanged) {
+      existing.sort((a, b) => {
+        if (a.isVideo && !b.isVideo) return -1;
+        if (!a.isVideo && b.isVideo) return 1;
+        return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+      });
       changed = true;
     }
   }
@@ -75,16 +96,4 @@ async function fetchAndMerge(baseUrl) {
   if (changed) {
     window.dispatchEvent(new CustomEvent('portfolio-updated'));
   }
-}
-
-// Cheap structural equality: same length, same names in order, same
-// sizes. Misses attribute changes but matches the granularity the UI
-// actually cares about.
-function sameItems(a, b) {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    if (a[i].name !== b[i].name) return false;
-    if (a[i].size !== b[i].size) return false;
-  }
-  return true;
 }
