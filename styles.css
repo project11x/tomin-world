@@ -513,6 +513,43 @@
       animation: widgetSettleIn 0.32s cubic-bezier(0.2, 0.7, 0.2, 1);
     }
 
+    /* Finder Icon View — macOS-style: thumbnail lifts subtly on hover, name
+       picks up the classic blue pill highlight (and a clearer dark-mode
+       readable colour). Selection / hover feedback lives only on the name
+       so the thumbnail stays clean. */
+    .finder-icon-item:hover .finder-icon-thumb {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(15, 23, 42, 0.06);
+    }
+
+    .finder-icon-item:hover .finder-icon-name {
+      background-color: rgba(59, 130, 246, 0.15);
+      color: rgb(15, 23, 42);
+    }
+
+    .finder-icon-item.is-selected .finder-icon-name {
+      background-color: rgb(59, 130, 246);
+      color: #fff;
+    }
+
+    .dark .finder-icon-name {
+      color: rgb(203, 213, 225);
+    }
+
+    .dark .finder-icon-item:hover .finder-icon-name {
+      background-color: rgba(59, 130, 246, 0.25);
+      color: #fff;
+    }
+
+    .dark .finder-icon-thumb {
+      background: rgba(148, 163, 184, 0.18);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    }
+
+    .dark .finder-icon-item:hover .finder-icon-thumb {
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.06);
+    }
+
     /* System Pulse widget — live dot pulse */
     @keyframes sysPulse {
 

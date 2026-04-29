@@ -298,19 +298,29 @@
             el.style.opacity = '';
             el.style.transform = '';
           });
-          // Compact widget appears now — play a brief blur→sharp pulse so its
-          // text "wakes up" into focus instead of hard-swapping in.
-          widget.classList.remove('widget-settle-in');
+          // Compact widget's TEXT elements play a brief blur→sharp pulse so
+          // they "wake up" into focus instead of hard-swapping in. We blur
+          // text only — applying it to the whole widget would also blur the
+          // backgrounds and SVG decorations, which feels like a flashbang.
+          const settleSelectors = cfg.settleSelectors || [];
+          const settleEls = settleSelectors
+            .map(sel => widget.querySelectorAll(sel))
+            .flatMap(nl => Array.from(nl));
+          settleEls.forEach(el => {
+            el.classList.remove('widget-settle-in');
+          });
           // Force a reflow so re-adding the class restarts the animation
           // even if the previous run hadn't been cleaned up yet.
           void widget.offsetWidth;
-          widget.classList.add('widget-settle-in');
-          const onSettleEnd = (e) => {
-            if (e.target !== widget || e.animationName !== 'widgetSettleIn') return;
-            widget.classList.remove('widget-settle-in');
-            widget.removeEventListener('animationend', onSettleEnd);
-          };
-          widget.addEventListener('animationend', onSettleEnd);
+          settleEls.forEach(el => {
+            el.classList.add('widget-settle-in');
+            const onEnd = (e) => {
+              if (e.animationName !== 'widgetSettleIn') return;
+              el.classList.remove('widget-settle-in');
+              el.removeEventListener('animationend', onEnd);
+            };
+            el.addEventListener('animationend', onEnd);
+          });
           if (onAfterClose) onAfterClose();
         }, __MORPH_DUR + 60);
       }
@@ -578,6 +588,16 @@
           titleBlock,
           '#sys-commits-list',
         ],
+        // Text-only settle on close — dot, comet rail and gradients keep
+        // their look so it doesn't read as a "flashbang" of the whole card.
+        settleSelectors: [
+          '#sys-live-label',
+          '#sys-eyebrow',
+          '#sys-headline',
+          '#sys-message',
+          '#sys-hash',
+          '#sys-time',
+        ],
         onBeforeOpen: () => {
           renderList();
           requestAnimationFrame(updateScrollFade);
@@ -730,6 +750,14 @@
           titleBlock,
           timelineWrap,
           tipsList,
+        ],
+        // Text-only settle — leaves the badge, slot dots and segment fills
+        // untouched so the timeline doesn't strobe.
+        settleSelectors: [
+          '#ila-badge',
+          '#ila-eyebrow',
+          '#ila-title',
+          '#ila-sub',
         ],
         onBeforeOpen: () => {
           // Sync badge content + colors from the compact widget.
@@ -885,6 +913,18 @@
           dateLabel,
           detailScroll,
           arcSvg,
+        ],
+        // Text-only settle — leaves the SVG arc, sun/glow/moon and live-dot
+        // alone so they don't strobe on close.
+        settleSelectors: [
+          '#iww-eyebrow-city',
+          '#iww-eyebrow-label',
+          '#iww-time',
+          '#iww-desc',
+          '#iww-icon',
+          '#iww-temp',
+          '#iww-wind',
+          '#iww-status-tag',
         ],
         onBeforeOpen: () => {
           syncFromCompact();

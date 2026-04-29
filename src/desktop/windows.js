@@ -202,7 +202,15 @@ function renderFolderContent(win, folderName) {
     html += `</tbody></table>`;
     mainArea.innerHTML = html;
   } else {
-    let html = `<div class="p-6 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">`;
+    // macOS-Finder Icon View:
+    //  • auto-fill grid that re-flows with the window width
+    //  • generously-sized square thumbnails (96px) with subtle rounded shadow
+    //  • filename below, allowed to wrap up to two lines with the classic
+    //    Finder pill highlight on hover instead of getting truncated mid-word
+    let html = `
+      <div class="finder-icon-grid"
+           style="display:grid; grid-template-columns:repeat(auto-fill, minmax(108px, 1fr)); gap:18px 6px; padding:18px 14px; align-content:start;">
+    `;
     sortedData.forEach((item, i) => {
       let thumb;
       if (item.isMagazine) {
@@ -218,11 +226,22 @@ function renderFolderContent(win, folderName) {
         thumb = `<img src="${item.src}" class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />`;
       }
       html += `
-        <div class="flex flex-col items-center group cursor-pointer" onclick="handleItemClick('${folderName.replace(/'/g, "\\'")}', ${i}, event)">
-          <div class="w-20 h-20 mb-2 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 transition-all duration-200 group-hover:scale-105 group-hover:shadow-lg ring-2 ring-transparent group-hover:ring-primary/40">
+        <div class="finder-icon-item group cursor-pointer"
+             onclick="handleItemClick('${folderName.replace(/'/g, "\\'")}', ${i}, event)"
+             style="display:flex; flex-direction:column; align-items:center; gap:4px; padding:4px 2px; border-radius:8px;">
+          <div class="finder-icon-thumb"
+               style="width:96px; height:96px; border-radius:10px; overflow:hidden;
+                      background:rgba(148,163,184,0.12); display:flex; align-items:center; justify-content:center;
+                      box-shadow:0 1px 3px rgba(15,23,42,0.08), 0 0 0 1px rgba(15,23,42,0.04);
+                      transition:box-shadow 160ms ease, transform 160ms ease;">
             ${thumb}
           </div>
-          <span class="text-[10px] text-center text-slate-700 dark:text-slate-300 font-medium break-all px-1 rounded group-hover:bg-primary group-hover:text-white transition-colors max-w-[80px] truncate">${item.name}</span>
+          <span class="finder-icon-name"
+                style="display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2;
+                       overflow:hidden; text-align:center; word-break:break-word; line-height:1.25;
+                       font-size:11.5px; font-weight:500; color:var(--finder-name-color, rgb(51,65,85));
+                       padding:1.5px 6px; border-radius:5px; max-width:100%;
+                       transition:background-color 120ms ease, color 120ms ease;">${item.name}</span>
         </div>
       `;
     });
