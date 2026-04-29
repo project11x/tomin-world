@@ -35,6 +35,10 @@ export function createWindow(folderName) {
 
   const id = `window-${windowCount}`;
   win.id = id;
+  // Tag this window so the live R2 sync re-render hook can find it
+  // without snagging the Quick Look / About modals (which also use the
+  // .app-window class).
+  win.classList.add('finder-window');
   win.dataset.folder = folderName;
   win.dataset.viewMode = 'grid';
   win.style.display = 'flex';
@@ -115,14 +119,27 @@ export function createWindow(folderName) {
     renderFolderContent(win, win.dataset.folder);
   };
 
-  // Inject Favorites
+  // Inject Favorites — extracted so we can re-run it when /api/portfolio
+  // surfaces new folders after the live R2 sync.
+  injectFavorites(win);
+
+  document.getElementById('desktop-main').appendChild(win);
+  updateViewTabs();
+  renderFolderContent(win, folderName);
+  return win;
+}
+
+function injectFavorites(win) {
   const favNav = win.querySelector('.favorites-nav');
+  if (!favNav) return;
+  const currentFolder = win.dataset.folder;
+  favNav.innerHTML = '';
   Object.keys(portfolioData).forEach(key => {
     if (key.includes('/')) return;
     const a = document.createElement('a');
     a.className = "flex items-center space-x-2 px-2 py-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded-md text-[12px] font-medium transition-colors cursor-pointer focus-nav-item select-none";
     a.innerHTML = `<span>${key}</span>`;
-    if (key === folderName) {
+    if (key === currentFolder) {
       a.classList.add('bg-primary/15', 'text-primary', 'font-semibold');
       a.classList.remove('text-slate-600', 'dark:text-slate-400');
     }
@@ -133,12 +150,16 @@ export function createWindow(folderName) {
     };
     favNav.appendChild(a);
   });
-
-  document.getElementById('desktop-main').appendChild(win);
-  updateViewTabs();
-  renderFolderContent(win, folderName);
-  return win;
 }
+
+// Refresh sidebar + main area on every open finder window when the live
+// R2 sync surfaces new folders or files.
+window.addEventListener('portfolio-updated', () => {
+  document.querySelectorAll('.finder-window').forEach(win => {
+    injectFavorites(win);
+    if (win.dataset.folder) renderFolderContent(win, win.dataset.folder);
+  });
+});
 
 function renderFolderContent(win, folderName) {
   if (!win) return;
