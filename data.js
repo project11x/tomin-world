@@ -451,72 +451,6 @@ export const portfolioData = {
       "isVideo": true
     }
   ],
-  "dist": [
-    {
-      "name": "_headers",
-      "type": "File",
-      "size": "180 B",
-      "date": "Apr 28, 2026",
-      "src": "dist/_headers",
-      "isVideo": false
-    },
-    {
-      "name": "admin.html",
-      "type": "File",
-      "size": "3.1 KB",
-      "date": "Apr 28, 2026",
-      "src": "dist/admin.html",
-      "isVideo": false
-    },
-    {
-      "name": "index.html",
-      "type": "File",
-      "size": "106.5 KB",
-      "date": "Apr 28, 2026",
-      "src": "dist/index.html",
-      "isVideo": false
-    },
-    {
-      "name": "manifest-eddie.json",
-      "type": "File",
-      "size": "542 B",
-      "date": "Apr 28, 2026",
-      "src": "dist/manifest-eddie.json",
-      "isVideo": false
-    },
-    {
-      "name": "manifest-instagram.json",
-      "type": "File",
-      "size": "576 B",
-      "date": "Apr 28, 2026",
-      "src": "dist/manifest-instagram.json",
-      "isVideo": false
-    },
-    {
-      "name": "manifest.json",
-      "type": "File",
-      "size": "520 B",
-      "date": "Apr 28, 2026",
-      "src": "dist/manifest.json",
-      "isVideo": false
-    },
-    {
-      "name": "OneSignalSDKWorker.js",
-      "type": "File",
-      "size": "75 B",
-      "date": "Apr 28, 2026",
-      "src": "dist/OneSignalSDKWorker.js",
-      "isVideo": false
-    },
-    {
-      "name": "status.json",
-      "type": "File",
-      "size": "429 B",
-      "date": "Apr 28, 2026",
-      "src": "dist/status.json",
-      "isVideo": false
-    }
-  ],
   "ftlotg": [
     {
       "name": "ftlotg.mp4",
@@ -535,7 +469,6 @@ export const portfolioData = {
       "isVideo": true
     }
   ],
-  "functions": [],
   "hlfatpch": [
     {
       "name": "how life feels after the paycheck hits HQ.mp4",
@@ -562,88 +495,6 @@ export const portfolioData = {
       "isVideo": true
     }
   ],
-  "icons": [
-    {
-      "name": "bts.png",
-      "type": "Image",
-      "size": "132.2 KB",
-      "date": "Mar 30, 2026",
-      "src": "icons/bts.png",
-      "isVideo": false
-    },
-    {
-      "name": "contact.png",
-      "type": "Image",
-      "size": "476.4 KB",
-      "date": "Mar 28, 2026",
-      "src": "icons/contact.png",
-      "isVideo": false
-    },
-    {
-      "name": "edits.png",
-      "type": "Image",
-      "size": "429.4 KB",
-      "date": "Mar 28, 2026",
-      "src": "icons/edits.png",
-      "isVideo": false
-    },
-    {
-      "name": "finder.png",
-      "type": "Image",
-      "size": "392.9 KB",
-      "date": "Mar 28, 2026",
-      "src": "icons/finder.png",
-      "isVideo": false
-    },
-    {
-      "name": "flavicon.png",
-      "type": "Image",
-      "size": "37.5 KB",
-      "date": "Mar 30, 2026",
-      "src": "icons/flavicon.png",
-      "isVideo": false
-    },
-    {
-      "name": "folder.png",
-      "type": "Image",
-      "size": "54.4 KB",
-      "date": "Mar 28, 2026",
-      "src": "icons/folder.png",
-      "isVideo": false
-    },
-    {
-      "name": "magazine.png",
-      "type": "Image",
-      "size": "458.1 KB",
-      "date": "Mar 28, 2026",
-      "src": "icons/magazine.png",
-      "isVideo": false
-    },
-    {
-      "name": "mail.png",
-      "type": "Image",
-      "size": "361.5 KB",
-      "date": "Apr 25, 2026",
-      "src": "icons/mail.png",
-      "isVideo": false
-    },
-    {
-      "name": "profilepicture.png",
-      "type": "Image",
-      "size": "4.6 MB",
-      "date": "Apr 22, 2026",
-      "src": "icons/profilepicture.png",
-      "isVideo": false
-    },
-    {
-      "name": "tomin-index.png",
-      "type": "Image",
-      "size": "68.2 KB",
-      "date": "Mar 28, 2026",
-      "src": "icons/tomin-index.png",
-      "isVideo": false
-    }
-  ],
   "lindsay lohan": [
     {
       "name": "lindsay lohan.mp4",
@@ -664,56 +515,6 @@ export const portfolioData = {
       "isVideo": true
     }
   ],
-  "public": [
-    {
-      "name": "_headers",
-      "type": "File",
-      "size": "843 B",
-      "date": "Apr 28, 2026",
-      "src": "public/_headers",
-      "isVideo": false
-    },
-    {
-      "name": "manifest-eddie.json",
-      "type": "File",
-      "size": "542 B",
-      "date": "Apr 27, 2026",
-      "src": "public/manifest-eddie.json",
-      "isVideo": false
-    },
-    {
-      "name": "manifest-instagram.json",
-      "type": "File",
-      "size": "576 B",
-      "date": "Apr 27, 2026",
-      "src": "public/manifest-instagram.json",
-      "isVideo": false
-    },
-    {
-      "name": "manifest.json",
-      "type": "File",
-      "size": "520 B",
-      "date": "Apr 27, 2026",
-      "src": "public/manifest.json",
-      "isVideo": false
-    },
-    {
-      "name": "OneSignalSDKWorker.js",
-      "type": "File",
-      "size": "75 B",
-      "date": "Apr 14, 2023",
-      "src": "public/OneSignalSDKWorker.js",
-      "isVideo": false
-    },
-    {
-      "name": "status.json",
-      "type": "File",
-      "size": "429 B",
-      "date": "Apr 26, 2026",
-      "src": "public/status.json",
-      "isVideo": false
-    }
-  ],
   "schimmel in schladming": [
     {
       "name": "schimmel in schladming HQ.mp4",
@@ -722,16 +523,6 @@ export const portfolioData = {
       "date": "Mar 6, 2026",
       "src": "schimmel%20in%20schladming/schimmel%20in%20schladming%20HQ_web.mp4",
       "isVideo": true
-    }
-  ],
-  "src": [
-    {
-      "name": "tailwind.css",
-      "type": "File",
-      "size": "59 B",
-      "date": "Apr 25, 2026",
-      "src": "src/tailwind.css",
-      "isVideo": false
     }
   ],
   "stoical": [
@@ -773,33 +564,6 @@ export const portfolioData = {
       "size": "1.9 MB",
       "date": "Jan 14, 2026",
       "src": "stoical/20260114-Screenshot%202026-01-14%20at%2014.25.49.png",
-      "isVideo": false
-    }
-  ],
-  "test-results": [],
-  "tests": [
-    {
-      "name": "desktop.spec.js",
-      "type": "File",
-      "size": "2.5 KB",
-      "date": "Apr 28, 2026",
-      "src": "tests/desktop.spec.js",
-      "isVideo": false
-    },
-    {
-      "name": "flows.spec.js",
-      "type": "File",
-      "size": "5.9 KB",
-      "date": "Apr 28, 2026",
-      "src": "tests/flows.spec.js",
-      "isVideo": false
-    },
-    {
-      "name": "mobile.spec.js",
-      "type": "File",
-      "size": "1.7 KB",
-      "date": "Apr 28, 2026",
-      "src": "tests/mobile.spec.js",
       "isVideo": false
     }
   ],
@@ -846,4 +610,4 @@ export const portfolioData = {
     }
   ]
 };
-export const globalLatestFileTime = 1777327200000;
+export const globalLatestFileTime = 1774821600000;

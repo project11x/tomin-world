@@ -122,7 +122,10 @@ export function createWindow(folderName) {
     const a = document.createElement('a');
     a.className = "flex items-center space-x-2 px-2 py-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded-md text-[12px] font-medium transition-colors cursor-pointer focus-nav-item select-none";
     a.innerHTML = `<span>${key}</span>`;
-    if (key === folderName) a.classList.add('bg-primary/90', 'text-white');
+    if (key === folderName) {
+      a.classList.add('bg-primary/15', 'text-primary', 'font-semibold');
+      a.classList.remove('text-slate-600', 'dark:text-slate-400');
+    }
     a.onclick = (e) => {
       e.stopPropagation();
       win.dataset.folder = key;
@@ -146,14 +149,16 @@ function renderFolderContent(win, folderName) {
 
   const viewMode = win.dataset.viewMode || 'grid';
 
-  // Update fav selection 
+  // Update fav selection — Finder-style blue tint with bold blue text so the
+  // label stays clearly readable against the light pill (the previous
+  // text-white on bg-primary/90 washed out into the panel background).
   const favLinks = win.querySelectorAll('.favorites-nav a');
   favLinks.forEach(a => {
     if (a.innerText.trim() === folderName) {
-      a.classList.add('bg-primary/90', 'text-white');
+      a.classList.add('bg-primary/15', 'text-primary', 'font-semibold');
       a.classList.remove('text-slate-600', 'dark:text-slate-400');
     } else {
-      a.classList.remove('bg-primary/90', 'text-white');
+      a.classList.remove('bg-primary/15', 'text-primary', 'font-semibold');
       a.classList.add('text-slate-600', 'dark:text-slate-400');
     }
   });

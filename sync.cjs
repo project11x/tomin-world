@@ -39,13 +39,32 @@ function formatDate(date) {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+// Project infrastructure folders that live in the repo but are NOT mirrored
+// to the Cloudflare R2 bucket — they shouldn't surface in the Finder
+// favorites or anywhere else portfolioData is iterated.
+const EXCLUDED_FOLDERS = new Set([
+    'node_modules',
+    'dist',
+    'public',
+    'src',
+    'tests',
+    'test-results',
+    'functions',
+    'icons',
+    'playwright-report',
+    '.git',
+    '.github',
+    '.vite',
+]);
+
 function generateData() {
     const portfolioData = {};
     const items = fs.readdirSync(projectDir);
 
     for (const item of items) {
         // Skip hidden files/folders and self
-        if (item.startsWith('.') || item === 'node_modules') continue;
+        if (item.startsWith('.')) continue;
+        if (EXCLUDED_FOLDERS.has(item)) continue;
         
         const itemPath = path.join(projectDir, item);
         const stat = fs.statSync(itemPath);

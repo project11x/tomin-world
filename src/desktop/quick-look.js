@@ -15,7 +15,13 @@ window.openQuickLook = function (item) {
     contentHtml = `<video class="object-contain block" src="${item.src}" loop playsinline style="width:min(640px,85vw);aspect-ratio:16/9;max-height:75vh;"></video>`;
     qlControls.style.display = '';
   } else {
-    contentHtml = `<img class="max-w-[85vw] max-h-[75vh] object-contain block" src="${item.src}" />`;
+    // Lock the image to a constant viewport height so every Quick Look
+    // window opens at roughly the same Y size, regardless of whether
+    // the photo is portrait, square or landscape — the WIDTH adapts to
+    // the photo's aspect ratio (capped at 85vw for very wide shots).
+    contentHtml = `<img class="block object-contain"
+                        style="height:70vh; width:auto; max-width:85vw; max-height:70vh;"
+                        src="${item.src}" />`;
     qlControls.style.display = 'none';
   }
   quickLookContent.innerHTML = contentHtml;
