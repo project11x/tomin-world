@@ -116,9 +116,20 @@
         expCard.style.transform = 'translateY(0)';
       }
 
-      function flipTransform(toEl, fromRect, toRect) {
-        const dx = fromRect.left - toRect.left;
-        const dy = fromRect.top - toRect.top;
+      // FLIP transform that lands `toEl` on `fromRect` when the card sits at
+      // its CURRENT rect (not the rect at which `toRect` was measured).
+      //
+      // `toRect` was measured while the card was at its FINAL (target) size.
+      // `contentEl` is `position:absolute; top:0; left:0` inside the card, so
+      // when the card snaps to a different rect the contentEl — and every
+      // shared element inside it — moves with it. The naive `from - to`
+      // delta would land the element off by exactly that card movement.
+      // `cardDx`/`cardDy` is the offset between where the card was when we
+      // measured `toRect` and where it is now (or will be at the end of the
+      // animation, in close()).
+      function flipTransform(toEl, fromRect, toRect, cardDx, cardDy) {
+        const dx = (fromRect.left - toRect.left) + (cardDx || 0);
+        const dy = (fromRect.top - toRect.top) + (cardDy || 0);
         const sx = toRect.width ? fromRect.width / toRect.width : 1;
         const sy = toRect.height ? fromRect.height / toRect.height : 1;
         toEl.style.transition = 'none';
@@ -145,9 +156,6 @@
         isOpen = true;
         if (onBeforeOpen) onBeforeOpen();
         expanded.style.display = 'block';
-        // A previous close may have left the card semi-transparent (it cross-
-        // fades out so the compact text shows through earlier). Reset.
-        expCard.style.opacity = '1';
 
         const target = getTarget();
         // 1. Lock the inner layout to its final size (so destinations stay put).
@@ -172,9 +180,16 @@
         });
 
         // 5. FLIP shared expanded elements onto their compact counterparts.
+        //    `p.dst` was measured while the card sat at `target` (full size);
+        //    we just snapped it back to `r0` (compact rect) so contentEl —
+        //    and every child inside it — moved by (target - r0). The FLIP
+        //    transform compensates so the element lands exactly on its
+        //    compact counterpart.
+        const cardDx = target.left - r0.left;
+        const cardDy = target.top - r0.top;
         pairs.forEach(p => {
           const src = p.from.getBoundingClientRect();
-          flipTransform(p.to, src, p.dst);
+          flipTransform(p.to, src, p.dst, cardDx, cardDy);
           // Above any non-shared neighbours.
           if (!p.to.style.zIndex) p.to.style.zIndex = '4';
         });
@@ -232,34 +247,34 @@
           dst: p.from.getBoundingClientRect(),   // compact position to land on
         }));
 
-        // Non-shared content fades out a touch faster so it's gone before
-        // the compact widget starts peeking through — keeps the cross-fade
-        // visually clean.
+        // Non-shared content fades out quickly + early so the card visually
+        // settles into its "looks-like-compact" state well before the shrink
+        // completes. By the time the shrink finishes, only the shared
+        // FLIP'd elements (already at their compact positions) remain — so
+        // hiding the overlay is a seamless swap with the compact widget.
         const fadeEls = resolveFadeEls();
         fadeEls.forEach(el => {
-          el.style.transition = `opacity 180ms ease, transform 240ms ease`;
+          el.style.transition = `opacity 160ms ease, transform 220ms ease`;
           el.style.opacity = '0';
-          el.style.transform = 'translateY(6px)';
+          el.style.transform = 'translateY(4px)';
         });
 
-        // Cross-fade the card itself: starts opaque, fades to transparent in
-        // the back half of the shrink. This lets the compact widget (which
-        // sits underneath the overlay) "auftauchen" early and softly instead
-        // of popping in only when the overlay is finally hidden.
-        const fadeStart = Math.round(__MORPH_DUR * 0.22);
-        const fadeDur = Math.round(__MORPH_DUR * 0.55);
-        const closeCardTrans = cardTransProps +
-          `, opacity ${fadeDur}ms cubic-bezier(0.4, 0, 0.7, 0.2) ${fadeStart}ms`;
+        // Card movement delta — `p.src` was measured while card sat at
+        // its current (expanded) rect; by the end of close it'll be at `r`
+        // (compact). contentEl follows the card, so the FLIP transform
+        // needs to compensate for that movement to actually land on `p.dst`.
+        const expandedRectNow = expCard.getBoundingClientRect();
 
         requestAnimationFrame(() => {
           if (isOpen) return;
           const r = widget.getBoundingClientRect();
-          setCardRect(r, compactRadius, closeCardTrans);
-          expCard.style.opacity = '0';
+          setCardRect(r, compactRadius, cardTransProps);
+          const cardDx = expandedRectNow.left - r.left;
+          const cardDy = expandedRectNow.top - r.top;
 
           pairs.forEach(p => {
-            const dx = p.dst.left - p.src.left;
-            const dy = p.dst.top - p.src.top;
+            const dx = (p.dst.left - p.src.left) + cardDx;
+            const dy = (p.dst.top - p.src.top) + cardDy;
             const sx = p.src.width ? p.dst.width / p.src.width : 1;
             const sy = p.src.height ? p.dst.height / p.src.height : 1;
             p.to.style.transition = `transform ${__MORPH_DUR}ms ${__MORPH_SPRING}`;
@@ -273,7 +288,6 @@
         setTimeout(() => {
           if (isOpen) return;
           expanded.style.display = 'none';
-          expCard.style.opacity = '1';
           unlockContent();
           pairs.forEach(p => {
             clearFlip(p.to);
