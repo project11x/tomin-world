@@ -298,6 +298,19 @@
             el.style.opacity = '';
             el.style.transform = '';
           });
+          // Compact widget appears now — play a brief blur→sharp pulse so its
+          // text "wakes up" into focus instead of hard-swapping in.
+          widget.classList.remove('widget-settle-in');
+          // Force a reflow so re-adding the class restarts the animation
+          // even if the previous run hadn't been cleaned up yet.
+          void widget.offsetWidth;
+          widget.classList.add('widget-settle-in');
+          const onSettleEnd = (e) => {
+            if (e.target !== widget || e.animationName !== 'widgetSettleIn') return;
+            widget.classList.remove('widget-settle-in');
+            widget.removeEventListener('animationend', onSettleEnd);
+          };
+          widget.addEventListener('animationend', onSettleEnd);
           if (onAfterClose) onAfterClose();
         }, __MORPH_DUR + 60);
       }

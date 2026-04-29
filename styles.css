@@ -489,6 +489,30 @@
       animation: ilaTextSwap 0.55s cubic-bezier(0.2, 0.7, 0.2, 1);
     }
 
+    /* Smart-stack widget settles into focus after the expanded overlay closes:
+       a brief blur→sharp pulse so the compact text doesn't just hard-swap
+       in, it visibly "wakes up" into the slot. */
+    @keyframes widgetSettleIn {
+      0% {
+        filter: blur(7px);
+        opacity: 0.4;
+      }
+
+      55% {
+        filter: blur(2px);
+        opacity: 0.85;
+      }
+
+      100% {
+        filter: blur(0);
+        opacity: 1;
+      }
+    }
+
+    .widget-settle-in {
+      animation: widgetSettleIn 0.32s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
     /* System Pulse widget — live dot pulse */
     @keyframes sysPulse {
 
