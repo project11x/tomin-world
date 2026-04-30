@@ -23,8 +23,8 @@
         instagram: { src: 'icons/icon%20alts/fuck%20instagram.png', name: 'fuck instagram' }
       };
       var choice, theme;
-      try { 
-        choice = localStorage.getItem('app-icon-choice'); 
+      try {
+        choice = localStorage.getItem('app-icon-choice');
         theme = localStorage.getItem('ios-theme') || 'auto';
       } catch (e) { }
 
@@ -54,8 +54,8 @@
         name: cfg.name, short_name: cfg.name,
         description: "Shouli's creative portfolio",
         start_url: '.', scope: '/', display: 'standalone',
-        orientation: 'portrait', 
-        background_color: pwaColor, 
+        orientation: 'portrait',
+        background_color: pwaColor,
         theme_color: pwaColor,
         icons: [
           { src: cfg.src, sizes: '256x256', type: 'image/png', purpose: 'any' },
@@ -82,8 +82,7 @@
     window.__osInitError = null;
   </script>
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer
-    onload="window.__osScriptStatus='loaded'"
-    onerror="window.__osScriptStatus='error'"></script>
+    onload="window.__osScriptStatus='loaded'" onerror="window.__osScriptStatus='error'"></script>
   <script>
     OneSignalDeferred.push(async function (OneSignal) {
       try {
@@ -159,7 +158,8 @@
   <header
     class="fixed top-0 left-0 w-full z-50 flex items-center h-8 px-4 justify-between bg-white/40 dark:bg-black/40 backdrop-blur-2xl border-b border-white/30 dark:border-white/8 transition-colors duration-150 ease-in-out">
     <div class="flex items-center space-x-4">
-      <span id="top-eddie" class="text-[14px] font-bold text-slate-900 dark:text-slate-100 px-2 tracking-normal cursor-pointer"
+      <span id="top-eddie"
+        class="text-[14px] font-bold text-slate-900 dark:text-slate-100 px-2 tracking-normal cursor-pointer"
         style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">EDDIE</span>
       <nav class="hidden md:flex items-center space-x-1">
         <a class="text-slate-900 dark:text-white font-semibold hover:bg-slate-200/50 dark:hover:bg-slate-700/50 rounded px-2 py-0.5 text-[13px] tracking-tight transition-colors"
@@ -459,23 +459,11 @@
           style="width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,0.08); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; text-decoration:none; backdrop-filter:blur(10px);">
           <span class="material-symbols-outlined" style="font-size:20px; color:#fff;">chat_bubble</span>
         </a>
-        <a href="mailto:eddie@shouli.de"
-          style="width:50px; height:50px; border-radius:50%; background:rgba(255,255,255,0.08); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; text-decoration:none; backdrop-filter:blur(10px);">
-          <span class="material-symbols-outlined" style="font-size:20px; color:#fff;">mail</span>
-        </a>
       </div>
 
       <!-- Info card: email + instagram -->
       <div
         style="background:rgba(255,255,255,0.08); border-radius:14px; overflow:hidden; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08); margin-bottom:14px; backdrop-filter:blur(10px);">
-        <a href="mailto:eddie@shouli.de" class="ios-contact-row">
-          <div style="flex:1; min-width:0;">
-            <div class="ios-contact-label" style="color:rgba(255,255,255,0.6);">email</div>
-            <div class="ios-contact-value" style="color:#fff;">eddie@shouli.de</div>
-          </div>
-          <span class="material-symbols-outlined ios-contact-trailing" style="color:rgba(255,255,255,0.6);">mail</span>
-        </a>
-        <div style="height:1px; background:rgba(255,255,255,0.1); margin-left:16px;"></div>
         <a href="https://instagram.com/edpz" target="_blank" rel="noopener" class="ios-contact-row">
           <div style="flex:1; min-width:0;">
             <div class="ios-contact-label" style="color:rgba(255,255,255,0.6);">instagram</div>
@@ -487,7 +475,8 @@
       </div>
 
       <!-- Desktop Push Toggle -->
-      <div style="background:rgba(255,255,255,0.08); border-radius:14px; padding:12px 16px; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08); backdrop-filter:blur(10px); margin-bottom:14px;">
+      <div
+        style="background:rgba(255,255,255,0.08); border-radius:14px; padding:12px 16px; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08); backdrop-filter:blur(10px); margin-bottom:14px;">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
           <p style="color:#fff; font-size:15px; font-weight:600; margin:0;">Benachrichtigungen</p>
           <button id="desktop-push-toggle" role="switch" aria-checked="false"
@@ -587,20 +576,6 @@
     <!-- safe area spacer -->
     <div style="height:env(safe-area-inset-top, 0px); flex-shrink:0;"></div>
 
-    <!-- Dynamic Island (prototype) -->
-    <div id="dyn-island" title="Tap to cycle demo states">
-      <div class="dyn-compact">
-        <span class="dyn-dot"></span>
-      </div>
-      <div class="dyn-expanded">
-        <div class="dyn-icon" id="dyn-icon">●</div>
-        <div class="dyn-text">
-          <div class="dyn-text-title" id="dyn-title">Dynamic Island</div>
-          <div class="dyn-text-sub" id="dyn-sub">Tap to cycle</div>
-        </div>
-        <div class="dyn-trailing" id="dyn-trailing">demo</div>
-      </div>
-    </div>
 
     <!-- Empty homescreen wallpaper area -->
     <div class="flex-1"></div>
@@ -1171,12 +1146,6 @@
           </div>
         </div>
 
-        <!-- Mail -->
-        <div class="ios-dock-item ios-intro-item cursor-pointer" data-ios-app="mail" style="display: none;">
-          <div class="w-[62px] h-[62px] drop-shadow-md">
-            <img src="icons/mail.png" class="w-full h-full object-contain" draggable="false" />
-          </div>
-        </div>
 
       </div>
     </div>
@@ -1409,24 +1378,11 @@
             style="width:54px; height:54px; border-radius:50%; background:rgba(255,255,255,0.08); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; -webkit-tap-highlight-color:transparent; text-decoration:none; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);">
             <span class="material-symbols-outlined" style="font-size:22px; color:#fff;">chat_bubble</span>
           </a>
-          <a href="mailto:eddie@shouli.de" class="ios-quick-action"
-            style="width:54px; height:54px; border-radius:50%; background:rgba(255,255,255,0.08); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; -webkit-tap-highlight-color:transparent; text-decoration:none; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);">
-            <span class="material-symbols-outlined" style="font-size:22px; color:#fff;">mail</span>
-          </a>
         </div>
 
         <!-- Info list card: email + instagram -->
         <div
           style="background:rgba(255,255,255,0.08); border-radius:14px; overflow:hidden; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.08); margin-bottom:18px; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);">
-          <a href="mailto:eddie@shouli.de" class="ios-contact-row">
-            <div style="flex:1; min-width:0;">
-              <div class="ios-contact-label" style="color:rgba(255,255,255,0.6);">email</div>
-              <div class="ios-contact-value" style="color:#fff;">eddie@shouli.de</div>
-            </div>
-            <span class="material-symbols-outlined ios-contact-trailing"
-              style="color:rgba(255,255,255,0.6);">mail</span>
-          </a>
-          <div style="height:1px; background:rgba(255,255,255,0.1); margin-left:16px;"></div>
           <a href="https://instagram.com/edpz" target="_blank" rel="noopener" class="ios-contact-row">
             <div style="flex:1; min-width:0;">
               <div class="ios-contact-label" style="color:rgba(255,255,255,0.6);">instagram</div>
@@ -1468,7 +1424,8 @@
                   style="position:absolute; top:2px; left:2px; width:27px; height:27px; border-radius:50%; background:#fff; box-shadow:0 3px 8px rgba(0,0,0,0.15), 0 3px 1px rgba(0,0,0,0.06); transition:transform 0.2s ease;"></span>
               </button>
             </div>
-            <p id="ios-push-hint" style="color:rgba(255,255,255,0.6); font-size:13px; line-height:1.45; margin:8px 0 0;">
+            <p id="ios-push-hint"
+              style="color:rgba(255,255,255,0.6); font-size:13px; line-height:1.45; margin:8px 0 0;">
               Updates direkt aufs Handy.
             </p>
           </div>
@@ -1510,132 +1467,6 @@
     </div><!-- end scroll container -->
   </div><!-- end ios-contact-app -->
 
-  <!-- iOS Mail App -->
-  <div id="ios-mail-app" class="ios-app-overlay fixed inset-0 z-[90] flex flex-col"
-    style="display:none; background:var(--ios-app-bg); transform:scale(0.4); opacity:0; border-radius:40px;">
-
-    <!-- === Inbox list screen === -->
-    <div id="ios-mail-screen-list" class="flex flex-col flex-1 min-h-0 relative">
-      <!-- Back button -->
-      <div class="shrink-0 px-5" style="padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:12px;">
-        <button data-ios-close="mail"
-          class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
-          style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
-          <span class="material-symbols-outlined" style="font-size:22px; color:var(--ios-text);">chevron_left</span>
-        </button>
-      </div>
-
-      <!-- Message count + divider + list -->
-      <div class="flex-1 overflow-y-auto px-5" style="padding-bottom: 92px;">
-        <p id="ios-mail-count" style="font-size:14px; color:var(--ios-text-secondary); padding:6px 0 8px;">1 Message</p>
-        <div style="height:1px; background:var(--ios-list-border);"></div>
-
-        <!-- Message row -->
-        <div class="ios-mail-row" data-action="mail-open">
-          <!-- Avatar bubble -->
-          <div
-            style="width:44px; height:44px; border-radius:50%; background:var(--ios-segmented-bg); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:13px; font-weight:600; color:var(--ios-text-secondary); letter-spacing:0.05em;">
-            ED</div>
-          <!-- Name + To -->
-          <div style="flex:1; min-width:0;">
-            <div style="font-size:16px; font-weight:600; color:var(--ios-text); line-height:1.2;">Eddie</div>
-            <div style="font-size:14px; color:var(--ios-text-secondary); line-height:1.3; margin-top:2px;">
-              To: <span style="color:var(--ios-text-secondary); opacity:0.65;">You</span>
-              <span style="margin-left:4px; opacity:0.45;">›</span>
-            </div>
-          </div>
-          <!-- Timestamp -->
-          <div
-            style="font-size:14px; color:var(--ios-text-secondary); flex-shrink:0; align-self:flex-start; padding-top:2px;">
-            Yesterday</div>
-        </div>
-      </div>
-
-      <!-- Bottom-right action pill -->
-      <div class="ios-mail-actions">
-        <a href="mailto:eddie@shouli.de" title="Reply">
-          <span class="material-symbols-outlined">reply</span>
-        </a>
-        <a href="mailto:eddie@shouli.de" title="New Mail">
-          <span class="material-symbols-outlined">mail</span>
-        </a>
-      </div>
-    </div>
-
-    <!-- === Message detail screen === -->
-    <div id="ios-mail-screen-detail" class="absolute inset-0 flex flex-col"
-      style="display:none; background:var(--ios-app-bg);">
-      <!-- Back button -->
-      <div class="shrink-0 px-5" style="padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:12px;">
-        <button data-ios-close="mail-back"
-          class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
-          style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
-          <span class="material-symbols-outlined" style="font-size:22px; color:var(--ios-text);">chevron_left</span>
-        </button>
-      </div>
-
-      <!-- Scrollable body -->
-      <div class="flex-1 overflow-y-auto px-5" style="padding-bottom: 92px;">
-        <!-- Subject -->
-        <h1
-          style="font-size:22px; font-weight:700; color:var(--ios-text); line-height:1.2; letter-spacing:-0.01em; padding-top:4px;">
-          Welcome to tomin.world</h1>
-
-        <!-- From / To meta -->
-        <div
-          style="display:flex; align-items:center; gap:12px; padding:16px 0 18px; border-bottom:1px solid var(--ios-list-border);">
-          <div
-            style="width:40px; height:40px; border-radius:50%; background:var(--ios-segmented-bg); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:12px; font-weight:600; color:var(--ios-text-secondary);">
-            ED</div>
-          <div style="flex:1; min-width:0;">
-            <div style="font-size:15px; color:var(--ios-text);"><span style="font-weight:600;">Eddie</span> <span
-                style="color:var(--ios-text-secondary);">&lt;eddie@shouli.de&gt;</span></div>
-            <div style="font-size:13px; color:var(--ios-text-secondary); margin-top:2px;">To: You</div>
-          </div>
-          <div style="font-size:13px; color:var(--ios-text-secondary); flex-shrink:0;">Yesterday</div>
-        </div>
-
-        <!-- Email body — functional content moved from old contact app -->
-        <div style="padding-top:18px; font-size:15px; color:var(--ios-text); line-height:1.55;">
-          <p style="margin:0 0 14px;">Moin 👋</p>
-          <p style="margin:0 0 14px;">Schön dass du hier bist. Ein paar Links und Sachen die du mit meiner Seite machen
-            kannst:</p>
-
-          <!-- Info card (was at top of old contact app) -->
-          <div
-            style="margin-top:16px; background:var(--ios-card-bg); border-radius:12px; overflow:hidden; box-shadow:0 0 0 1px var(--ios-card-border);">
-            <div
-              style="display:flex; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--ios-card-border);">
-              <span style="color:var(--ios-text-secondary); font-size:15px;">Website</span>
-              <span style="color:var(--ios-text); font-size:15px;">2.0</span>
-            </div>
-            <a href="https://instagram.com/edpz" target="_blank" rel="noopener"
-              style="display:flex; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--ios-card-border); text-decoration:none; -webkit-tap-highlight-color:transparent;">
-              <span style="color:var(--ios-text-secondary); font-size:15px;">Instagram</span>
-              <span style="color:var(--ios-text); font-size:15px;">@edpz</span>
-            </a>
-            <a href="mailto:eddie@shouli.de"
-              style="display:flex; justify-content:space-between; padding:14px 16px; text-decoration:none; -webkit-tap-highlight-color:transparent;">
-              <span style="color:var(--ios-text-secondary); font-size:15px;">Mail</span>
-              <span style="color:var(--ios-text); font-size:15px;">eddie@shouli.de</span>
-            </a>
-          </div>
-
-          <p style="margin:22px 0 0; color:var(--ios-text-secondary); font-size:14px;">— Eddie</p>
-        </div>
-      </div>
-
-      <!-- Bottom-right action pill -->
-      <div class="ios-mail-actions">
-        <a href="mailto:eddie@shouli.de" title="Reply">
-          <span class="material-symbols-outlined">reply</span>
-        </a>
-        <a href="mailto:eddie@shouli.de" title="New Mail">
-          <span class="material-symbols-outlined">mail</span>
-        </a>
-      </div>
-    </div>
-  </div>
 
   <!-- Magazine Reader Workspace -->
   <section id="magazine-reader" class="fixed inset-0 z-[100] pointer-events-none overflow-hidden"

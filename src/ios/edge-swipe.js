@@ -32,14 +32,7 @@
       match: () => isShown('ios-contact-app'),
       back: () => window.iosCloseContact && window.iosCloseContact(),
     },
-    { // Mail — message detail view
-      match: () => isShown('ios-mail-app') && isShown('ios-mail-screen-detail'),
-      back: () => window.iosMailBackToList && window.iosMailBackToList(),
-    },
-    { // Mail — inbox list
-      match: () => isShown('ios-mail-app'),
-      back: () => window.iosCloseMail && window.iosCloseMail(),
-    },
+
   ];
 
   function isShown(id) {

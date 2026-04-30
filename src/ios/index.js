@@ -678,40 +678,7 @@ import { safePlayVideo, killOtherVideos, attachBeachball } from '../utils/video.
     }, 300);
   };
 
-  // ---- iOS Mail App ----
-  const iosMailApp = document.getElementById('ios-mail-app');
-  const iosMailScreenList = document.getElementById('ios-mail-screen-list');
-  const iosMailScreenDet = document.getElementById('ios-mail-screen-detail');
 
-  window.iosOpenMail = function (event) {
-    const iconEl = event ? event.currentTarget : null;
-    setThemeColorForApp();
-    // always open on the inbox list
-    iosMailScreenList.style.display = 'flex';
-    iosMailScreenDet.style.display = 'none';
-    iosMailApp.classList.remove('closing');
-    performIosAppTransition(iosMailApp, iconEl, true);
-  };
-
-  window.iosCloseMail = function () {
-    setThemeColorForScreen();
-    iosMailApp.classList.add('closing');
-    performIosAppTransition(iosMailApp, null, false);
-    setTimeout(() => {
-      iosMailApp.style.display = 'none';
-      iosMailApp.classList.remove('closing');
-    }, 300);
-  };
-
-  window.iosMailOpenMessage = function () {
-    iosMailScreenDet.style.display = 'flex';
-    iosMailScreenList.style.display = 'none';
-  };
-
-  window.iosMailBackToList = function () {
-    iosMailScreenList.style.display = 'flex';
-    iosMailScreenDet.style.display = 'none';
-  };
 
   // ---- iOS BTS App ----
   const iosBtsApp = document.getElementById('ios-bts-app');

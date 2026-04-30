@@ -43,10 +43,8 @@ import { setDarkMode, setTheme } from './system-bar.js';
     edits: 'iosCloseEdits',
     bts: 'iosCloseBts',
     contact: 'iosCloseContact',
-    mail: 'iosCloseMail',
     'bts-back': 'iosBtsBackToFolders',
     'bts-viewer': 'iosBtsCloseViewer',
-    'mail-back': 'iosMailBackToList',
   };
   $$('[data-ios-close]').forEach((el) => {
     on(el, () => {
@@ -65,9 +63,5 @@ import { setDarkMode, setTheme } from './system-bar.js';
     on(el, () => window.setAppIcon(el.dataset.appIcon, el));
   });
 
-  // Mail open
-  $$('[data-action="mail-open"]').forEach((el) => {
-    on(el, () => window.iosMailOpenMessage());
-  });
 })();
 
