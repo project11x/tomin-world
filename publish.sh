@@ -249,20 +249,59 @@ while IFS= read -r -d '' f; do
   UPLOAD_FILES+=("$f")
 done < <(find "$PROJECT_DIR" -type f -print0)
 
-echo -e "  ${#UPLOAD_FILES[@]} file(s) to upload."
+TOTAL_BYTES=0
+for f in "${UPLOAD_FILES[@]}"; do
+  TOTAL_BYTES=$((TOTAL_BYTES + $(stat -f%z "$f")))
+done
+TOTAL_HUMAN=$(numfmt --to=iec-i --suffix=B --format='%.1f' "$TOTAL_BYTES" 2>/dev/null || echo "${TOTAL_BYTES}B")
+echo -e "  ${#UPLOAD_FILES[@]} file(s), ${TOTAL_HUMAN} total."
 
 if $DRY_RUN; then
   for f in "${UPLOAD_FILES[@]}"; do
     rel="${f#$REPO_DIR/}"
-    echo -e "  ${DIM}→ would upload: $rel${NC}"
+    sz=$(numfmt --to=iec-i --suffix=B --format='%.1f' "$(stat -f%z "$f")" 2>/dev/null || stat -f%z "$f")
+    echo -e "  ${DIM}→ would upload: $rel (${sz})${NC}"
   done
 else
-  for f in "${UPLOAD_FILES[@]}"; do
-    rel="${f#$REPO_DIR/}"
-    echo -e "  ${DIM}→ $rel${NC}"
-    npx --yes wrangler r2 object put "${R2_BUCKET}/${rel}" --file="$f" --remote >/dev/null
-  done
-  echo -e "${GREEN}✓ Uploaded ${#UPLOAD_FILES[@]} file(s)${NC}"
+  PARALLEL="${R2_PARALLEL:-4}"
+  echo -e "  ${DIM}Uploading up to ${PARALLEL} files in parallel…${NC}"
+  START_TS=$(date +%s)
+  TOTAL=${#UPLOAD_FILES[@]}
+
+  # Worker function: upload one file, print a counter line on completion.
+  # Counter is incremented atomically via a flock-protected file so parallel
+  # workers don't clobber each other's writes.
+  COUNTER_FILE=$(mktemp -t r2pub.XXXXXX)
+  echo 0 > "$COUNTER_FILE"
+  export R2_BUCKET REPO_DIR COUNTER_FILE TOTAL DIM GREEN RED NC
+
+  printf '%s\0' "${UPLOAD_FILES[@]}" | \
+    xargs -0 -P "$PARALLEL" -I {} bash -c '
+      f="$1"
+      rel="${f#$REPO_DIR/}"
+      sz=$(numfmt --to=iec-i --suffix=B --format="%.1f" "$(stat -f%z "$f")" 2>/dev/null || stat -f%z "$f")
+      if npx --yes wrangler r2 object put "${R2_BUCKET}/${rel}" --file="$f" --remote >/dev/null 2>&1; then
+        # Atomic increment + print under flock so output stays clean.
+        (
+          flock 9
+          n=$(($(cat "$COUNTER_FILE") + 1))
+          echo "$n" > "$COUNTER_FILE"
+          printf "  [%d/%d] ✓ %s (%s)\n" "$n" "$TOTAL" "$rel" "$sz"
+        ) 9>>"$COUNTER_FILE.lock"
+      else
+        ( flock 9; printf "  ✗ FAILED %s\n" "$rel" ) 9>>"$COUNTER_FILE.lock"
+        exit 1
+      fi
+    ' _ {}
+
+  RC=$?
+  rm -f "$COUNTER_FILE" "$COUNTER_FILE.lock"
+  ELAPSED=$(($(date +%s) - START_TS))
+  if [ "$RC" -ne 0 ]; then
+    echo -e "${RED}✗ One or more uploads failed.${NC}"
+    exit 1
+  fi
+  echo -e "${GREEN}✓ Uploaded ${TOTAL} file(s) in ${ELAPSED}s${NC}"
 fi
 
 # ─────────────────────────────────────────────────────────────────────
