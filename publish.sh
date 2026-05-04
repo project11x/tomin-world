@@ -36,23 +36,97 @@ REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 # ─────────────────────────────────────────────────────────────────────
 # Args
 # ─────────────────────────────────────────────────────────────────────
-PROJECT="${1:-}"
+PROJECT=""
 DRY_RUN=false
 for arg in "$@"; do
-  if [ "$arg" = "--dry-run" ]; then DRY_RUN=true; fi
+  case "$arg" in
+    --dry-run) DRY_RUN=true ;;
+    *) [ -z "$PROJECT" ] && PROJECT="$arg" ;;
+  esac
 done
 
-if [ -z "$PROJECT" ] || [ "$PROJECT" = "--dry-run" ]; then
-  echo -e "${BLUE}Portfolio Publish Assistant${NC}"
-  echo -e "Usage: $0 \"Project Name\" [--dry-run]"
-  echo ""
-  read -r -p "Project name (folder name on disk): " PROJECT
-  if [ -z "$PROJECT" ]; then
-    echo -e "${RED}No project name given.${NC}"; exit 1
+cd "$REPO_DIR"
+
+# ─────────────────────────────────────────────────────────────────────
+# Build the list of publishable units:
+#   - every top-level folder that isn't in sync.cjs's EXCLUDED_FOLDERS
+#   - every magazine subfolder under "TOMIN INDEX.TXT/" (each is its
+#     own publishable unit per sync.cjs's special handling)
+# ─────────────────────────────────────────────────────────────────────
+EXCLUDED="node_modules dist public src tests test-results functions icons playwright-report .git .github .vite"
+list_publishable() {
+  local entry name
+  for entry in "$REPO_DIR"/*/; do
+    name=$(basename "$entry")
+    case " $EXCLUDED " in *" $name "*) continue ;; esac
+    if [ "$name" = "TOMIN INDEX.TXT" ]; then
+      local sub
+      for sub in "$entry"*/; do
+        [ -d "$sub" ] || continue
+        echo "TOMIN INDEX.TXT/$(basename "$sub")"
+      done
+    else
+      echo "$name"
+    fi
+  done
+}
+
+# Interactive arrow-key picker. Falls back to numbered menu if not on a TTY.
+pick_project() {
+  local options=()
+  while IFS= read -r line; do options+=("$line"); done < <(list_publishable)
+  if [ ${#options[@]} -eq 0 ]; then
+    echo -e "${RED}No publishable folders found in $REPO_DIR.${NC}" >&2
+    exit 1
   fi
+
+  if command -v fzf >/dev/null 2>&1; then
+    PROJECT=$(printf '%s\n' "${options[@]}" | fzf --prompt="Pick project › " --height=40% --reverse) || exit 130
+    return
+  fi
+
+  if [ ! -t 0 ] || [ ! -t 1 ]; then
+    echo -e "${RED}No TTY — pass the project name as an argument.${NC}" >&2
+    exit 1
+  fi
+
+  # Pure-bash arrow-key picker.
+  local idx=0 key
+  tput civis 2>/dev/null || true
+  trap 'tput cnorm 2>/dev/null || true' EXIT
+  while true; do
+    echo -e "${BLUE}Pick project (↑/↓, Enter to confirm, q to quit):${NC}" >&2
+    local i
+    for i in "${!options[@]}"; do
+      if [ "$i" -eq "$idx" ]; then
+        echo -e "  ${GREEN}▸ ${options[$i]}${NC}" >&2
+      else
+        echo -e "    ${options[$i]}" >&2
+      fi
+    done
+    IFS= read -rsn1 key
+    if [ "$key" = $'\x1b' ]; then
+      read -rsn2 key
+      case "$key" in
+        '[A') ((idx > 0)) && ((idx--)) ;;
+        '[B') ((idx < ${#options[@]} - 1)) && ((idx++)) ;;
+      esac
+    elif [ "$key" = "" ]; then
+      PROJECT="${options[$idx]}"; break
+    elif [ "$key" = "q" ]; then
+      tput cnorm 2>/dev/null || true; exit 130
+    fi
+    # Redraw: move cursor up by header (1) + option count
+    tput cuu $((${#options[@]} + 1)) 2>/dev/null || true
+    tput ed 2>/dev/null || true
+  done
+  tput cnorm 2>/dev/null || true
+}
+
+if [ -z "$PROJECT" ]; then
+  pick_project
 fi
 
-cd "$REPO_DIR"
 PROJECT_DIR="$REPO_DIR/$PROJECT"
 
 clear
