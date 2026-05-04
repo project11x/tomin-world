@@ -5,6 +5,18 @@ import { makeShareButton } from '../utils/share.js';
 import { folderToSlug, itemToSlug } from '../utils/slugs.js';
 import { isItemRecent } from '../utils/recency.js';
 
+function formatRelativeDate(raw) {
+  if (!raw) return '';
+  const t = Date.parse(raw);
+  if (isNaN(t)) return raw;
+  const diffMs = Date.now() - t;
+  const day = 24 * 60 * 60 * 1000;
+  if (diffMs < day) return 'Heute';
+  if (diffMs < 2 * day) return 'Gestern';
+  if (diffMs < 7 * day) return `vor ${Math.floor(diffMs / day)} Tagen`;
+  return new Date(t).toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
 function pushItemURL(folder, indexWithinFolder, itemName) {
   // Best-effort push so the share button gets a meaningful URL on mobile.
   // The router's applyURL is mobile-skipped, so this is purely cosmetic.
@@ -234,6 +246,7 @@ function popURLToRoot() {
         const newPill = isNew
           ? `<span style="position:absolute;top:10px;left:10px;background:rgba(255,69,58,0.95);color:#fff;font-size:10px;font-weight:700;letter-spacing:0.04em;padding:3px 8px;border-radius:999px;backdrop-filter:blur(8px);box-shadow:0 2px 8px rgba(255,69,58,0.4);z-index:1;">NEU</span>`
           : '';
+        const dateLabel = formatRelativeDate(magObj && magObj.date);
         return `
           <div onclick="iosTapMagazine('${mag.folder.replace(/'/g, "\\'")}',${mag.index})"
             style="-webkit-tap-highlight-color:transparent;cursor:pointer;height:fit-content;">
@@ -244,7 +257,7 @@ function popURLToRoot() {
             : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--ios-text-secondary);font-size:12px;">${mag.name}</div>`}
             </div>
             <p style="color:var(--ios-text);font-weight:600;font-size:13px;margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${mag.name}</p>
-            <p style="color:var(--ios-text-secondary);font-size:11px;margin-top:1px;">Today</p>
+            <p style="color:var(--ios-text-secondary);font-size:11px;margin-top:1px;">${dateLabel}</p>
           </div>`;
       }).join('');
 

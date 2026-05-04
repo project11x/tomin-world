@@ -286,8 +286,16 @@ window.addEventListener('item-closed', () => {
 
 window.addEventListener('popstate', applyURL);
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', applyURL, { once: true });
-} else {
-  applyURL();
+// Defer to a microtask so any synchronous setup queued after the
+// imports in app.js (e.g. the R2_BASE_URL prefix loop on portfolioData)
+// completes before applyURL renders. Without this, a reload at
+// /projects/<folder> opens the finder window with raw, un-prefixed
+// item.src values and every thumbnail shows the broken-image marker.
+function bootApplyURL() {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyURL, { once: true });
+  } else {
+    applyURL();
+  }
 }
+queueMicrotask(bootApplyURL);
