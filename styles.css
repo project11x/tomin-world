@@ -999,28 +999,10 @@
     }
 
 /* ─── View Transitions ──────────────────────────────────────────────
-   Native crossfade is fine, but we soften the easing and shorten it a
-   touch so the morph feels intentional rather than generic. Quick Look
-   gets a subtle scale-up so it pops out of nothing instead of just
-   fading in. */
+   Plain crossfade — no scale, no bounce. Slightly shorter than the
+   browser default so opens / closes feel responsive, not draggy. */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: 220ms;
-  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-::view-transition-new(root) {
-  animation-name: vt-fade-scale-in;
-}
-::view-transition-old(root) {
-  animation-name: vt-fade-out;
-}
-
-@keyframes vt-fade-scale-in {
-  from { opacity: 0; transform: scale(0.985); }
-  to   { opacity: 1; transform: scale(1); }
-}
-@keyframes vt-fade-out {
-  from { opacity: 1; }
-  to   { opacity: 0; }
+  animation-duration: 160ms;
+  animation-timing-function: ease;
 }
