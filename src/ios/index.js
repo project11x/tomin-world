@@ -43,6 +43,9 @@ function popURLToRoot() {
     share.style.cssText += 'background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); margin-right:8px; color:var(--ios-text-secondary);';
     share.style.width = '40px';
     share.style.height = '40px';
+    // Header is flex justify-between; pushing share to the right keeps the
+    // share + close pair tight together on the right edge.
+    share.style.marginLeft = 'auto';
     closeBtn.parentElement.insertBefore(share, closeBtn);
   };
 
