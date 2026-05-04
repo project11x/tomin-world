@@ -313,6 +313,9 @@ function makeDraggable(el, handleSelector) {
   function attachHandler(targetEl, handle) {
     handle.onmousedown = (e) => {
       if (e.target.closest('.cursor-pointer') || e.target.closest('button') || e.target.closest('.btn-close-window')) return;
+      // In share-mode, the modal must stay locked: no drag, no z-index reset
+      // (bringToFront would push it behind the white overlay).
+      if (targetEl.dataset.shareMode === 'true') return;
       bringToFront(targetEl);
 
       const rect = targetEl.getBoundingClientRect();
