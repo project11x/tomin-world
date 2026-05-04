@@ -52,6 +52,26 @@ async function fetchAndMerge(baseUrl) {
 
   let changed = false;
 
+  // Map remote folder keys back onto the existing baked keys when their
+  // NFC-normalised forms match. Without this, a single magazine folder
+  // (e.g. "Numéro Berlin") that exists in R2 with mixed precomposed /
+  // decomposed accent encodings shows up twice in the merged data — one
+  // tile per byte-distinct key.
+  const norm = (s) => String(s || '').normalize('NFC');
+  const bakedKeyByNorm = {};
+  Object.keys(portfolioData).forEach((k) => { bakedKeyByNorm[norm(k)] = k; });
+  const remappedRemote = {};
+  for (const k of Object.keys(remote)) {
+    const target = bakedKeyByNorm[norm(k)] || k;
+    if (remappedRemote[target]) {
+      // Two remote keys collapse onto the same baked folder — concat lists.
+      remappedRemote[target] = remappedRemote[target].concat(remote[k] || []);
+    } else {
+      remappedRemote[target] = remote[k];
+    }
+  }
+  remote = remappedRemote;
+
   // STRICTLY ADDITIVE merge. The earlier version did a full replace +
   // delete-missing, which wiped the baked snapshot the moment the R2
   // listing was incomplete or differently structured. We never touch
