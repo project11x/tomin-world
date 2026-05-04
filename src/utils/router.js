@@ -64,6 +64,7 @@ function showShareOverlay() {
 
 export function dismissShareOverlay() {
   if (!shareOverlayActive) return;
+  markVisited();
   shareOverlayEl.style.opacity = '0';
   shareOverlayEl._btn.style.opacity = '0';
   setTimeout(() => {
@@ -135,8 +136,13 @@ function syncURL() {
   if (og) og.setAttribute('content', title);
 }
 
+function markVisited() {
+  try { sessionStorage.setItem('shouli-visited', '1'); } catch (e) {}
+}
+
 let scheduled = false;
 window.addEventListener('window-changed', () => {
+  markVisited();
   if (scheduled) return;
   scheduled = true;
   requestAnimationFrame(() => { scheduled = false; syncURL(); });
@@ -181,6 +187,13 @@ function applyURL() {
     const it = slugToItem(folder, itemMatch[2]);
     if (!it) return;
 
+    // Detect a fresh external arrival (shared-link visit) vs an in-session
+    // navigation / refresh. Set a session flag once we've shown the site
+    // normally — every subsequent route resolution skips the share-mode.
+    const fromSelf = !!document.referrer && document.referrer.startsWith(location.origin);
+    const visitedThisSession = sessionStorage.getItem('shouli-visited') === '1';
+    const isSharedArrival = !fromSelf && !visitedThisSession && !shareOverlayActive;
+
     if (isMobile) {
       // Mobile: open the item directly via existing iOS handlers.
       const isMag = !!portfolioData[`${folder}/${it.item.name}`];
@@ -202,23 +215,34 @@ function applyURL() {
       return;
     }
 
-    // Desktop: open quick look / magazine + show share overlay.
+    // Desktop: open the item. If this is a shared-link arrival, drop the
+    // white share-mode overlay; otherwise just open it on top of the
+    // existing desktop (an own reload should look like the desktop).
     applying = true;
-    document.querySelectorAll('.finder-window').forEach((w) => w.remove());
+    if (isSharedArrival) {
+      document.querySelectorAll('.finder-window').forEach((w) => w.remove());
+    } else {
+      // Make sure the folder is open behind, like a normal in-app open.
+      const open = Array.from(document.querySelectorAll('.finder-window'))
+        .some((w) => w.dataset.folder === folder);
+      if (!open) createWindow(folder);
+    }
     applying = false;
 
-    showShareOverlay();
-    setTimeout(() => {
-      openItemForRoute(folder, it.index);
-      bumpModalAboveOverlay();
-    }, 50);
-    // Keep enforcing the bump for a short window — bringToFront may run
-    // again as the modal mounts / animates.
-    let bumps = 0;
-    const bumpTimer = setInterval(() => {
-      bumpModalAboveOverlay();
-      if (++bumps > 12 || !shareOverlayActive) clearInterval(bumpTimer);
-    }, 60);
+    if (isSharedArrival) {
+      showShareOverlay();
+      setTimeout(() => {
+        openItemForRoute(folder, it.index);
+        bumpModalAboveOverlay();
+      }, 50);
+      let bumps = 0;
+      const bumpTimer = setInterval(() => {
+        bumpModalAboveOverlay();
+        if (++bumps > 12 || !shareOverlayActive) clearInterval(bumpTimer);
+      }, 60);
+    } else {
+      setTimeout(() => openItemForRoute(folder, it.index), 50);
+    }
     document.title = `${it.item.name} — ${baseTitle()}`;
     return;
   }
