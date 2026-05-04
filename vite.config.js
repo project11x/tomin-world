@@ -1,12 +1,14 @@
 import { defineConfig } from 'vite';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import prerenderProjects from './vite-plugin-prerender.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   root: '.',
   publicDir: 'public',
+  plugins: [prerenderProjects()],
   server: {
     port: 5173,
     strictPort: false,

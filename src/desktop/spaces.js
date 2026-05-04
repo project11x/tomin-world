@@ -310,6 +310,7 @@ btnCloseMagazine.addEventListener('click', () => {
   setTimeout(() => {
     magazineScroller.innerHTML = "";
   }, 500); // clear after animation
+  window.dispatchEvent(new CustomEvent('item-closed'));
 });
 
 const getMagazineViews = () => {

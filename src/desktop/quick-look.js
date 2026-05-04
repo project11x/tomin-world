@@ -1,6 +1,15 @@
 // Quick Look modal — preview an image or video pulled from a finder window.
 import { safePlayVideo, killOtherVideos, attachBeachball } from '../utils/video.js';
 import { bringToFront } from './windows.js';
+import { makeShareButton } from '../utils/share.js';
+
+(function injectQuickLookShare() {
+  const header = document.querySelector('#quick-look-modal .draggable-handle');
+  if (!header) return;
+  const btn = makeShareButton({ size: 18, getUrl: () => location.href, getTitle: () => document.title });
+  btn.style.marginLeft = 'auto';
+  header.appendChild(btn);
+})();
 
 window.openQuickLook = function (item) {
   const quickLookTitle = document.getElementById('quick-look-title');
@@ -114,6 +123,7 @@ window.closeQuickLook = function () {
     quickLookModal.classList.add('hidden');
     quickLookContent.innerHTML = '';
   }, 300);
+  window.dispatchEvent(new CustomEvent('item-closed'));
 };
 
 document.getElementById('btn-close-quick-look').addEventListener('click', window.closeQuickLook);

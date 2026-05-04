@@ -19,6 +19,8 @@ import './src/widgets/weather.js';
 import './src/widgets/smart-stack.js';
 import './src/widgets/portfolio-timeline.js';
 import './src/desktop/ui-bindings.js';
+import './src/desktop/context-menu.js';
+import './src/utils/router.js';
 
 // Prepend R2 base URL to all src values when running in production.
 // Idempotent: skip items that already start with the R2 prefix.

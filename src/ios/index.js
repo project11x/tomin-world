@@ -1,6 +1,28 @@
 // ====== iOS Homescreen Logic ======
 import { portfolioData } from '../../data.js';
 import { safePlayVideo, killOtherVideos, attachBeachball } from '../utils/video.js';
+import { makeShareButton } from '../utils/share.js';
+
+(function injectIosShareButtons() {
+  const inject = (closeBtn) => {
+    if (!closeBtn || closeBtn.dataset.shareInjected) return;
+    closeBtn.dataset.shareInjected = 'true';
+    const share = makeShareButton({ size: 18, getUrl: () => location.href, getTitle: () => document.title });
+    share.style.cssText += 'background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); margin-right:8px; color:var(--ios-text-secondary);';
+    share.style.width = '40px';
+    share.style.height = '40px';
+    closeBtn.parentElement.insertBefore(share, closeBtn);
+  };
+  const tryInject = () => {
+    inject(document.querySelector('#ios-edits-app [data-ios-close="edits"]'));
+    inject(document.querySelector('#ios-mag-screen-reader [data-ios-close="reader"]'));
+  };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', tryInject, { once: true });
+  } else {
+    tryInject();
+  }
+})();
 
 (function () {
   const iosScreen = document.getElementById('ios-screen');

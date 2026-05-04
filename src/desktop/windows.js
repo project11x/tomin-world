@@ -2,12 +2,21 @@
 // item-click router (delegates to magazine reader / quick look in other modules).
 
 import { portfolioData } from '../../data.js';
+import { makeShareButton } from '../utils/share.js';
+import { folderToSlug } from '../utils/slugs.js';
 
 let highestZIndex = 50;
 export function bringToFront(element) {
   if (!element) return;
   highestZIndex++;
   element.style.zIndex = String(highestZIndex);
+  if (element.classList && element.classList.contains('finder-window')) {
+    window.dispatchEvent(new CustomEvent('window-changed'));
+  }
+}
+
+function emitWindowChange() {
+  window.dispatchEvent(new CustomEvent('window-changed'));
 }
 
 const finderTemplate = document.getElementById('finder-window-template');
@@ -94,8 +103,8 @@ export function createWindow(folderName) {
   });
 
   // UI setup
-  win.querySelector('.btn-close-window').onclick = () => win.remove();
-  win.querySelector('.btn-minimize-window').onclick = () => win.remove();
+  win.querySelector('.btn-close-window').onclick = () => { win.remove(); emitWindowChange(); };
+  win.querySelector('.btn-minimize-window').onclick = () => { win.remove(); emitWindowChange(); };
   win.querySelector('.btn-fullscreen-window').onclick = () => toggleFullscreen(win);
 
   const btnGrid = win.querySelector('#btn-view-grid');
@@ -126,6 +135,20 @@ export function createWindow(folderName) {
   document.getElementById('desktop-main').appendChild(win);
   updateViewTabs();
   renderFolderContent(win, folderName);
+
+  // Share button in the title bar (right of view toggles)
+  const viewToggleParent = win.querySelector('#btn-view-grid')?.parentElement?.parentElement;
+  if (viewToggleParent) {
+    const shareBtn = makeShareButton({
+      size: 18,
+      getUrl: () => `${location.origin}/projects/${folderToSlug(win.dataset.folder)}`,
+      getTitle: () => `${win.dataset.folder} — Shouli`,
+    });
+    shareBtn.style.marginLeft = '8px';
+    viewToggleParent.appendChild(shareBtn);
+  }
+
+  emitWindowChange();
   return win;
 }
 
@@ -147,6 +170,7 @@ function injectFavorites(win) {
       e.stopPropagation();
       win.dataset.folder = key;
       renderFolderContent(win, key);
+      emitWindowChange();
     };
     favNav.appendChild(a);
   });
@@ -331,11 +355,13 @@ window.handleItemClick = function (folder, index) {
   const magKey = folder + "/" + item.name;
   if (portfolioData[magKey]) {
     window.openMagazineReader(folder, index);
+    window.dispatchEvent(new CustomEvent('item-opened', { detail: { folder, index } }));
     return;
   }
 
   // Everything else (Images and Videos) goes to Quick Look as default
   window.openQuickLook(item);
+  window.dispatchEvent(new CustomEvent('item-opened', { detail: { folder, index } }));
 };
 
 function toggleFullscreen(win) {
