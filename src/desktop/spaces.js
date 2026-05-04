@@ -8,23 +8,19 @@ import { makeShareButton } from '../utils/share.js';
 
 (function injectMagazineShareButton() {
   const ready = () => {
-    const back = document.getElementById('btn-close-magazine');
-    if (!back || back.dataset.shareInjected) return;
-    back.dataset.shareInjected = 'true';
+    const themeBtn = document.getElementById('mag-theme-toggle');
+    if (!themeBtn || themeBtn.dataset.shareInjected) return;
+    themeBtn.dataset.shareInjected = 'true';
     const share = makeShareButton({
-      size: 18,
+      size: 20,
       getUrl: () => location.href,
       getTitle: () => document.title,
     });
-    // Match the back-button glass-pill look: place it as a sibling next to it.
-    share.className = 'share-btn edits-glass-card';
-    share.style.cssText = `
-      width:42px; height:42px; padding:0; margin-left:8px;
-      display:inline-flex; align-items:center; justify-content:center;
-      border-radius:9999px; cursor:pointer; border:none;
-      color:rgba(15,23,42,0.7);
-    `;
-    back.parentElement.appendChild(share);
+    // Match the existing dark-mode / fullscreen pills on the top-right.
+    share.className = 'share-btn edits-glass-card w-11 h-11 rounded-full cursor-pointer flex items-center justify-center active:opacity-70 transition-opacity';
+    share.style.cssText = '';
+    share.querySelector('.material-symbols-outlined')?.classList.add('text-slate-600', 'dark:text-white/70');
+    themeBtn.parentElement.insertBefore(share, themeBtn);
   };
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', ready, { once: true });
