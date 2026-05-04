@@ -958,60 +958,6 @@
       window.iosWeatherIsOpen = () => morph.isOpen();
     })();
 
-    // ═════════════════════════════════════════════════════════════════════
-    // Dynamic Island (prototype) — tap-to-cycle through demo states so we
-    // can feel the morph. Content is placeholder; plug real triggers later.
-    // ═════════════════════════════════════════════════════════════════════
-    (function () {
-      const island = document.getElementById('dyn-island');
-      if (!island) return;
-      const icon = document.getElementById('dyn-icon');
-      const title = document.getElementById('dyn-title');
-      const sub = document.getElementById('dyn-sub');
-      const trail = document.getElementById('dyn-trailing');
-
-      const DEMO = [
-        { icon: '●', title: 'eddie pushed', sub: 'Fix beachball wobble', trail: 'now' },
-        { icon: '☀', title: 'Good morning', sub: 'Berlin — 14°C, sunny', trail: '↑6:42' },
-        { icon: '✓', title: 'Available', sub: 'Open for new projects', trail: '→ mail' },
-        { icon: '▶', title: 'Opening', sub: 'Edits — Music Videos', trail: '' },
-      ];
-      let idx = 0;
-
-      function showExpanded(state) {
-        icon.textContent = state.icon;
-        title.textContent = state.title;
-        sub.textContent = state.sub;
-        trail.textContent = state.trail || '';
-        trail.style.display = state.trail ? '' : 'none';
-        island.classList.add('is-expanded');
-      }
-      function collapse() {
-        island.classList.remove('is-expanded');
-      }
-
-      // Tap to cycle: if collapsed, expand to next demo state.
-      // If expanded, collapse.
-      island.addEventListener('click', () => {
-        if (island.classList.contains('is-expanded')) {
-          collapse();
-        } else {
-          showExpanded(DEMO[idx % DEMO.length]);
-          idx++;
-        }
-      });
-
-      // Auto-fire a demo once after the iOS screen shows, so visitors see
-      // the morph without needing to tap.
-      setTimeout(() => {
-        if (document.getElementById('ios-screen').style.display !== 'none') {
-          showExpanded(DEMO[0]);
-          setTimeout(collapse, 3500);
-          idx = 1;
-        }
-      }, 2200);
-    })();
-
     // Smart-stack card click bindings (replaces inline onclick handlers).
     (function () {
       const bind = (id, key) => {

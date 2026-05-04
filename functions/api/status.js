@@ -1,43 +1,30 @@
 // Cloudflare Pages Function — admin status proxy.
 // Path: /api/status (PUT)
 //
-// Why this exists:
-//   The previous flow shipped a GitHub PAT to the browser via localStorage.
-//   Even with Cloudflare Access protecting /admin.html, any future XSS would
-//   leak the token. This proxy keeps the PAT server-side as a Pages secret,
-//   while the browser only ever sees its Access cookie.
+// Auth: validates the CF_Authorization JWT cookie issued by Cloudflare Access
+// directly against the team's JWKS. This works whether or not Access injects
+// the Cf-Access-Authenticated-User-Email header (which has been flaky during
+// Access service degradations).
 //
-// Trust model:
-//   Cloudflare Access sits in front of /api/status (configured in the Access
-//   dashboard the same way as /admin.html). When a request reaches this
-//   function it has already been authenticated. We additionally check the
-//   `Cf-Access-Authenticated-User-Email` header against ADMIN_EMAILS so a
-//   misconfigured Access policy can't grant unintended write access.
-//
-// Required Pages env vars (set in dashboard → Settings → Environment variables):
-//   GH_TOKEN       GitHub fine-grained PAT with contents:write on the repo
-//   GH_REPO        e.g. "project11x/tomin-world"
-//   ADMIN_EMAILS   comma-separated allowlist, e.g. "ed.wut@icloud.com"
-//
-// Methods:
-//   PUT /api/status — body is the new status JSON; we commit it to
-//                     public/status.json on the configured repo.
+// Required Pages env vars:
+//   GH_TOKEN              GitHub fine-grained PAT with contents:write
+//   GH_REPO               e.g. "project11x/tomin-world"
+//   ADMIN_EMAILS          comma-separated allowlist
+//   CF_ACCESS_TEAM_DOMAIN e.g. "shouli-admin.cloudflareaccess.com"
+//   CF_ACCESS_AUD         the Access application AUD tag
 
 export async function onRequestPut(context) {
   const { request, env } = context;
 
-  // 1. Auth: trust Cloudflare Access, but verify the email is in our allowlist.
-  const email = request.headers.get('Cf-Access-Authenticated-User-Email');
+  const email = await authenticate(request, env);
   if (!email) return json({ error: 'unauthenticated' }, 401);
 
   const allow = (env.ADMIN_EMAILS || '').split(',').map((s) => s.trim()).filter(Boolean);
   if (!allow.includes(email)) return json({ error: 'forbidden', email }, 403);
 
-  // 2. Validate config.
   if (!env.GH_TOKEN) return json({ error: 'GH_TOKEN not configured' }, 500);
   if (!env.GH_REPO) return json({ error: 'GH_REPO not configured' }, 500);
 
-  // 3. Validate body shape — minimal, just enough to refuse obvious garbage.
   let newStatus;
   try {
     newStatus = await request.json();
@@ -49,7 +36,6 @@ export async function onRequestPut(context) {
     if (!(k in newStatus)) return json({ error: `missing field: ${k}` }, 400);
   }
 
-  // 4. Read current file SHA from GitHub.
   const fileUrl = `https://api.github.com/repos/${env.GH_REPO}/contents/public/status.json`;
   const ghHeaders = {
     Authorization: `token ${env.GH_TOKEN}`,
@@ -63,7 +49,6 @@ export async function onRequestPut(context) {
   }
   const fileData = await getResp.json();
 
-  // 5. Commit the update.
   const body = {
     message: `chore(status): update via admin (${email})`,
     content: btoa(unescape(encodeURIComponent(JSON.stringify(newStatus, null, 2)))),
@@ -82,10 +67,92 @@ export async function onRequestPut(context) {
   return json({ ok: true });
 }
 
-// Reject everything that isn't PUT.
 export async function onRequest(context) {
   if (context.request.method === 'PUT') return onRequestPut(context);
   return json({ error: 'method not allowed' }, 405);
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Auth helpers — verify the Cloudflare Access JWT directly.
+// ─────────────────────────────────────────────────────────────────────────
+
+async function authenticate(request, env) {
+  // Fast path: header (present when Access injects it normally).
+  const headerEmail = request.headers.get('Cf-Access-Authenticated-User-Email');
+  if (headerEmail) return headerEmail;
+
+  // Fallback: validate the CF_Authorization cookie ourselves.
+  if (!env.CF_ACCESS_TEAM_DOMAIN || !env.CF_ACCESS_AUD) return null;
+
+  const cookie = request.headers.get('Cookie') || '';
+  const match = cookie.match(/CF_Authorization=([^;]+)/);
+  if (!match) return null;
+  const token = match[1];
+
+  try {
+    const payload = await verifyJwt(token, env.CF_ACCESS_TEAM_DOMAIN, env.CF_ACCESS_AUD);
+    return payload?.email || null;
+  } catch {
+    return null;
+  }
+}
+
+async function verifyJwt(token, teamDomain, expectedAud) {
+  const [headerB64, payloadB64, sigB64] = token.split('.');
+  if (!headerB64 || !payloadB64 || !sigB64) throw new Error('malformed jwt');
+
+  const header = JSON.parse(b64urlDecodeToString(headerB64));
+  const payload = JSON.parse(b64urlDecodeToString(payloadB64));
+
+  const now = Math.floor(Date.now() / 1000);
+  if (payload.exp && now >= payload.exp) throw new Error('expired');
+  if (payload.nbf && now < payload.nbf) throw new Error('not yet valid');
+  if (payload.iss !== `https://${teamDomain}`) throw new Error('bad issuer');
+  const auds = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
+  if (!auds.includes(expectedAud)) throw new Error('bad audience');
+
+  const jwks = await fetchJwks(teamDomain);
+  const jwk = jwks.keys.find((k) => k.kid === header.kid);
+  if (!jwk) throw new Error('unknown kid');
+
+  const key = await crypto.subtle.importKey(
+    'jwk',
+    jwk,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false,
+    ['verify']
+  );
+  const data = new TextEncoder().encode(`${headerB64}.${payloadB64}`);
+  const signature = b64urlDecodeToBytes(sigB64);
+  const ok = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, signature, data);
+  if (!ok) throw new Error('bad signature');
+
+  return payload;
+}
+
+let jwksCache = { domain: '', expires: 0, value: null };
+async function fetchJwks(teamDomain) {
+  const now = Date.now();
+  if (jwksCache.value && jwksCache.domain === teamDomain && jwksCache.expires > now) {
+    return jwksCache.value;
+  }
+  const resp = await fetch(`https://${teamDomain}/cdn-cgi/access/certs`);
+  if (!resp.ok) throw new Error('jwks fetch failed');
+  const value = await resp.json();
+  jwksCache = { domain: teamDomain, expires: now + 10 * 60 * 1000, value };
+  return value;
+}
+
+function b64urlDecodeToString(s) {
+  return new TextDecoder().decode(b64urlDecodeToBytes(s));
+}
+function b64urlDecodeToBytes(s) {
+  const pad = s.length % 4 === 0 ? '' : '='.repeat(4 - (s.length % 4));
+  const b64 = (s + pad).replace(/-/g, '+').replace(/_/g, '/');
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
 }
 
 function json(obj, status = 200) {
