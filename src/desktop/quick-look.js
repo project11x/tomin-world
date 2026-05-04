@@ -106,23 +106,37 @@ window.openQuickLook = function (item) {
     });
   }
 
-  quickLookModal.classList.remove('hidden');
-  setTimeout(() => {
-    quickLookModal.classList.remove('opacity-0');
-    quickLookModal.classList.add('opacity-100');
-  }, 10);
-  bringToFront(quickLookModal);
+  const reveal = () => {
+    quickLookModal.classList.remove('hidden');
+    setTimeout(() => {
+      quickLookModal.classList.remove('opacity-0');
+      quickLookModal.classList.add('opacity-100');
+    }, 10);
+    bringToFront(quickLookModal);
+  };
+  if (typeof document.startViewTransition === 'function') {
+    document.startViewTransition(reveal);
+  } else {
+    reveal();
+  }
 };
 
 window.closeQuickLook = function () {
   const quickLookModal = document.getElementById('quick-look-modal');
   const quickLookContent = document.getElementById('quick-look-content');
-  quickLookModal.classList.remove('opacity-100');
-  quickLookModal.classList.add('opacity-0');
-  setTimeout(() => {
-    quickLookModal.classList.add('hidden');
-    quickLookContent.innerHTML = '';
-  }, 300);
+  const close = () => {
+    quickLookModal.classList.remove('opacity-100');
+    quickLookModal.classList.add('opacity-0');
+    setTimeout(() => {
+      quickLookModal.classList.add('hidden');
+      quickLookContent.innerHTML = '';
+    }, 300);
+  };
+  if (typeof document.startViewTransition === 'function') {
+    document.startViewTransition(close);
+  } else {
+    close();
+  }
   window.dispatchEvent(new CustomEvent('item-closed'));
 };
 

@@ -33,6 +33,15 @@ document.getElementById('btn-close-about').onclick = () => {
   document.getElementById('about-me-modal').classList.add('hidden');
 };
 
+function withViewTransition(fn) {
+  if (typeof document.startViewTransition === 'function') {
+    let result;
+    document.startViewTransition(() => { result = fn(); });
+    return result;
+  }
+  return fn();
+}
+
 export function createWindow(folderName) {
   if (!folderName || !portfolioData[folderName]) {
     // Fallback to first folder if key not found
@@ -104,8 +113,14 @@ export function createWindow(folderName) {
   });
 
   // UI setup
-  win.querySelector('.btn-close-window').onclick = () => { win.remove(); emitWindowChange(); };
-  win.querySelector('.btn-minimize-window').onclick = () => { win.remove(); emitWindowChange(); };
+  win.querySelector('.btn-close-window').onclick = () => {
+    withViewTransition(() => win.remove());
+    emitWindowChange();
+  };
+  win.querySelector('.btn-minimize-window').onclick = () => {
+    withViewTransition(() => win.remove());
+    emitWindowChange();
+  };
   win.querySelector('.btn-fullscreen-window').onclick = () => toggleFullscreen(win);
 
   const btnGrid = win.querySelector('#btn-view-grid');
@@ -133,7 +148,12 @@ export function createWindow(folderName) {
   // surfaces new folders after the live R2 sync.
   injectFavorites(win);
 
-  document.getElementById('desktop-main').appendChild(win);
+  // Tag for view-transition pairing — folder icon → window morph.
+  win.style.viewTransitionName = `finder-${windowCount}`;
+
+  withViewTransition(() => {
+    document.getElementById('desktop-main').appendChild(win);
+  });
   updateViewTabs();
   renderFolderContent(win, folderName);
 
@@ -229,7 +249,7 @@ function renderRecentView(win) {
   if (folders.length === 0) {
     mainArea.innerHTML = `<div class="flex flex-col items-center justify-center h-full opacity-40 p-8 text-center">
       <span class="material-symbols-outlined text-6xl">new_releases</span>
-      <p class="mt-2 text-sm font-medium">Nothing new in the last 90 days</p>
+      <p class="mt-2 text-sm font-medium">Nothing new in the last 30 days</p>
     </div>`;
     return;
   }

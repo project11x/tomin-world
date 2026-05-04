@@ -3,7 +3,8 @@
 
 import { portfolioData } from '../../data.js';
 
-const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
+// 30-day window — anything added within the last month counts as "new".
+const RECENT_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 
 function parseItemDate(d) {
   if (!d) return 0;
@@ -11,7 +12,7 @@ function parseItemDate(d) {
   return isNaN(t) ? 0 : t;
 }
 
-export function isItemRecent(item, cutoff = Date.now() - NINETY_DAYS_MS) {
+export function isItemRecent(item, cutoff = Date.now() - RECENT_WINDOW_MS) {
   return parseItemDate(item && item.date) >= cutoff;
 }
 
@@ -25,12 +26,12 @@ export function folderLatestTimestamp(folder) {
   return latest;
 }
 
-export function isFolderRecent(folder, cutoff = Date.now() - NINETY_DAYS_MS) {
+export function isFolderRecent(folder, cutoff = Date.now() - RECENT_WINDOW_MS) {
   return folderLatestTimestamp(folder) >= cutoff;
 }
 
 export function recentFolders() {
-  const cutoff = Date.now() - NINETY_DAYS_MS;
+  const cutoff = Date.now() - RECENT_WINDOW_MS;
   return Object.keys(portfolioData)
     .filter((k) => !k.includes('/'))
     .filter((k) => isFolderRecent(k, cutoff))
@@ -38,7 +39,7 @@ export function recentFolders() {
 }
 
 export function recentMagazines() {
-  const cutoff = Date.now() - NINETY_DAYS_MS;
+  const cutoff = Date.now() - RECENT_WINDOW_MS;
   const out = [];
   Object.keys(portfolioData).forEach((folder) => {
     if (folder.includes('/')) return;
@@ -52,7 +53,7 @@ export function recentMagazines() {
 export function recentEdits(collectFn) {
   // collectFn = the iOS module's iosCollectEdits flat list builder.
   // Falls back to scanning every video item with low digit count.
-  const cutoff = Date.now() - NINETY_DAYS_MS;
+  const cutoff = Date.now() - RECENT_WINDOW_MS;
   if (typeof collectFn === 'function') {
     return collectFn().filter((e) => isItemRecent(e, cutoff));
   }
