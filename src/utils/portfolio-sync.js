@@ -73,13 +73,20 @@ async function fetchAndMerge(baseUrl) {
     // baked list. Order is preserved for the existing items; new items
     // get sorted in afterwards (videos first, then alphabetical) to
     // match the rest of the UI.
+    //
+    // Names are normalised to Unicode NFC before comparison — R2 may hand
+    // back precomposed characters (`é` U+00E9) while data.js was generated
+    // with decomposed ones (`e` + U+0301). Without this, "Numéro Berlin"
+    // shows up twice on the magazines grid because the two strings hash
+    // differently even though they render identically.
+    const norm = (s) => String(s || '').normalize('NFC');
     const existing = portfolioData[folderKey];
-    const existingNames = new Set(existing.map((it) => it.name));
+    const existingNames = new Set(existing.map((it) => norm(it.name)));
     let folderChanged = false;
     for (const item of remoteList) {
-      if (item && item.name && !existingNames.has(item.name)) {
+      if (item && item.name && !existingNames.has(norm(item.name))) {
         existing.push(item);
-        existingNames.add(item.name);
+        existingNames.add(norm(item.name));
         folderChanged = true;
       }
     }
