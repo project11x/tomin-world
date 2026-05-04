@@ -224,7 +224,15 @@ if $DRY_RUN; then
   echo -e "${DIM}  (skipped in dry-run)${NC}"
 else
   npm run sync --silent
-  if ! grep -q "\"$PROJECT\"" data.js; then
+  # Normalize both sides to NFC before comparing — macOS stores filenames as
+  # NFD ("e" + combining accent), terminal input is NFC ("é"). They look
+  # identical but byte-compare as different.
+  if ! node -e '
+    const fs = require("fs");
+    const needle = process.argv[1].normalize("NFC");
+    const hay = fs.readFileSync("data.js", "utf8").normalize("NFC");
+    process.exit(hay.includes(`"${needle}"`) ? 0 : 1);
+  ' "$PROJECT"; then
     echo -e "${RED}✗ '$PROJECT' did not appear in data.js after sync.${NC}"
     echo -e "  Check the folder name — sync.cjs might have skipped it."
     exit 1
