@@ -151,7 +151,9 @@ function popURLToRoot() {
     if (isOpen) {
       lastIosAppIcon = iconEl;
 
-      if (supportsVT) {
+      // No icon to morph from (programmatic open, e.g. mobile deep-link).
+      // Skip the view-transition and just show the app instantly.
+      if (supportsVT && iconEl) {
         clearMorphMarkers();
         // Mark the icon as the morph source — captured as OLD state
         iconEl.classList.add('app-morphing');
@@ -866,6 +868,54 @@ function popURLToRoot() {
       iosBtsScreenFolders.style.opacity = '0.4';
       iosBtsScreenFiles.style.transform = 'translateX(0)';
     }));
+  };
+
+  // ---- Mobile deep-link entry: route a shared /projects/<folder>/<item>
+  // URL into the right iOS app (magazine / edits / BTS) and navigate to
+  // the exact item, so the recipient lands on the content directly. ----
+  window.iosOpenItem = function (folder, indexWithinFolder) {
+    const items = portfolioData[folder] || [];
+    const item = items[indexWithinFolder];
+    if (!item) return;
+
+    const isMagazine = !!portfolioData[folder + '/' + item.name];
+    if (isMagazine) {
+      window.iosOpenMagazines && window.iosOpenMagazines();
+      setTimeout(() => window.iosTapMagazine && window.iosTapMagazine(folder, indexWithinFolder), 350);
+      return;
+    }
+
+    // Try the curated Edits flat list first (videos with low digit count).
+    if (item.isVideo) {
+      const edits = iosCollectEdits();
+      const editIdx = edits.findIndex((e) => e.folder === folder && e.name === item.name);
+      if (editIdx >= 0) {
+        window.iosOpenEdits && window.iosOpenEdits();
+        setTimeout(() => iosSelectEdit(editIdx, true), 400);
+        return;
+      }
+    }
+
+    // Fallback: BTS app — drill into folder + open viewer at the matching tile.
+    const btsFiles = iosBtsCollectFiles(folder);
+    const btsIdx = btsFiles.findIndex((f) => f.name === item.name);
+    if (btsIdx < 0) {
+      // Last resort: just open the BTS folder so something happens.
+      window.iosOpenBts && window.iosOpenBts();
+      setTimeout(() => window.iosBtsTapFolder && window.iosBtsTapFolder(folder), 350);
+      return;
+    }
+    window.iosOpenBts && window.iosOpenBts();
+    setTimeout(() => {
+      window.iosBtsTapFolder && window.iosBtsTapFolder(folder);
+      setTimeout(() => window.iosBtsOpenViewer && window.iosBtsOpenViewer(btsIdx), 380);
+    }, 350);
+  };
+
+  window.iosOpenFolder = function (folder) {
+    if (!portfolioData[folder]) return;
+    window.iosOpenBts && window.iosOpenBts();
+    setTimeout(() => window.iosBtsTapFolder && window.iosBtsTapFolder(folder), 350);
   };
 
   window.iosBtsBackToFolders = function () {

@@ -195,23 +195,14 @@ function applyURL() {
     const isSharedArrival = !fromSelf && !visitedThisSession && !shareOverlayActive;
 
     if (isMobile) {
-      // Mobile: open the item directly via existing iOS handlers.
-      const isMag = !!portfolioData[`${folder}/${it.item.name}`];
-      const wait = (cb, n = 30) => {
-        if (n === 0) return;
-        if (isMag && window.iosTapMagazine) { window.iosTapMagazine(folder, it.index); return; }
-        if (!isMag) {
-          // Try edits app first if it's a video
-          if (it.item.isVideo && window.iosOpenEdits) {
-            window.iosOpenEdits();
-            // edits app shows list; we won't auto-select to avoid surprise
-            return;
-          }
-          if (window.iosOpenBts) { window.iosOpenBts(); return; }
-        }
-        setTimeout(() => wait(cb, n - 1), 100);
+      // Wait until the iOS module has registered its dispatcher, then route
+      // the deep-link to the right app + item.
+      const tryOpen = (n = 40) => {
+        if (window.iosOpenItem) { window.iosOpenItem(folder, it.index); return; }
+        if (n <= 0) return;
+        setTimeout(() => tryOpen(n - 1), 80);
       };
-      wait();
+      tryOpen();
       return;
     }
 
@@ -247,7 +238,20 @@ function applyURL() {
     return;
   }
 
-  if (isMobile) return; // mobile keeps its own UI for /
+  if (isMobile) {
+    if (folderMatch) {
+      const folder = slugToFolder(folderMatch[1]);
+      if (folder) {
+        const tryOpen = (n = 40) => {
+          if (window.iosOpenFolder) { window.iosOpenFolder(folder); return; }
+          if (n <= 0) return;
+          setTimeout(() => tryOpen(n - 1), 80);
+        };
+        tryOpen();
+      }
+    }
+    return; // mobile handles its own UI for everything else
+  }
 
   if (folderMatch) {
     const folder = slugToFolder(folderMatch[1]);

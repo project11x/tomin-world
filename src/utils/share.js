@@ -20,12 +20,15 @@ function showToast(msg) {
   toastEl._t = setTimeout(() => { toastEl.style.opacity = '0'; }, 1800);
 }
 
-export async function shareLink({ url, title, text } = {}) {
+export async function shareLink({ url } = {}) {
   const u = url || location.href;
-  const t = title || document.title;
   if (navigator.share) {
     try {
-      await navigator.share({ url: u, title: t, text: text || t });
+      // URL only — let the receiving app pull title / image from the
+      // prerendered page's OG meta. Passing title/text causes platforms
+      // like WhatsApp + iMessage to prefix the link with the site name
+      // ("Shouli — …"), which the user doesn't want.
+      await navigator.share({ url: u });
       return;
     } catch (e) {
       if (e && e.name === 'AbortError') return;
