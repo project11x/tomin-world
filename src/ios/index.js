@@ -3,6 +3,7 @@ import { portfolioData } from '../../data.js';
 import { safePlayVideo, killOtherVideos, attachBeachball } from '../utils/video.js';
 import { makeShareButton } from '../utils/share.js';
 import { folderToSlug, itemToSlug } from '../utils/slugs.js';
+import { isItemRecent } from '../utils/recency.js';
 
 function pushItemURL(folder, indexWithinFolder, itemName) {
   // Best-effort push so the share button gets a meaningful URL on mobile.
@@ -226,17 +227,26 @@ function popURLToRoot() {
 
     iosMagGrid.innerHTML = magazines.length === 0
       ? '<div style="grid-column:1/-1;text-align:center;padding-top:80px;color:var(--ios-text-secondary);font-size:14px;">No magazines found</div>'
-      : magazines.map(mag => `
+      : magazines.map(mag => {
+        const items = portfolioData[mag.folder] || [];
+        const magObj = items[mag.index];
+        const isNew = magObj && isItemRecent(magObj);
+        const newPill = isNew
+          ? `<span style="position:absolute;top:10px;left:10px;background:rgba(255,69,58,0.95);color:#fff;font-size:10px;font-weight:700;letter-spacing:0.04em;padding:3px 8px;border-radius:999px;backdrop-filter:blur(8px);box-shadow:0 2px 8px rgba(255,69,58,0.4);z-index:1;">NEU</span>`
+          : '';
+        return `
           <div onclick="iosTapMagazine('${mag.folder.replace(/'/g, "\\'")}',${mag.index})"
             style="-webkit-tap-highlight-color:transparent;cursor:pointer;height:fit-content;">
-            <div style="border-radius:14px;overflow:hidden;aspect-ratio:3/4;background:#1e293b;box-shadow:0 4px 16px rgba(0,0,0,0.25);">
+            <div style="position:relative;border-radius:14px;overflow:hidden;aspect-ratio:3/4;background:#1e293b;box-shadow:0 4px 16px rgba(0,0,0,0.25);">
+              ${newPill}
               ${mag.cover
-          ? `<img src="${mag.cover}" style="width:100%;height:100%;object-fit:cover;" />`
-          : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--ios-text-secondary);font-size:12px;">${mag.name}</div>`}
+            ? `<img src="${mag.cover}" style="width:100%;height:100%;object-fit:cover;" />`
+            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--ios-text-secondary);font-size:12px;">${mag.name}</div>`}
             </div>
             <p style="color:var(--ios-text);font-weight:600;font-size:13px;margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${mag.name}</p>
             <p style="color:var(--ios-text-secondary);font-size:11px;margin-top:1px;">Today</p>
-          </div>`).join('');
+          </div>`;
+      }).join('');
 
     iosMagazinesApp.classList.remove('closing');
     performIosAppTransition(iosMagazinesApp, iconEl, true);
@@ -455,8 +465,17 @@ function popURLToRoot() {
       const nameNoExt = item.name.replace(/\.[^/.]+$/, '');
       const row = document.createElement('div');
       row.className = 'ios-edit-row';
-      row.style.cssText = 'padding:14px 20px; cursor:pointer; color:var(--ios-text); font-size:15px; font-weight:400; border-bottom:1px solid var(--ios-list-border); -webkit-tap-highlight-color:transparent;';
-      row.textContent = nameNoExt;
+      row.style.cssText = 'padding:14px 20px; cursor:pointer; color:var(--ios-text); font-size:15px; font-weight:400; border-bottom:1px solid var(--ios-list-border); -webkit-tap-highlight-color:transparent; display:flex; align-items:center; gap:10px;';
+      const label = document.createElement('span');
+      label.textContent = nameNoExt;
+      label.style.cssText = 'flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;';
+      row.appendChild(label);
+      if (isItemRecent(item)) {
+        const pill = document.createElement('span');
+        pill.textContent = 'NEU';
+        pill.style.cssText = 'background:rgba(255,69,58,0.95); color:#fff; font-size:9px; font-weight:700; letter-spacing:0.04em; padding:3px 7px; border-radius:999px; flex-shrink:0;';
+        row.appendChild(pill);
+      }
       row.addEventListener('click', () => iosSelectEdit(i));
       iosEditsList.appendChild(row);
     });

@@ -4,6 +4,7 @@
 import { portfolioData } from '../../data.js';
 import { makeShareButton } from '../utils/share.js';
 import { folderToSlug } from '../utils/slugs.js';
+import { recentFolders, isFolderRecent } from '../utils/recency.js';
 
 let highestZIndex = 50;
 export function bringToFront(element) {
@@ -169,11 +170,114 @@ function injectFavorites(win) {
     a.onclick = (e) => {
       e.stopPropagation();
       win.dataset.folder = key;
+      if (win.dataset.viewMode === 'recent') win.dataset.viewMode = 'grid';
       renderFolderContent(win, key);
+      injectFavorites(win);
       emitWindowChange();
     };
     favNav.appendChild(a);
   });
+  bindNewTag(win);
+}
+
+function bindNewTag(win) {
+  const tagsContainer = win.querySelector('aside .mt-auto');
+  if (!tagsContainer) return;
+  const newRow = tagsContainer.querySelector('div.flex.items-center.space-x-2');
+  if (!newRow) return;
+  // Style the row as an interactive pill instead of a static label.
+  newRow.style.cursor = 'pointer';
+  newRow.style.padding = '6px 8px';
+  newRow.style.marginLeft = '-8px';
+  newRow.style.borderRadius = '6px';
+  newRow.style.transition = 'background-color 120ms';
+  newRow.style.userSelect = 'none';
+  const setActive = (on) => {
+    if (on) {
+      newRow.style.background = 'rgba(236,72,153,0.12)';
+      newRow.querySelector('span').style.color = 'rgb(236,72,153)';
+    } else {
+      newRow.style.background = 'transparent';
+      newRow.querySelector('span').style.color = '';
+    }
+  };
+  setActive(win.dataset.viewMode === 'recent');
+  newRow.onmouseenter = () => { if (win.dataset.viewMode !== 'recent') newRow.style.background = 'rgba(127,127,127,0.10)'; };
+  newRow.onmouseleave = () => { if (win.dataset.viewMode !== 'recent') newRow.style.background = 'transparent'; };
+  newRow.onclick = (e) => {
+    e.stopPropagation();
+    win.dataset.viewMode = 'recent';
+    win.dataset.folder = '__recent__';
+    renderRecentView(win);
+    emitWindowChange();
+  };
+}
+
+function renderRecentView(win) {
+  const mainArea = win.querySelector('.finder-main-area');
+  const title = win.querySelector('.finder-title');
+  if (title) title.innerText = 'NEW — Recent Projects';
+
+  // Clear sidebar selection
+  win.querySelectorAll('.favorites-nav a').forEach((a) => {
+    a.classList.remove('bg-primary/15', 'text-primary', 'font-semibold');
+    a.classList.add('text-slate-600', 'dark:text-slate-400');
+  });
+  bindNewTag(win); // re-paint active state
+
+  const folders = recentFolders();
+  if (folders.length === 0) {
+    mainArea.innerHTML = `<div class="flex flex-col items-center justify-center h-full opacity-40 p-8 text-center">
+      <span class="material-symbols-outlined text-6xl">new_releases</span>
+      <p class="mt-2 text-sm font-medium">Nothing new in the last 90 days</p>
+    </div>`;
+    return;
+  }
+
+  let html = `
+    <div class="finder-icon-grid"
+         style="display:grid; grid-template-columns:repeat(auto-fill, minmax(108px, 1fr)); gap:18px 6px; padding:18px 14px; align-content:start;">
+  `;
+  folders.forEach((folderName) => {
+    const items = portfolioData[folderName] || [];
+    const cover = items.find((it) => !it.isVideo && !it.isMagazine && it.src);
+    const thumb = cover
+      ? `<img src="${cover.src}" class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />`
+      : `<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-400 to-pink-600">
+           <span class="material-symbols-outlined text-white text-3xl" style="font-variation-settings:'FILL' 1;">folder</span>
+         </div>`;
+    const safe = folderName.replace(/'/g, "\\'");
+    html += `
+      <div class="finder-icon-item group cursor-pointer"
+           onclick="(window.__openFolderFromRecent || (()=>{}))('${safe}')"
+           style="display:flex; flex-direction:column; align-items:center; gap:4px; padding:4px 2px; border-radius:8px; position:relative;">
+        <div class="finder-icon-thumb"
+             style="width:96px; height:96px; border-radius:10px; overflow:hidden;
+                    background:rgba(148,163,184,0.12); display:flex; align-items:center; justify-content:center;
+                    box-shadow:0 1px 3px rgba(15,23,42,0.08), 0 0 0 1px rgba(15,23,42,0.04);
+                    transition:box-shadow 160ms ease, transform 160ms ease; position:relative;">
+          ${thumb}
+          <span style="position:absolute; top:6px; left:6px; background:rgb(236,72,153); color:#fff; font-size:9px; font-weight:700; letter-spacing:0.04em; padding:2px 6px; border-radius:6px; box-shadow:0 2px 6px rgba(236,72,153,0.4);">NEU</span>
+        </div>
+        <span class="finder-icon-name"
+              style="display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2;
+                     overflow:hidden; text-align:center; word-break:break-word; line-height:1.25;
+                     font-size:11.5px; font-weight:500; color:var(--finder-name-color, rgb(51,65,85));
+                     padding:1.5px 6px; border-radius:5px; max-width:100%;">${folderName}</span>
+      </div>
+    `;
+  });
+  html += `</div>`;
+  mainArea.innerHTML = html;
+
+  // Click handler that opens a folder back in the same window
+  window.__openFolderFromRecent = (folderName) => {
+    win.dataset.viewMode = 'grid';
+    win.dataset.folder = folderName;
+    renderFolderContent(win, folderName);
+    injectFavorites(win);
+    emitWindowChange();
+  };
 }
 
 // Refresh sidebar + main area on every open finder window when the live

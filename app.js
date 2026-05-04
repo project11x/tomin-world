@@ -15,6 +15,7 @@ import './src/desktop/spaces.js';
 import './src/desktop/edits-viewer.js';
 import './src/ios/index.js';
 import './src/ios/edge-swipe.js';
+import './src/ios/badges.js';
 import './src/widgets/weather.js';
 import './src/widgets/smart-stack.js';
 import './src/widgets/portfolio-timeline.js';
