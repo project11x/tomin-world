@@ -1,11 +1,11 @@
 {
   "rightNow": {
-    "title": "🎥 Shooting",
-    "note": "numero berlin 🤞",
-    "statusDetail": "test"
+    "title": "✅ Published",
+    "note": "numero berlin",
+    "statusDetail": ""
   },
   "vibe": {
-    "title": "stuck"
+    "title": "shipping"
   },
   "workingOn": "TOMIN INDEX",
   "availableDoing": [
@@ -18,7 +18,6 @@
     "hyperfocus",
     "referencing",
     "stuck",
-    "shipping",
-    "new"
+    "shipping"
   ]
 }
