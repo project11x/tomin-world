@@ -2,9 +2,41 @@
 import { portfolioData } from '../../data.js';
 import { safePlayVideo, killOtherVideos, attachBeachball } from '../utils/video.js';
 import { makeShareButton } from '../utils/share.js';
+import { folderToSlug, itemToSlug } from '../utils/slugs.js';
+
+function pushItemURL(folder, indexWithinFolder, itemName) {
+  // Best-effort push so the share button gets a meaningful URL on mobile.
+  // The router's applyURL is mobile-skipped, so this is purely cosmetic.
+  let idx = indexWithinFolder;
+  if (idx == null && itemName != null) {
+    const items = portfolioData[folder] || [];
+    idx = items.findIndex((i) => i.name === itemName);
+  }
+  if (idx == null || idx < 0) return;
+  const fs = folderToSlug(folder);
+  const is = itemToSlug(folder, idx);
+  if (!fs || !is) return;
+  const target = `/projects/${fs}/${is}`;
+  if (location.pathname !== target) {
+    try { history.replaceState({}, '', target); } catch (e) {}
+  }
+}
+
+function pushFolderURL(folder) {
+  const fs = folderToSlug(folder);
+  if (!fs) return;
+  const target = `/projects/${fs}`;
+  if (location.pathname !== target) {
+    try { history.replaceState({}, '', target); } catch (e) {}
+  }
+}
+
+function popURLToRoot() {
+  try { history.replaceState({}, '', '/'); } catch (e) {}
+}
 
 (function injectIosShareButtons() {
-  const inject = (closeBtn) => {
+  const injectBeside = (closeBtn) => {
     if (!closeBtn || closeBtn.dataset.shareInjected) return;
     closeBtn.dataset.shareInjected = 'true';
     const share = makeShareButton({ size: 18, getUrl: () => location.href, getTitle: () => document.title });
@@ -13,9 +45,25 @@ import { makeShareButton } from '../utils/share.js';
     share.style.height = '40px';
     closeBtn.parentElement.insertBefore(share, closeBtn);
   };
+
+  const injectInEditsControls = () => {
+    const controls = document.getElementById('ios-edits-controls');
+    if (!controls || controls.dataset.shareInjected) return;
+    controls.dataset.shareInjected = 'true';
+    const share = makeShareButton({ size: 20, getUrl: () => location.href, getTitle: () => document.title });
+    share.style.color = '#fff';
+    share.style.flexShrink = '0';
+    share.style.width = '32px';
+    share.style.height = '32px';
+    // Insert just before the fullscreen icon so the row reads
+    // [play] [scrubber] [time] [share] [fullscreen]
+    const fs = document.getElementById('ios-edits-fullscreen');
+    if (fs) controls.insertBefore(share, fs); else controls.appendChild(share);
+  };
+
   const tryInject = () => {
-    inject(document.querySelector('#ios-edits-app [data-ios-close="edits"]'));
-    inject(document.querySelector('#ios-mag-screen-reader [data-ios-close="reader"]'));
+    injectBeside(document.querySelector('#ios-mag-screen-reader [data-ios-close="reader"]'));
+    injectInEditsControls();
   };
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', tryInject, { once: true });
@@ -233,6 +281,7 @@ import { makeShareButton } from '../utils/share.js';
     const magKey = folder + '/' + magItem.name;
     const pages = portfolioData[magKey] || [];
 
+    pushItemURL(folder, index);
     iosMagReaderTitle.textContent = magItem.name;
     const pageStyle = 'flex:0 0 100vw; width:100vw; min-width:100vw; height:100%; scroll-snap-align:start; overflow:hidden; display:flex; align-items:center; justify-content:center; background:transparent;';
     iosMagReaderPages.innerHTML = pages.length === 0
@@ -282,6 +331,7 @@ import { makeShareButton } from '../utils/share.js';
     iosMagScreenGrid.style.transform = 'translateX(0)';
     iosMagScreenGrid.style.opacity = '1';
     iosMagScreenReader.style.transform = 'translateX(100%)';
+    popURLToRoot();
     setTimeout(() => {
       iosMagScreenReader.style.display = 'none';
       iosMagReaderPages.innerHTML = '';
@@ -374,6 +424,7 @@ import { makeShareButton } from '../utils/share.js';
   function iosSelectEdit(index, autoPlay = true) {
     if (index < 0 || index >= iosEditsItems.length) return;
     const item = iosEditsItems[index];
+    pushItemURL(item.folder, null, item.name);
     iosEditsVideo.src = item.src;
     iosEditsBB.hide();
     if (autoPlay) {
@@ -425,6 +476,7 @@ import { makeShareButton } from '../utils/share.js';
     iosEditsApp.classList.add('closing');
     iosEditsVideo.pause();
     iosEditsVideo.src = '';
+    popURLToRoot();
     performIosAppTransition(iosEditsApp, null, false);
     setTimeout(() => {
       iosEditsApp.style.display = 'none';
@@ -786,6 +838,7 @@ import { makeShareButton } from '../utils/share.js';
   };
 
   window.iosBtsTapFolder = function (folderName) {
+    pushFolderURL(folderName);
     iosBtsCurrentFiles = iosBtsCollectFiles(folderName);
     iosBtsFolderTitle.textContent = folderName;
     if (iosBtsViewerTitle) iosBtsViewerTitle.textContent = folderName;
@@ -816,6 +869,7 @@ import { makeShareButton } from '../utils/share.js';
     iosBtsScreenFolders.style.transform = 'translateX(0)';
     iosBtsScreenFolders.style.opacity = '1';
     iosBtsScreenFiles.style.transform = 'translateX(100%)';
+    popURLToRoot();
     setTimeout(() => { iosBtsScreenFiles.style.display = 'none'; }, 350);
   };
 

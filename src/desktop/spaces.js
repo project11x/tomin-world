@@ -4,6 +4,34 @@
 // travel passes through the desktop (200% distance).
 
 import { portfolioData } from '../../data.js';
+import { makeShareButton } from '../utils/share.js';
+
+(function injectMagazineShareButton() {
+  const ready = () => {
+    const back = document.getElementById('btn-close-magazine');
+    if (!back || back.dataset.shareInjected) return;
+    back.dataset.shareInjected = 'true';
+    const share = makeShareButton({
+      size: 18,
+      getUrl: () => location.href,
+      getTitle: () => document.title,
+    });
+    // Match the back-button glass-pill look: place it as a sibling next to it.
+    share.className = 'share-btn edits-glass-card';
+    share.style.cssText = `
+      width:42px; height:42px; padding:0; margin-left:8px;
+      display:inline-flex; align-items:center; justify-content:center;
+      border-radius:9999px; cursor:pointer; border:none;
+      color:rgba(15,23,42,0.7);
+    `;
+    back.parentElement.appendChild(share);
+  };
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', ready, { once: true });
+  } else {
+    ready();
+  }
+})();
 
 const editsViewer = document.getElementById('edits-viewer');
 const desktopMain = document.getElementById('desktop-main');
