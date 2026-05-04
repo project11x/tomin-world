@@ -175,3 +175,40 @@ if (document.readyState === 'loading') {
 } else {
   init();
 }
+
+// ─── Click-count panel ────────────────────────────────────────────
+async function loadTrack() {
+  const root = document.getElementById('adm-track');
+  if (!root) return;
+  try {
+    const res = await fetch('/api/track', { cache: 'no-store' });
+    if (!res.ok) throw new Error(String(res.status));
+    const data = await res.json();
+    const folders = Object.entries(data.folders || {}).sort((a, b) => b[1].count - a[1].count);
+    const items = Object.entries(data.items || {}).sort((a, b) => b[1].count - a[1].count);
+    const fmt = (entry) => `${entry.count}× <span style="opacity:0.4;">· ${new Date(entry.last).toLocaleDateString('de-DE',{day:'2-digit',month:'short'})}</span>`;
+    const row = (label, entry) => `
+      <div style="display:flex; justify-content:space-between; gap:12px; padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.04);">
+        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${label}</span>
+        <span style="opacity:0.85; flex-shrink:0;">${fmt(entry)}</span>
+      </div>`;
+    let html = '';
+    if (folders.length === 0 && items.length === 0) {
+      html = '<div style="opacity:0.5;">No clicks tracked yet.</div>';
+    } else {
+      if (folders.length) {
+        html += '<div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; opacity:0.5; margin:8px 0 4px;">Folders</div>';
+        html += folders.map(([k, v]) => row(k, v)).join('');
+      }
+      if (items.length) {
+        html += '<div style="font-size:10px; text-transform:uppercase; letter-spacing:0.08em; opacity:0.5; margin:14px 0 4px;">Items</div>';
+        html += items.map(([k, v]) => row(k, v)).join('');
+      }
+    }
+    root.innerHTML = html;
+  } catch (e) {
+    root.innerHTML = `<div style="color:rgba(255,120,120,0.8);">Failed to load: ${(e && e.message) || e}</div>`;
+  }
+}
+loadTrack();
+setInterval(loadTrack, 60000);

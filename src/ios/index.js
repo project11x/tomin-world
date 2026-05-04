@@ -4,6 +4,7 @@ import { safePlayVideo, killOtherVideos, attachBeachball } from '../utils/video.
 import { makeShareButton } from '../utils/share.js';
 import { folderToSlug, itemToSlug } from '../utils/slugs.js';
 import { isItemRecent } from '../utils/recency.js';
+import { trackFolderOpen, trackItemOpen } from '../utils/track.js';
 
 function formatRelativeDate(raw) {
   if (!raw) return '';
@@ -310,6 +311,7 @@ function popURLToRoot() {
     const pages = portfolioData[magKey] || [];
 
     pushItemURL(folder, index);
+    trackItemOpen(folder, index);
     iosMagReaderTitle.textContent = magItem.name;
     const pageStyle = 'flex:0 0 100vw; width:100vw; min-width:100vw; height:100%; scroll-snap-align:start; overflow:hidden; display:flex; align-items:center; justify-content:center; background:transparent;';
     iosMagReaderPages.innerHTML = pages.length === 0
@@ -453,6 +455,7 @@ function popURLToRoot() {
     if (index < 0 || index >= iosEditsItems.length) return;
     const item = iosEditsItems[index];
     pushItemURL(item.folder, null, item.name);
+    trackItemOpen(item.folder, item.name.replace(/\.[^.]+$/, ''));
     iosEditsVideo.src = item.src;
     iosEditsBB.hide();
     if (autoPlay) {
@@ -876,6 +879,7 @@ function popURLToRoot() {
 
   window.iosBtsTapFolder = function (folderName) {
     pushFolderURL(folderName);
+    trackFolderOpen(folderName);
     iosBtsCurrentFiles = iosBtsCollectFiles(folderName);
     iosBtsFolderTitle.textContent = folderName;
     if (iosBtsViewerTitle) iosBtsViewerTitle.textContent = folderName;
