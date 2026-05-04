@@ -75,7 +75,9 @@ export function dismissShareOverlay() {
   shareOverlayActive = false;
   document.body.classList.remove('share-mode');
   const ql = document.getElementById('quick-look-modal');
-  if (ql) delete ql.dataset.shareMode;
+  if (ql) { delete ql.dataset.shareMode; ql.style.zIndex = ''; }
+  const mag = document.getElementById('magazine-reader');
+  if (mag) mag.style.zIndex = '';
   // Open the folder behind so closing the item reveals context.
   const m = location.pathname.match(/^\/projects\/([^/]+)\/[^/]+\/?$/);
   if (m) {
@@ -84,6 +86,13 @@ export function dismissShareOverlay() {
       createWindow(folder);
     }
   }
+}
+
+function bumpModalAboveOverlay() {
+  const ql = document.getElementById('quick-look-modal');
+  const mag = document.getElementById('magazine-reader');
+  if (ql && !ql.classList.contains('hidden') && ql.style.zIndex !== '99998') ql.style.zIndex = '99998';
+  if (mag && Number(mag.style.zIndex || 0) < 99998) mag.style.zIndex = '99998';
 }
 
 function openItemForRoute(folder, itemIndex) {
@@ -199,7 +208,17 @@ function applyURL() {
     applying = false;
 
     showShareOverlay();
-    setTimeout(() => openItemForRoute(folder, it.index), 50);
+    setTimeout(() => {
+      openItemForRoute(folder, it.index);
+      bumpModalAboveOverlay();
+    }, 50);
+    // Keep enforcing the bump for a short window — bringToFront may run
+    // again as the modal mounts / animates.
+    let bumps = 0;
+    const bumpTimer = setInterval(() => {
+      bumpModalAboveOverlay();
+      if (++bumps > 12 || !shareOverlayActive) clearInterval(bumpTimer);
+    }, 60);
     document.title = `${it.item.name} — ${baseTitle()}`;
     return;
   }
