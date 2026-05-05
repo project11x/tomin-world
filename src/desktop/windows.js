@@ -209,6 +209,9 @@ function bindNewTag(win) {
   const newRow = pinkDot?.parentElement;
   if (!newRow) return;
   // Style the row as an interactive pill instead of a static label.
+  // The Tailwind class flags it to the aside's drag handler — without it
+  // the drag logic captures mousedown and the click never fires.
+  newRow.classList.add('cursor-pointer');
   newRow.style.cursor = 'pointer';
   newRow.style.padding = '6px 8px';
   newRow.style.marginLeft = '-8px';
