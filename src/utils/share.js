@@ -54,7 +54,7 @@ export function makeShareButton({ size = 22, title = 'Teilen', getUrl, getTitle,
     background:transparent; border:none; cursor:pointer;
     color:inherit; transition:background-color 120ms ease, transform 120ms ease;
   `;
-  btn.innerHTML = `<span class="material-symbols-outlined" style="font-size:${size}px;">ios_share</span>`;
+  btn.innerHTML = `<span class="material-symbols-rounded" style="font-size:${size}px;">ios_share</span>`;
   btn.addEventListener('mouseenter', () => { btn.style.backgroundColor = 'rgba(127,127,127,0.18)'; });
   btn.addEventListener('mouseleave', () => { btn.style.backgroundColor = 'transparent'; });
   btn.addEventListener('click', (e) => {

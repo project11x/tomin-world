@@ -266,7 +266,7 @@ function renderRecentView(win) {
   });
   if (folders.length === 0 && magazines.length === 0) {
     mainArea.innerHTML = `<div class="flex flex-col items-center justify-center h-full opacity-40 p-8 text-center">
-      <span class="material-symbols-outlined text-6xl">new_releases</span>
+      <span class="material-symbols-rounded text-6xl">new_releases</span>
       <p class="mt-2 text-sm font-medium">Nothing new in the last 30 days</p>
     </div>`;
     return;
@@ -288,7 +288,7 @@ function renderRecentView(win) {
       html += `
         <tr class="group hover:bg-primary/10 dark:hover:bg-white/5 transition-colors cursor-pointer" onclick="(window.__openFolderFromRecent || (()=>{}))('${safe}')">
           <td class="py-2 px-4 flex items-center space-x-2">
-            <span class="material-symbols-outlined text-[14px] text-pink-500 bg-pink-500/15 p-0.5 rounded mr-2" style="font-variation-settings:'FILL' 1;">folder</span>
+            <span class="material-symbols-rounded text-[14px] text-pink-500 bg-pink-500/15 p-0.5 rounded mr-2" style="font-variation-settings:'FILL' 1;">folder</span>
             <span class="text-on-surface dark:text-slate-100 font-semibold group-hover:text-primary dark:group-hover:text-white transition-colors">${folderName}</span>
           </td>
           <td class="py-2 px-2 text-slate-500 dark:text-slate-400">Folder</td>
@@ -301,7 +301,7 @@ function renderRecentView(win) {
       html += `
         <tr class="group hover:bg-primary/10 dark:hover:bg-white/5 transition-colors cursor-pointer" onclick="window.handleItemClick && window.handleItemClick('${safeFolder}', ${idx})">
           <td class="py-2 px-4 flex items-center space-x-2">
-            <span class="material-symbols-outlined text-[14px] text-amber-500 bg-amber-500/15 p-0.5 rounded mr-2">menu_book</span>
+            <span class="material-symbols-rounded text-[14px] text-amber-500 bg-amber-500/15 p-0.5 rounded mr-2">menu_book</span>
             <span class="text-on-surface dark:text-slate-100 font-semibold group-hover:text-primary dark:group-hover:text-white transition-colors">${label}</span>
           </td>
           <td class="py-2 px-2 text-slate-500 dark:text-slate-400">Magazine</td>
@@ -353,7 +353,7 @@ function renderRecentView(win) {
     const thumb = cover
       ? `<img src="${cover.src}" class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />`
       : `<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-400 to-pink-600">
-           <span class="material-symbols-outlined text-white text-3xl" style="font-variation-settings:'FILL' 1;">folder</span>
+           <span class="material-symbols-rounded text-white text-3xl" style="font-variation-settings:'FILL' 1;">folder</span>
          </div>`;
     const safe = folderName.replace(/'/g, "\\'");
     html += cell({
@@ -377,7 +377,7 @@ function renderRecentView(win) {
     const thumb = cover
       ? `<img src="${cover}" class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />`
       : `<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-400 to-amber-600">
-           <span class="material-symbols-outlined text-white text-3xl" style="font-variation-settings:'FILL' 1;">menu_book</span>
+           <span class="material-symbols-rounded text-white text-3xl" style="font-variation-settings:'FILL' 1;">menu_book</span>
          </div>`;
     const safeFolder = folder.replace(/'/g, "\\'");
     html += cell({
@@ -442,7 +442,7 @@ function renderFolderContent(win, folderName) {
 
   if (sortedData.length === 0) {
     mainArea.innerHTML = `<div class="flex flex-col items-center justify-center h-full opacity-40">
-      <span class="material-symbols-outlined text-6xl">folder_open</span>
+      <span class="material-symbols-rounded text-6xl">folder_open</span>
       <p class="mt-2 text-sm font-medium">This folder is empty</p>
     </div>`;
     return;
@@ -465,7 +465,7 @@ function renderFolderContent(win, folderName) {
       html += `
         <tr class="group hover:bg-primary/10 dark:hover:bg-white/5 transition-colors cursor-pointer" onclick="${clickAction}">
           <td class="py-2 px-4 flex items-center space-x-2">
-            <span class="material-symbols-outlined text-[14px] text-sky-500 bg-primary/20 p-0.5 rounded mr-2">${item.isVideo ? 'movie' : 'image'}</span>
+            <span class="material-symbols-rounded text-[14px] text-sky-500 bg-primary/20 p-0.5 rounded mr-2">${item.isVideo ? 'movie' : 'image'}</span>
             <span class="text-on-surface dark:text-slate-100 font-semibold group-hover:text-primary dark:group-hover:text-white transition-colors">${item.name}</span>
           </td>
           <td class="py-2 px-2 text-slate-500 dark:text-slate-400">${item.type}</td>
@@ -493,7 +493,7 @@ function renderFolderContent(win, folderName) {
         const cover = pages.find(p => !p.isVideo && p.src);
         thumb = cover
           ? `<img src="${cover.src}" class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />`
-          : `<div class="w-full h-full flex items-center justify-center bg-slate-200 dark:bg-slate-700"><span class="material-symbols-outlined text-slate-400 text-3xl" style="font-variation-settings:'FILL' 1;">auto_stories</span></div>`;
+          : `<div class="w-full h-full flex items-center justify-center bg-slate-200 dark:bg-slate-700"><span class="material-symbols-rounded text-slate-400 text-3xl" style="font-variation-settings:'FILL' 1;">auto_stories</span></div>`;
       } else if (item.isVideo) {
         thumb = `<video src="${item.src}" class="w-full h-full object-cover" muted preload="metadata" onloadedmetadata="this.currentTime=0.001" style="pointer-events:none;"></video>`;
       } else {

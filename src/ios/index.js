@@ -703,7 +703,7 @@ function popURLToRoot() {
         const check = document.createElement('span');
         check.className = 'icon-pick-check';
         check.style.cssText = 'position:absolute; bottom:-2px; right:-2px; width:20px; height:20px; background:#0a84ff; border-radius:50%; display:flex; align-items:center; justify-content:center;';
-        check.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px; color:#fff;">check</span>';
+        check.innerHTML = '<span class="material-symbols-rounded" style="font-size:14px; color:#fff;">check</span>';
         el.appendChild(check);
       }
     };
@@ -850,7 +850,7 @@ function popURLToRoot() {
             <p style="color:var(--ios-text); font-size:15px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${f.name}</p>
             <p style="color:var(--ios-text-secondary); font-size:13px;">${f.count} items</p>
           </div>
-          <span class="material-symbols-outlined" style="color:var(--ios-text-secondary); font-size:20px;">chevron_right</span>
+          <span class="material-symbols-rounded" style="color:var(--ios-text-secondary); font-size:20px;">chevron_right</span>
         </div>
       `).join('');
 

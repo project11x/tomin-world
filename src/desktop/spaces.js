@@ -19,7 +19,7 @@ import { makeShareButton } from '../utils/share.js';
     // Match the existing dark-mode / fullscreen pills on the top-right.
     share.className = 'share-btn edits-glass-card w-11 h-11 rounded-full cursor-pointer flex items-center justify-center active:opacity-70 transition-opacity';
     share.style.cssText = '';
-    share.querySelector('.material-symbols-outlined')?.classList.add('text-slate-600', 'dark:text-white/70');
+    share.querySelector('.material-symbols-rounded')?.classList.add('text-slate-600', 'dark:text-white/70');
     themeBtn.parentElement.insertBefore(share, themeBtn);
   };
   if (document.readyState === 'loading') {
