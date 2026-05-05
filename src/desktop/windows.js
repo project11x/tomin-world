@@ -136,12 +136,14 @@ export function createWindow(folderName) {
   if (btnGrid) btnGrid.onclick = () => {
     win.dataset.viewMode = 'grid';
     updateViewTabs();
-    renderFolderContent(win, win.dataset.folder);
+    if (win.dataset.folder === '__recent__') renderRecentView(win);
+    else renderFolderContent(win, win.dataset.folder);
   };
   if (btnList) btnList.onclick = () => {
     win.dataset.viewMode = 'list';
     updateViewTabs();
-    renderFolderContent(win, win.dataset.folder);
+    if (win.dataset.folder === '__recent__') renderRecentView(win);
+    else renderFolderContent(win, win.dataset.folder);
   };
 
   // Inject Favorites — extracted so we can re-run it when /api/portfolio
@@ -191,7 +193,7 @@ function injectFavorites(win) {
     a.onclick = (e) => {
       e.stopPropagation();
       win.dataset.folder = key;
-      if (win.dataset.viewMode === 'recent') win.dataset.viewMode = 'grid';
+      if (win.dataset.folder === '__recent__' && !win.dataset.viewMode) win.dataset.viewMode = 'grid';
       renderFolderContent(win, key);
       injectFavorites(win);
       emitWindowChange();
@@ -227,12 +229,12 @@ function bindNewTag(win) {
       newRow.querySelector('span').style.color = '';
     }
   };
-  setActive(win.dataset.viewMode === 'recent');
-  newRow.onmouseenter = () => { if (win.dataset.viewMode !== 'recent') newRow.style.background = 'rgba(127,127,127,0.10)'; };
-  newRow.onmouseleave = () => { if (win.dataset.viewMode !== 'recent') newRow.style.background = 'transparent'; };
+  const isRecent = () => win.dataset.folder === '__recent__';
+  setActive(isRecent());
+  newRow.onmouseenter = () => { if (!isRecent()) newRow.style.background = 'rgba(127,127,127,0.10)'; };
+  newRow.onmouseleave = () => { if (!isRecent()) newRow.style.background = 'transparent'; };
   newRow.onclick = (e) => {
     e.stopPropagation();
-    win.dataset.viewMode = 'recent';
     win.dataset.folder = '__recent__';
     renderRecentView(win);
     emitWindowChange();
@@ -267,6 +269,53 @@ function renderRecentView(win) {
       <span class="material-symbols-outlined text-6xl">new_releases</span>
       <p class="mt-2 text-sm font-medium">Nothing new in the last 30 days</p>
     </div>`;
+    return;
+  }
+
+  if ((win.dataset.viewMode || 'grid') === 'list') {
+    let html = `
+      <table class="w-full text-left text-[12px] border-collapse bg-transparent">
+        <thead class="sticky top-0 bg-white/50 dark:bg-slate-900/80 backdrop-blur-md text-slate-500 font-medium border-b border-slate-200/20 dark:border-white/5 shadow-sm z-10 transition-colors duration-300">
+          <tr>
+            <th class="py-3 px-4 font-semibold w-1/2">Name</th>
+            <th class="py-3 px-2 font-semibold">Type</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100/10 dark:divide-slate-700/50">
+    `;
+    folders.forEach((folderName) => {
+      const safe = folderName.replace(/'/g, "\\'");
+      html += `
+        <tr class="group hover:bg-primary/10 dark:hover:bg-white/5 transition-colors cursor-pointer" onclick="(window.__openFolderFromRecent || (()=>{}))('${safe}')">
+          <td class="py-2 px-4 flex items-center space-x-2">
+            <span class="material-symbols-outlined text-[14px] text-pink-500 bg-pink-500/15 p-0.5 rounded mr-2" style="font-variation-settings:'FILL' 1;">folder</span>
+            <span class="text-on-surface dark:text-slate-100 font-semibold group-hover:text-primary dark:group-hover:text-white transition-colors">${folderName}</span>
+          </td>
+          <td class="py-2 px-2 text-slate-500 dark:text-slate-400">Folder</td>
+        </tr>
+      `;
+    });
+    magazines.forEach(({ folder, idx, item }) => {
+      const safeFolder = folder.replace(/'/g, "\\'");
+      const label = item.name.replace(/\.[^.]+$/, '');
+      html += `
+        <tr class="group hover:bg-primary/10 dark:hover:bg-white/5 transition-colors cursor-pointer" onclick="window.handleItemClick && window.handleItemClick('${safeFolder}', ${idx})">
+          <td class="py-2 px-4 flex items-center space-x-2">
+            <span class="material-symbols-outlined text-[14px] text-amber-500 bg-amber-500/15 p-0.5 rounded mr-2">menu_book</span>
+            <span class="text-on-surface dark:text-slate-100 font-semibold group-hover:text-primary dark:group-hover:text-white transition-colors">${label}</span>
+          </td>
+          <td class="py-2 px-2 text-slate-500 dark:text-slate-400">Magazine</td>
+        </tr>
+      `;
+    });
+    html += `</tbody></table>`;
+    mainArea.innerHTML = html;
+    window.__openFolderFromRecent = (folderName) => {
+      win.dataset.folder = folderName;
+      renderFolderContent(win, folderName);
+      injectFavorites(win);
+      emitWindowChange();
+    };
     return;
   }
 
