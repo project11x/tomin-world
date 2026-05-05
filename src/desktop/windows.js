@@ -202,9 +202,11 @@ function injectFavorites(win) {
 }
 
 function bindNewTag(win) {
-  const tagsContainer = win.querySelector('aside .mt-auto');
-  if (!tagsContainer) return;
-  const newRow = tagsContainer.querySelector('div.flex.items-center.space-x-2');
+  // Anchor on the pink dot — it's unique in the sidebar, so we don't have
+  // to lean on flaky utility-class selectors that can collide with the
+  // traffic-light row at the top of the aside.
+  const pinkDot = win.querySelector('aside .bg-pink-500');
+  const newRow = pinkDot?.parentElement;
   if (!newRow) return;
   // Style the row as an interactive pill instead of a static label.
   newRow.style.cursor = 'pointer';
