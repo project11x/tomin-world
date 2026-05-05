@@ -309,7 +309,13 @@ function renderRecentView(win) {
   // handleItemClick router so the magazine UX is identical to opening
   // from inside its parent folder.
   magazines.forEach(({ folder, idx, item }) => {
-    const cover = item.cover || item.src;
+    // Magazine items don't carry their own image — the cover is the
+    // first picture inside the magazine's sub-folder, stored under
+    // `<parent>/<magazine name>` in portfolioData.
+    const subKey = `${folder}/${item.name}`;
+    const subItems = portfolioData[subKey] || [];
+    const coverItem = subItems.find((it) => !it.isVideo && !it.isMagazine && it.src);
+    const cover = coverItem?.src || item.cover || item.src;
     const thumb = cover
       ? `<img src="${cover}" class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />`
       : `<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-amber-400 to-amber-600">
