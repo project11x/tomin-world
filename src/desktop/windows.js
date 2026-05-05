@@ -5,7 +5,6 @@ import { portfolioData } from '../../data.js';
 import { makeShareButton } from '../utils/share.js';
 import { folderToSlug } from '../utils/slugs.js';
 import { recentFolders, isFolderRecent } from '../utils/recency.js';
-import { trackFolderOpen, trackItemOpen } from '../utils/track.js';
 
 let highestZIndex = 50;
 export function bringToFront(element) {
@@ -157,7 +156,7 @@ export function createWindow(folderName) {
   });
   updateViewTabs();
   renderFolderContent(win, folderName);
-  trackFolderOpen(folderName);
+  window.umami?.track('folder-open', { folder: folderName });
 
   // Share button in the title bar (right of view toggles)
   const viewToggleParent = win.querySelector('#btn-view-grid')?.parentElement?.parentElement;
@@ -479,7 +478,7 @@ setTimeout(() => {
 
 window.handleItemClick = function (folder, index) {
   const item = portfolioData[folder][index];
-  trackItemOpen(folder, index);
+  window.umami?.track('item-open', { folder, item: item?.name || String(index) });
 
   // Handle Magazines/Folders first
   const magKey = folder + "/" + item.name;

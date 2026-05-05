@@ -106,37 +106,30 @@ window.openQuickLook = function (item) {
     });
   }
 
-  const reveal = () => {
-    quickLookModal.classList.remove('hidden');
-    setTimeout(() => {
-      quickLookModal.classList.remove('opacity-0');
-      quickLookModal.classList.add('opacity-100');
-    }, 10);
-    bringToFront(quickLookModal);
-  };
-  if (typeof document.startViewTransition === 'function') {
-    document.startViewTransition(reveal);
-  } else {
-    reveal();
-  }
+  // Raise the z-index BEFORE the modal becomes visible, otherwise it
+  // flashes behind the Finder window for a frame and then jumps to the
+  // front. We also skip View Transitions here — the cross-fade conflicts
+  // with our manual z-index and feels heavier than a plain opacity tween.
+  bringToFront(quickLookModal);
+  quickLookModal.classList.remove('hidden');
+  requestAnimationFrame(() => {
+    quickLookModal.classList.remove('opacity-0');
+    quickLookModal.classList.add('opacity-100');
+  });
 };
 
 window.closeQuickLook = function () {
   const quickLookModal = document.getElementById('quick-look-modal');
   const quickLookContent = document.getElementById('quick-look-content');
-  const close = () => {
-    quickLookModal.classList.remove('opacity-100');
-    quickLookModal.classList.add('opacity-0');
-    setTimeout(() => {
-      quickLookModal.classList.add('hidden');
-      quickLookContent.innerHTML = '';
-    }, 300);
-  };
-  if (typeof document.startViewTransition === 'function') {
-    document.startViewTransition(close);
-  } else {
-    close();
-  }
+  // Plain opacity fade — View Transitions snapshotted the modal at its
+  // current z-index, which made it appear to close BEHIND the Finder
+  // window once the snapshot dissolved.
+  quickLookModal.classList.remove('opacity-100');
+  quickLookModal.classList.add('opacity-0');
+  setTimeout(() => {
+    quickLookModal.classList.add('hidden');
+    quickLookContent.innerHTML = '';
+  }, 300);
   window.dispatchEvent(new CustomEvent('item-closed'));
 };
 
