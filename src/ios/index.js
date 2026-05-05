@@ -4,6 +4,7 @@ import { safePlayVideo, killOtherVideos, attachBeachball } from '../utils/video.
 import { makeShareButton } from '../utils/share.js';
 import { folderToSlug, itemToSlug } from '../utils/slugs.js';
 import { isItemRecent } from '../utils/recency.js';
+import { setIcon } from '../utils/icons.js';
 
 function formatRelativeDate(raw) {
   if (!raw) return '';
@@ -133,10 +134,11 @@ function popURLToRoot() {
       if (!icon) return;
       function upd() {
         const lvl = Math.round(bat.level * 100);
-        icon.textContent = bat.charging ? 'battery_charging_full'
+        const name = bat.charging ? 'battery_charging_full'
           : lvl > 80 ? 'battery_full'
             : lvl > 40 ? 'battery_5_bar'
               : lvl > 10 ? 'battery_2_bar' : 'battery_0_bar';
+        setIcon(icon, name);
       }
       upd();
       bat.addEventListener('levelchange', upd);
@@ -386,8 +388,8 @@ function popURLToRoot() {
     if (iosEditsVideo.requestFullscreen) iosEditsVideo.requestFullscreen();
     else if (iosEditsVideo.webkitEnterFullscreen) iosEditsVideo.webkitEnterFullscreen();
   });
-  iosEditsVideo.addEventListener('play', () => { iosEditsPlayPause.textContent = 'pause_circle'; });
-  iosEditsVideo.addEventListener('pause', () => { iosEditsPlayPause.textContent = 'play_circle'; });
+  iosEditsVideo.addEventListener('play', () => { setIcon(iosEditsPlayPause, 'pause_circle'); });
+  iosEditsVideo.addEventListener('pause', () => { setIcon(iosEditsPlayPause, 'play_circle'); });
   iosEditsVideo.addEventListener('timeupdate', () => {
     if (!iosEditsVideo.duration) return;
     const pct = (iosEditsVideo.currentTime / iosEditsVideo.duration) * 100;

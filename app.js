@@ -7,6 +7,7 @@
 
 import { portfolioData } from './data.js';
 import { bootstrapPortfolioSync } from './src/utils/portfolio-sync.js';
+import './src/utils/icons.js';
 import './src/utils/video.js';
 import './src/desktop/system-bar.js';
 import './src/desktop/windows.js';

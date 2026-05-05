@@ -3,6 +3,7 @@ import { portfolioData } from '../../data.js';
 import { safePlayVideo, killOtherVideos, attachBeachball } from '../utils/video.js';
 import { switchToSpace } from './spaces.js';
 import { createWindow } from './windows.js';
+import { setIcon } from '../utils/icons.js';
 
 const editsViewer = document.getElementById('edits-viewer');
 const editsList = document.getElementById('edits-list');
@@ -63,10 +64,10 @@ const editsTimeEl = document.getElementById('edits-time');
 editsPlayPause.addEventListener('click', () => {
   if (editsVideo.paused) {
     editsVideo.play();
-    editsPlayPause.innerText = 'pause_circle';
+    setIcon(editsPlayPause, 'pause_circle');
   } else {
     editsVideo.pause();
-    editsPlayPause.innerText = 'play_circle';
+    setIcon(editsPlayPause, 'play_circle');
   }
 });
 
@@ -79,8 +80,8 @@ editsVideo.addEventListener('timeupdate', () => {
   editsTimeEl.innerText = `${m}:${s}`;
 });
 
-editsVideo.addEventListener('play', () => { editsPlayPause.innerText = 'pause_circle'; });
-editsVideo.addEventListener('pause', () => { editsPlayPause.innerText = 'play_circle'; });
+editsVideo.addEventListener('play', () => { setIcon(editsPlayPause, 'pause_circle'); });
+editsVideo.addEventListener('pause', () => { setIcon(editsPlayPause, 'play_circle'); });
 
 editsProgressBg.addEventListener('pointerdown', (e) => {
   e.preventDefault();

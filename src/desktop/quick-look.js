@@ -2,6 +2,7 @@
 import { safePlayVideo, killOtherVideos, attachBeachball } from '../utils/video.js';
 import { bringToFront } from './windows.js';
 import { makeShareButton } from '../utils/share.js';
+import { setIcon } from '../utils/icons.js';
 
 (function injectQuickLookShare() {
   const header = document.querySelector('#quick-look-modal .draggable-handle');
@@ -81,8 +82,8 @@ window.openQuickLook = function (item) {
         timeSpan.textContent = `${m}:${s}`;
       }
     });
-    videoEl.addEventListener('play', () => { newPlay.textContent = 'pause_circle'; });
-    videoEl.addEventListener('pause', () => { newPlay.textContent = 'play_circle'; });
+    videoEl.addEventListener('play', () => { setIcon(newPlay, 'pause_circle'); });
+    videoEl.addEventListener('pause', () => { setIcon(newPlay, 'play_circle'); });
 
     newPlay.addEventListener('click', () => { if (videoEl.paused) videoEl.play(); else videoEl.pause(); });
 

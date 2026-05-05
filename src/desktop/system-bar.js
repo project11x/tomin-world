@@ -1,3 +1,5 @@
+import { setIcon } from '../utils/icons.js';
+
 // --- System Bar Logic ---
 function updateClock() {
   const now = new Date();
@@ -17,15 +19,15 @@ if (navigator.getBattery) {
       const level = Math.round(battery.level * 100);
       batText.innerText = `${level}%`;
       if (battery.charging) {
-        batIcon.innerText = 'battery_charging_full';
+        setIcon(batIcon, 'battery_charging_full');
       } else if (level > 80) {
-        batIcon.innerText = 'battery_full';
+        setIcon(batIcon, 'battery_full');
       } else if (level > 40) {
-        batIcon.innerText = 'battery_5_bar';
+        setIcon(batIcon, 'battery_5_bar');
       } else if (level > 10) {
-        batIcon.innerText = 'battery_2_bar';
+        setIcon(batIcon, 'battery_2_bar');
       } else {
-        batIcon.innerText = 'battery_0_bar';
+        setIcon(batIcon, 'battery_0_bar');
       }
     }
     updateBattery();
@@ -76,10 +78,10 @@ function setDarkMode(isDark) {
   }
 
   const icon = isDark ? 'light_mode' : 'dark_mode';
-  if (themeToggle) themeToggle.innerText = icon;
+  if (themeToggle) setIcon(themeToggle, icon);
   if (magThemeToggle) {
-    const iconSpan = magThemeToggle.querySelector('span');
-    if (iconSpan) iconSpan.innerText = icon;
+    const iconSpan = magThemeToggle.querySelector('.bi, span');
+    if (iconSpan) setIcon(iconSpan, icon);
   }
   updateThemeCheckmarks();
 }
