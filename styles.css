@@ -567,6 +567,43 @@
       background: linear-gradient(135deg, #ff3d8b, #ff8fc4) !important;
     }
 
+    /* Fiona on mobile / iOS — extra pink everywhere */
+    .theme-pink #ios-screen {
+      background: linear-gradient(180deg, #ffa8d0 0%, #ff8fc4 50%, #ff5fa6 100%) !important;
+    }
+    .theme-pink #ios-dock,
+    .theme-pink .ios-dock {
+      background: rgba(255, 143, 196, 0.45) !important;
+      backdrop-filter: blur(24px) saturate(1.4);
+      -webkit-backdrop-filter: blur(24px) saturate(1.4);
+      box-shadow: inset 0 0 0 1px rgba(255, 61, 139, 0.35), 0 8px 24px rgba(255, 61, 139, 0.25) !important;
+    }
+    .theme-pink .ios-app-overlay {
+      background: linear-gradient(180deg, #fff5fa 0%, #ffe4f2 35%, #ffc8e0 100%) !important;
+    }
+    /* Let the overlay's pink gradient show through inner sections that hard-code --ios-app-bg */
+    .theme-pink .ios-app-overlay > div[style*="--ios-app-bg"],
+    .theme-pink .ios-app-overlay [style*="background:var(--ios-app-bg)"],
+    .theme-pink .ios-app-overlay [style*="background: var(--ios-app-bg)"] {
+      background: transparent !important;
+    }
+    .dark.theme-pink .ios-app-overlay,
+    .ios-dark.theme-pink .ios-app-overlay {
+      background: linear-gradient(180deg, #3a0f24 0%, #200612 100%) !important;
+    }
+    .theme-pink .ios-status-bar,
+    .theme-pink .ios-app-header {
+      color: #b3004a !important;
+    }
+    .theme-pink #ios-smart-stack,
+    .theme-pink #sstack-frame {
+      box-shadow: 0 12px 28px rgba(255, 61, 139, 0.3) !important;
+    }
+    .theme-pink .desktop-icon span,
+    .theme-pink .ios-app-label {
+      text-shadow: 0 1px 6px rgba(255, 61, 139, 0.5);
+    }
+
     /* Sparkle decoration on hero / portfolio cards */
     .theme-pink #ios-portfolio-card::after,
     .theme-pink #ios-changelog-card::after {

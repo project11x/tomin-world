@@ -534,16 +534,19 @@ function popURLToRoot() {
     document.querySelectorAll('meta[name="theme-color"]').forEach(m => m.content = color);
   }
   function setThemeColorForScreen() {
+    if (window._iosFiona) { setThemeColor('#ff8fc4'); return; }
     setThemeColor(window._iosDark ? '#000000' : '#ffffff');
   }
   function setThemeColorForApp() {
+    if (window._iosFiona) { setThemeColor('#ffb8d9'); return; }
     setThemeColor(window._iosDark ? '#1c1c1e' : '#f2f2f7');
   }
 
-  function applyIosTheme(isDark) {
+  function applyIosTheme(isDark, isFiona) {
     window._iosDark = isDark;
+    window._iosFiona = !!isFiona;
     const html = document.documentElement;
-    
+
     // Synchronize with Tailwind and other global styles
     if (isDark) {
       html.classList.add('dark');
@@ -555,6 +558,11 @@ function popURLToRoot() {
       html.classList.remove('ios-dark');
       html.classList.add('light');
       document.body.classList.remove('ios-dark');
+    }
+    if (isFiona) {
+      html.classList.add('theme-pink');
+    } else {
+      html.classList.remove('theme-pink');
     }
 
     // Update the manifest dynamically so the splash screen matches on next launch
@@ -584,7 +592,9 @@ function popURLToRoot() {
     // Also keep #ios-screen in sync for the dock
     const screen = document.getElementById('ios-screen');
     if (screen) {
-      screen.style.background = isDark ? '#000000' : '#ffffff';
+      screen.style.background = isFiona
+        ? 'linear-gradient(180deg, #ffa8d0 0%, #ff8fc4 50%, #ff5fa6 100%)'
+        : (isDark ? '#000000' : '#ffffff');
     }
     // Update status bar color (check if any app is open)
     const anyAppOpen = document.querySelector('.ios-app-overlay[style*="display: flex"], .ios-app-overlay[style*="display:flex"]');
@@ -593,19 +603,32 @@ function popURLToRoot() {
     const autoBtn = document.getElementById('ios-theme-auto');
     const lightBtn = document.getElementById('ios-theme-light');
     const darkBtn = document.getElementById('ios-theme-dark');
+    const fionaBtn = document.getElementById('ios-theme-fiona');
     if (!autoBtn) return;
     const stored = localStorage.getItem('ios-theme') || 'auto';
-    [autoBtn, lightBtn, darkBtn].forEach(btn => {
+    [autoBtn, lightBtn, darkBtn, fionaBtn].forEach(btn => {
+      if (!btn) return;
       btn.style.background = 'transparent';
       btn.style.color = 'var(--ios-segmented-inactive-text)';
       btn.style.borderRadius = '7px';
       btn.style.boxShadow = 'none';
     });
-    const activeBtn = stored === 'auto' ? autoBtn : stored === 'light' ? lightBtn : darkBtn;
-    activeBtn.style.background = 'var(--ios-segmented-active)';
-    activeBtn.style.color = 'var(--ios-segmented-active-text)';
-    activeBtn.style.borderRadius = '7px';
-    activeBtn.style.boxShadow = isDark ? 'none' : '0 1px 3px rgba(0,0,0,0.12)';
+    const activeBtn = stored === 'auto' ? autoBtn
+      : stored === 'light' ? lightBtn
+      : stored === 'fiona' ? fionaBtn
+      : darkBtn;
+    if (activeBtn) {
+      if (stored === 'fiona') {
+        activeBtn.style.background = 'linear-gradient(135deg, #ff3d8b, #ff8fc4)';
+        activeBtn.style.color = '#fff';
+        activeBtn.style.boxShadow = '0 1px 6px rgba(255,61,139,0.45)';
+      } else {
+        activeBtn.style.background = 'var(--ios-segmented-active)';
+        activeBtn.style.color = 'var(--ios-segmented-active-text)';
+        activeBtn.style.boxShadow = isDark ? 'none' : '0 1px 3px rgba(0,0,0,0.12)';
+      }
+      activeBtn.style.borderRadius = '7px';
+    }
   }
 
   function getSystemDark() {
@@ -615,9 +638,11 @@ function popURLToRoot() {
   window.setIosTheme = function (mode) {
     localStorage.setItem('ios-theme', mode);
     if (mode === 'auto') {
-      applyIosTheme(getSystemDark());
+      applyIosTheme(getSystemDark(), false);
+    } else if (mode === 'fiona') {
+      applyIosTheme(false, true);
     } else {
-      applyIosTheme(mode === 'dark');
+      applyIosTheme(mode === 'dark', false);
     }
   };
 
@@ -625,14 +650,16 @@ function popURLToRoot() {
   (function () {
     const stored = localStorage.getItem('ios-theme') || 'auto';
     if (stored === 'auto') {
-      applyIosTheme(getSystemDark());
+      applyIosTheme(getSystemDark(), false);
+    } else if (stored === 'fiona') {
+      applyIosTheme(false, true);
     } else {
-      applyIosTheme(stored === 'dark');
+      applyIosTheme(stored === 'dark', false);
     }
     // Listen for system changes
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
       const stored = localStorage.getItem('ios-theme') || 'auto';
-      if (stored === 'auto') applyIosTheme(e.matches);
+      if (stored === 'auto') applyIosTheme(e.matches, false);
     });
   })();
 

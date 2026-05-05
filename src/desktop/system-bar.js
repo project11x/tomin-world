@@ -91,8 +91,27 @@ function setTheme(mode) {
   html.classList.remove('theme-glass', 'theme-pink');
   if (mode === 'glass') html.classList.add('theme-glass');
   if (mode === 'pink') html.classList.add('theme-pink');
+  try {
+    if (mode === 'pink') {
+      localStorage.setItem('ios-theme', 'fiona');
+    } else {
+      const stored = localStorage.getItem('ios-theme');
+      if (stored === 'fiona') localStorage.setItem('ios-theme', 'auto');
+    }
+  } catch (e) {}
   updateThemeCheckmarks();
 }
+
+// Sync with the inline pre-apply script: if `theme-pink` was added on load
+// because `ios-theme === 'fiona'`, the dropdown checkmarks should reflect that.
+(function syncFromStorage() {
+  try {
+    const stored = localStorage.getItem('ios-theme');
+    if (stored === 'fiona') {
+      document.documentElement.classList.add('theme-pink');
+    }
+  } catch (e) {}
+})();
 
 updateThemeCheckmarks();
 

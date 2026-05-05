@@ -31,6 +31,7 @@
 
       // Determine if we should use dark splash screen colors
       var isDark = false;
+      var isFiona = theme === 'fiona';
       if (theme === 'dark') {
         isDark = true;
       } else if (theme === 'auto' || !theme) {
@@ -47,9 +48,12 @@
         document.documentElement.classList.remove('dark');
         document.documentElement.classList.remove('ios-dark');
       }
+      if (isFiona) {
+        document.documentElement.classList.add('theme-pink');
+      }
 
       var cfg = ICONS[choice] || ICONS.default;
-      var pwaColor = isDark ? '#000000' : '#ffffff';
+      var pwaColor = isFiona ? '#ff8fc4' : (isDark ? '#000000' : '#ffffff');
 
       var manifest = {
         name: cfg.name, short_name: cfg.name,
@@ -1437,6 +1441,8 @@
                 style="flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:rgba(255,255,255,0.5); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Light</button>
               <button data-ios-theme="dark" id="ios-theme-dark"
                 style="flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:rgba(255,255,255,0.5); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Dark</button>
+              <button data-ios-theme="fiona" id="ios-theme-fiona"
+                style="flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:rgba(255,255,255,0.5); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Fiona</button>
             </div>
           </div>
 
