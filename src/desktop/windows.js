@@ -251,8 +251,17 @@ function renderRecentView(win) {
   });
   bindNewTag(win); // re-paint active state
 
-  const folders = recentFolders();
   const magazines = recentMagazines();
+  // Magazine containers (e.g. "TOMIN INDEX.TXT") only hold magazine
+  // entries — surfacing them as a folder tile is redundant since each
+  // recent magazine is already shown as its own tile below.
+  const magazineHosts = new Set(magazines.map((m) => m.folder));
+  const folders = recentFolders().filter((f) => {
+    const items = portfolioData[f] || [];
+    if (items.length === 0) return false;
+    const everyItemIsMagazine = items.every((it) => it.isMagazine);
+    return !(everyItemIsMagazine && magazineHosts.has(f));
+  });
   if (folders.length === 0 && magazines.length === 0) {
     mainArea.innerHTML = `<div class="flex flex-col items-center justify-center h-full opacity-40 p-8 text-center">
       <span class="material-symbols-outlined text-6xl">new_releases</span>
