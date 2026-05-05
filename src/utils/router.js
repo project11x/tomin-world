@@ -119,10 +119,11 @@ function syncURL() {
   if (wins.length > 0) {
     const focused = wins[wins.length - 1];
     const focusedFolder = focused.dataset.folder || '';
+    if (focusedFolder === '__recent__') return;
     const focusedSlug = folderToSlug(focusedFolder);
     if (!focusedSlug) return;
     const others = wins.slice(0, -1)
-      .map((w) => folderToSlug(w.dataset.folder || ''))
+      .map((w) => w.dataset.folder === '__recent__' ? '' : folderToSlug(w.dataset.folder || ''))
       .filter(Boolean);
     target = `/projects/${focusedSlug}`;
     if (others.length) target += `?also=${others.join(',')}`;
