@@ -1,0 +1,1159 @@
+/* =============================================================
+   Material 3 design tokens.
+
+   Two-layer system:
+   - Reference tonal palettes (per seed) — generated offline from
+     Google's HCT algorithm, prebaked here so we ship no JS dep.
+   - System color tokens (semantic roles) — what components use.
+
+   Switch seed: change .theme-material[data-seed="..."]
+   Switch mode: .dark.theme-material flips system tokens
+
+   Spec reference: m3.material.io/styles/color/system
+   ============================================================= */
+
+
+/* === Reference tonal palettes (seeds) ============================
+   Each seed defines primary / secondary / tertiary / neutral / neutral-variant
+   tonal stops at 0,10,20,30,40,50,60,70,80,90,95,99,100. We only emit
+   the tones that system tokens reference (saves ~60% of the bytes).
+   ================================================================= */
+
+/* ---- Burgundy (default seed: 0xFF984061 → P 358° / 60 chroma) ---- */
+.theme-material[data-seed="burgundy"],
+.theme-material:not([data-seed]) {
+  --md-ref-p-10: #3e0021;
+  --md-ref-p-20: #621237;
+  --md-ref-p-30: #832b4d;
+  --md-ref-p-40: #a14465;
+  --md-ref-p-80: #ffb1c7;
+  --md-ref-p-90: #ffd9e2;
+  --md-ref-p-95: #ffecf0;
+  --md-ref-p-99: #fffbff;
+
+  --md-ref-s-30: #5d3f48;
+  --md-ref-s-80: #e3bdc6;
+  --md-ref-s-90: #ffd9e2;
+
+  --md-ref-t-30: #7c5635;
+  --md-ref-t-80: #f4bb8a;
+  --md-ref-t-90: #ffdcc1;
+
+  --md-ref-n-6:  #1f1a1c;
+  --md-ref-n-10: #201a1c;
+  --md-ref-n-20: #362f31;
+  --md-ref-n-90: #ede0e2;
+  --md-ref-n-95: #fcedef;
+  --md-ref-n-99: #fffbff;
+
+  --md-ref-nv-30: #50434a;
+  --md-ref-nv-50: #82747a;
+  --md-ref-nv-80: #d3c2c8;
+}
+
+/* ---- Forest Green (0xFF2E7D32) ---- */
+.theme-material[data-seed="green"] {
+  --md-ref-p-10: #002204;
+  --md-ref-p-20: #003910;
+  --md-ref-p-30: #00531c;
+  --md-ref-p-40: #006d28;
+  --md-ref-p-80: #6ddd80;
+  --md-ref-p-90: #87fa9a;
+  --md-ref-p-95: #c4ffc7;
+  --md-ref-p-99: #f5fff4;
+
+  --md-ref-s-30: #3a4f3c;
+  --md-ref-s-80: #b9ccb6;
+  --md-ref-s-90: #d5e8d2;
+
+  --md-ref-t-30: #2c4d59;
+  --md-ref-t-80: #abcbe1;
+  --md-ref-t-90: #c8e6fd;
+
+  --md-ref-n-6:  #181d18;
+  --md-ref-n-10: #1a1c19;
+  --md-ref-n-20: #2e312d;
+  --md-ref-n-90: #e1e3dc;
+  --md-ref-n-95: #f0f2eb;
+  --md-ref-n-99: #fbfdf6;
+
+  --md-ref-nv-30: #404943;
+  --md-ref-nv-50: #707972;
+  --md-ref-nv-80: #c0c9bf;
+}
+
+/* ---- Deep Blue (0xFF0061A4) ---- */
+.theme-material[data-seed="blue"] {
+  --md-ref-p-10: #001d36;
+  --md-ref-p-20: #003258;
+  --md-ref-p-30: #00497d;
+  --md-ref-p-40: #0061a4;
+  --md-ref-p-80: #9ecaff;
+  --md-ref-p-90: #d1e4ff;
+  --md-ref-p-95: #e8f1ff;
+  --md-ref-p-99: #fdfcff;
+
+  --md-ref-s-30: #3d4758;
+  --md-ref-s-80: #bbc7db;
+  --md-ref-s-90: #d7e3f7;
+
+  --md-ref-t-30: #56365b;
+  --md-ref-t-80: #efb1f1;
+  --md-ref-t-90: #ffd6fb;
+
+  --md-ref-n-6:  #181c20;
+  --md-ref-n-10: #1a1c1e;
+  --md-ref-n-20: #2f3033;
+  --md-ref-n-90: #e2e2e6;
+  --md-ref-n-95: #f1f0f4;
+  --md-ref-n-99: #fdfcff;
+
+  --md-ref-nv-30: #42474e;
+  --md-ref-nv-50: #72777f;
+  --md-ref-nv-80: #c2c7cf;
+}
+
+/* ---- Coral (0xFFE55934) ---- */
+.theme-material[data-seed="coral"] {
+  --md-ref-p-10: #3b0900;
+  --md-ref-p-20: #621400;
+  --md-ref-p-30: #8c2300;
+  --md-ref-p-40: #b43200;
+  --md-ref-p-80: #ffb59c;
+  --md-ref-p-90: #ffdbcd;
+  --md-ref-p-95: #ffede5;
+  --md-ref-p-99: #fffbff;
+
+  --md-ref-s-30: #6f4937;
+  --md-ref-s-80: #f5b89e;
+  --md-ref-s-90: #ffdbcd;
+
+  --md-ref-t-30: #5b5d2c;
+  --md-ref-t-80: #c8ca77;
+  --md-ref-t-90: #e4e691;
+
+  --md-ref-n-6:  #1d1b1a;
+  --md-ref-n-10: #201a18;
+  --md-ref-n-20: #362f2c;
+  --md-ref-n-90: #ede0db;
+  --md-ref-n-95: #fcede7;
+  --md-ref-n-99: #fffbff;
+
+  --md-ref-nv-30: #53433d;
+  --md-ref-nv-50: #85746c;
+  --md-ref-nv-80: #d8c2ba;
+}
+
+/* ---- Slate (0xFF5C6470 — neutral-only) ---- */
+.theme-material[data-seed="slate"] {
+  --md-ref-p-10: #161c25;
+  --md-ref-p-20: #2b313b;
+  --md-ref-p-30: #424752;
+  --md-ref-p-40: #595f6a;
+  --md-ref-p-80: #c1c7d4;
+  --md-ref-p-90: #dde2f0;
+  --md-ref-p-95: #ecf0fe;
+  --md-ref-p-99: #fdfbff;
+
+  --md-ref-s-30: #444855;
+  --md-ref-s-80: #c4c6d5;
+  --md-ref-s-90: #e0e2f1;
+
+  --md-ref-t-30: #5b3f5e;
+  --md-ref-t-80: #f0b3f3;
+  --md-ref-t-90: #fed6fa;
+
+  --md-ref-n-6:  #1a1c1f;
+  --md-ref-n-10: #1c1c1f;
+  --md-ref-n-20: #313034;
+  --md-ref-n-90: #e4e2e6;
+  --md-ref-n-95: #f2f0f4;
+  --md-ref-n-99: #fdfbff;
+
+  --md-ref-nv-30: #44464f;
+  --md-ref-nv-50: #74777f;
+  --md-ref-nv-80: #c5c6d0;
+}
+
+
+/* === System tokens (what components consume) ====================== */
+
+.theme-material {
+  --md-sys-color-primary: var(--md-ref-p-40);
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: var(--md-ref-p-90);
+  --md-sys-color-on-primary-container: var(--md-ref-p-10);
+
+  --md-sys-color-secondary-container: var(--md-ref-s-90);
+  --md-sys-color-on-secondary-container: #1d1a22;
+
+  --md-sys-color-tertiary-container: var(--md-ref-t-90);
+  --md-sys-color-on-tertiary-container: #2c1600;
+
+  --md-sys-color-surface: var(--md-ref-n-99);
+  --md-sys-color-surface-dim: color-mix(in srgb, var(--md-ref-n-90) 60%, var(--md-ref-n-95));
+  --md-sys-color-surface-bright: var(--md-ref-n-99);
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: color-mix(in srgb, var(--md-ref-n-90) 25%, var(--md-ref-n-99));
+  --md-sys-color-surface-container: color-mix(in srgb, var(--md-ref-n-90) 45%, var(--md-ref-n-99));
+  --md-sys-color-surface-container-high: color-mix(in srgb, var(--md-ref-n-90) 65%, var(--md-ref-n-99));
+  --md-sys-color-surface-container-highest: var(--md-ref-n-90);
+
+  --md-sys-color-on-surface: #1d1b1e;
+  --md-sys-color-on-surface-variant: var(--md-ref-nv-30);
+  --md-sys-color-outline: var(--md-ref-nv-50);
+  --md-sys-color-outline-variant: var(--md-ref-nv-80);
+  --md-sys-color-inverse-surface: var(--md-ref-n-20);
+  --md-sys-color-inverse-on-surface: #f4eef0;
+
+  --md-sys-color-shadow: #000000;
+  --md-sys-color-scrim: #000000;
+
+  /* Motion tokens — M3 standard easings & durations */
+  --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --md-sys-motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --md-sys-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --md-sys-motion-duration-short2: 100ms;
+  --md-sys-motion-duration-medium2: 300ms;
+  --md-sys-motion-duration-long2: 500ms;
+
+  /* Shape tokens */
+  --md-sys-shape-corner-xs: 4px;
+  --md-sys-shape-corner-sm: 8px;
+  --md-sys-shape-corner-md: 12px;
+  --md-sys-shape-corner-lg: 16px;
+  --md-sys-shape-corner-xl: 28px;
+  --md-sys-shape-corner-full: 999px;
+}
+
+.dark.theme-material {
+  --md-sys-color-primary: var(--md-ref-p-80);
+  --md-sys-color-on-primary: var(--md-ref-p-20);
+  --md-sys-color-primary-container: var(--md-ref-p-30);
+  --md-sys-color-on-primary-container: var(--md-ref-p-90);
+
+  --md-sys-color-secondary-container: var(--md-ref-s-30);
+  --md-sys-color-on-secondary-container: #e3e0ed;
+
+  --md-sys-color-tertiary-container: var(--md-ref-t-30);
+  --md-sys-color-on-tertiary-container: var(--md-ref-t-90);
+
+  --md-sys-color-surface: var(--md-ref-n-6);
+  --md-sys-color-surface-dim: var(--md-ref-n-6);
+  --md-sys-color-surface-bright: color-mix(in srgb, var(--md-ref-n-20) 60%, var(--md-ref-n-90) 10%);
+  --md-sys-color-surface-container-lowest: color-mix(in srgb, #000 30%, var(--md-ref-n-6));
+  --md-sys-color-surface-container-low: var(--md-ref-n-10);
+  --md-sys-color-surface-container: color-mix(in srgb, var(--md-ref-n-10) 60%, var(--md-ref-n-20));
+  --md-sys-color-surface-container-high: color-mix(in srgb, var(--md-ref-n-10) 30%, var(--md-ref-n-20));
+  --md-sys-color-surface-container-highest: color-mix(in srgb, var(--md-ref-n-20) 80%, var(--md-ref-n-90) 10%);
+
+  --md-sys-color-on-surface: #e6e1e4;
+  --md-sys-color-on-surface-variant: var(--md-ref-nv-80);
+  --md-sys-color-outline: var(--md-ref-nv-50);
+  --md-sys-color-outline-variant: var(--md-ref-nv-30);
+  --md-sys-color-inverse-surface: var(--md-ref-n-90);
+  --md-sys-color-inverse-on-surface: var(--md-ref-n-20);
+}
+
+
+/* === The Android screen shell ===================================== */
+
+#android-screen {
+  display: none;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font-family: 'Roboto', 'Roboto Flex', system-ui, -apple-system, sans-serif;
+  flex-direction: column;
+}
+
+.theme-material #android-screen {
+  display: flex;
+}
+
+/* Hide the iOS screen when Material is active so we don't double-stack */
+.theme-material #ios-screen {
+  display: none !important;
+}
+
+
+/* === Top App Bar (M3 medium top app bar, simplified) ============== */
+
+.md-top-app-bar {
+  flex-shrink: 0;
+  padding: max(env(safe-area-inset-top, 0px), 24px) 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--md-sys-color-surface);
+}
+
+.md-top-app-bar h1 {
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: 0;
+  margin: 0;
+  color: var(--md-sys-color-on-surface);
+  line-height: 36px;
+}
+
+
+/* === FAB ========================================================== */
+
+.md-fab {
+  position: absolute;
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  right: 16px;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-lg);
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  cursor: pointer;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  transition:
+    box-shadow var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.md-fab:active {
+  transform: scale(0.96);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+
+/* === Bottom Navigation Bar ======================================== */
+
+.md-bottom-nav {
+  position: relative;
+  flex-shrink: 0;
+  height: 80px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--md-sys-color-surface-container);
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+}
+
+.md-bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 12px 0 16px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+.md-bottom-nav-item .md-bottom-nav-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 32px;
+  border-radius: var(--md-sys-shape-corner-lg);
+  transition: background var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized);
+}
+
+.md-bottom-nav-item .bi {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.md-bottom-nav-item.active {
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.md-bottom-nav-item.active .md-bottom-nav-pill {
+  background: var(--md-sys-color-secondary-container);
+}
+
+#android-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+
+/* === M3 Ripple ===================================================== */
+
+.md-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--md-sys-color-on-surface);
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0);
+  transition:
+    transform var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized-decelerate),
+    opacity var(--md-sys-motion-duration-short2) linear;
+}
+
+.md-ripple-active {
+  transform: scale(1);
+  opacity: 0.12;
+}
+
+.md-ripple-fade {
+  opacity: 0;
+  transition: opacity var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-standard);
+}
+
+.md-fab .md-ripple,
+.md-bottom-nav-item.active .md-ripple,
+[data-android-jump] .md-ripple {
+  background: var(--md-sys-color-on-primary-container);
+}
+
+
+/* === Top App Bar — scroll-collapse ================================ */
+
+.md-top-app-bar {
+  transition:
+    padding var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized),
+    box-shadow var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+.md-top-app-bar h1 {
+  transition: font-size var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized);
+}
+
+.md-top-app-bar.collapsed {
+  padding-bottom: 12px;
+  background: var(--md-sys-color-surface-container);
+  box-shadow: 0 1px 0 var(--md-sys-color-outline-variant);
+}
+
+.md-top-app-bar.collapsed h1 {
+  font-size: 22px;
+  line-height: 28px;
+}
+
+
+/* === State layers (M3 hover/pressed) ============================== */
+
+.md-list-item:active,
+.md-card-button:active,
+.md-mag-card:active {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+}
+
+.md-list-item,
+.md-card-button {
+  transition: background var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+
+/* === iOS settings: M3-flavoured when Material is the active palette === */
+
+.theme-material #ios-palette-toggle {
+  background: var(--md-sys-color-surface-container-high) !important;
+  border-radius: var(--md-sys-shape-corner-full) !important;
+  padding: 4px !important;
+  gap: 0 !important;
+}
+
+.theme-material #ios-palette-toggle button {
+  border-radius: var(--md-sys-shape-corner-full) !important;
+  color: var(--md-sys-color-on-surface-variant) !important;
+  font-family: 'Roboto', system-ui, sans-serif !important;
+  font-weight: 500 !important;
+  transition: background var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized),
+    color var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized) !important;
+}
+
+.theme-material #ios-palette-toggle button[data-palette]:nth-child(1)[style*="--ios-segmented-active"],
+.theme-material #ios-palette-toggle button[style*="--ios-segmented-active"] {
+  background: var(--md-sys-color-secondary-container) !important;
+  color: var(--md-sys-color-on-secondary-container) !important;
+  box-shadow: none !important;
+}
+
+/* Settings card backdrop when Material is active — M3 Surface Container */
+.theme-material #ios-contact-app .ios-contact-row,
+.theme-material #ios-contact-app [style*="background:rgba(255,255,255,0.08)"] {
+  background: var(--md-sys-color-surface-container) !important;
+  color: var(--md-sys-color-on-surface) !important;
+}
+
+.theme-material #ios-contact-app {
+  background: var(--md-sys-color-surface) !important;
+  color: var(--md-sys-color-on-surface) !important;
+}
+
+.theme-material #ios-contact-app p,
+.theme-material #ios-contact-app .ios-contact-value {
+  color: var(--md-sys-color-on-surface) !important;
+}
+
+.theme-material #ios-contact-app .ios-contact-label,
+.theme-material #ios-contact-app [style*="rgba(255,255,255,0.6)"] {
+  color: var(--md-sys-color-on-surface-variant) !important;
+}
+
+
+/* === Edge-to-edge / safe-area polish ============================== */
+
+#android-screen,
+#android-edits-viewer {
+  padding-top: env(safe-area-inset-top, 0px);
+  box-sizing: border-box;
+}
+
+#android-content {
+  padding-bottom: 100px; /* Bottom-Nav height + breathing room */
+}
+
+
+/* === M3 Edits Viewer ============================================== */
+
+#android-edits-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: none;
+  flex-direction: column;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font-family: 'Roboto', system-ui, sans-serif;
+}
+
+#android-edits-viewer.open { display: flex; }
+
+#android-edits-viewer .md-viewer-bar {
+  flex-shrink: 0;
+  height: 64px;
+  padding: 0 4px 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--md-sys-color-surface);
+  position: relative;
+  z-index: 2;
+}
+
+#android-edits-viewer .md-icon-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--md-sys-color-on-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#android-edits-viewer .md-viewer-title {
+  flex: 1;
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--md-sys-color-on-surface);
+}
+
+#android-edits-viewer .md-viewer-stage {
+  flex: 1;
+  position: relative;
+  background: #000;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#android-edits-viewer video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+#android-edits-viewer .md-viewer-controls {
+  flex-shrink: 0;
+  padding: 16px 16px max(env(safe-area-inset-bottom, 0px), 16px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--md-sys-color-surface-container);
+}
+
+#android-edits-viewer .md-viewer-meta p {
+  margin: 0;
+}
+#android-edits-viewer .md-viewer-meta .md-folder {
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+#android-edits-viewer .md-viewer-meta .md-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+  margin-top: 2px;
+}
+
+#android-edits-viewer .md-viewer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+#android-edits-viewer .md-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#android-edits-viewer .md-slider-time {
+  font-family: 'Roboto', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  color: var(--md-sys-color-on-surface-variant);
+  font-variant-numeric: tabular-nums;
+  min-width: 36px;
+  text-align: center;
+}
+
+#android-edits-viewer .md-slider {
+  flex: 1;
+  position: relative;
+  height: 36px;
+  cursor: pointer;
+  touch-action: none;
+}
+
+#android-edits-viewer .md-slider-track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-surface-container-highest);
+  transform: translateY(-50%);
+  overflow: hidden;
+}
+
+#android-edits-viewer .md-slider-buffered {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0;
+  background: color-mix(in srgb, var(--md-sys-color-primary) 24%, transparent);
+}
+
+#android-edits-viewer .md-slider-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0;
+  background: var(--md-sys-color-primary);
+  transition: width 80ms linear;
+}
+
+#android-edits-viewer .md-slider-thumb {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 4px;
+  height: 24px;
+  border-radius: var(--md-sys-shape-corner-sm);
+  background: var(--md-sys-color-primary);
+  transform: translate(-2px, -50%);
+  transition: width 120ms var(--md-sys-motion-easing-standard);
+  pointer-events: none;
+}
+
+#android-edits-viewer .md-slider:active .md-slider-thumb,
+#android-edits-viewer .md-slider.dragging .md-slider-thumb {
+  width: 6px;
+  transform: translate(-3px, -50%);
+}
+
+#android-edits-viewer .md-viewer-play {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--md-sys-shape-corner-xl);
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  border: none;
+  cursor: pointer;
+  font-size: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  overflow: hidden;
+}
+#android-edits-viewer .md-viewer-play:active { transform: scale(0.94); }
+
+
+/* === Contact-tab specifics: hero photo, location chips, action buttons ====== */
+
+.md-hero {
+  background: var(--md-sys-color-surface-container-high);
+}
+
+.md-hero img {
+  /* Absolute-positioned, fills the section completely. object-fit:cover
+     scales the photo up if needed so it always covers the full element —
+     no whitespace ever, just a tighter crop.
+
+     scale(1.18) zooms a bit further into the face area so the dark/blurry
+     bar ceiling above doesn't dominate the frame. Adjust if you swap the
+     photo for one with the subject in a different position. */
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 35%;
+  transform: scale(1.18);
+  transform-origin: center 40%;
+  display: block;
+}
+
+.md-hero-scrim {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 55%;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.18) 50%, rgba(0, 0, 0, 0.7) 100%);
+  pointer-events: none;
+}
+
+.md-hero-meta {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 18px;
+  color: #fff;
+  font-family: 'Roboto', system-ui, sans-serif;
+  line-height: normal;
+}
+
+.md-hero-eyebrow {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  opacity: 0.82;
+}
+
+.md-hero-title {
+  margin: 0;
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 40px;
+  letter-spacing: -0.5px;
+}
+
+.md-hero-chips {
+  margin-top: 12px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+
+.md-loc-chip {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-family: 'Roboto', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  padding: 4px 10px;
+  border-radius: var(--md-sys-shape-corner-full);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.md-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 6px 12px;
+  border-radius: var(--md-sys-shape-corner-md);
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Roboto', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  transition: background var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.md-action-btn .bi {
+  font-size: 20px;
+}
+
+
+/* === Smooth M3 enter animation on theme switch ==================== */
+
+.md-stagger {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+.md-screen-revealing .md-stagger {
+  animation: md-stagger-in var(--md-sys-motion-duration-long2) var(--md-sys-motion-easing-emphasized-decelerate) forwards;
+}
+
+/* Each direct child gets a slight increasing delay (1..N × 60ms) */
+.md-screen-revealing .md-stagger:nth-child(1) { animation-delay: 0ms; }
+.md-screen-revealing .md-stagger:nth-child(2) { animation-delay: 60ms; }
+.md-screen-revealing .md-stagger:nth-child(3) { animation-delay: 120ms; }
+.md-screen-revealing .md-stagger:nth-child(4) { animation-delay: 180ms; }
+.md-screen-revealing .md-stagger:nth-child(5) { animation-delay: 240ms; }
+.md-screen-revealing .md-stagger:nth-child(6) { animation-delay: 300ms; }
+.md-screen-revealing .md-stagger:nth-child(7) { animation-delay: 360ms; }
+
+@keyframes md-stagger-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* When NOT revealing, items should be in their final state — no FOUC */
+#android-screen:not(.md-screen-revealing) .md-stagger {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Top app bar drops in from above */
+#android-screen.md-screen-revealing .md-top-app-bar {
+  animation: md-topbar-in var(--md-sys-motion-duration-medium2) var(--md-sys-motion-easing-emphasized) forwards;
+}
+
+@keyframes md-topbar-in {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Bottom nav items pop in one-by-one from below — feels alive, not static */
+#android-screen.md-screen-revealing .md-bottom-nav .md-bottom-nav-item {
+  opacity: 0;
+  transform: translateY(20px) scale(0.86);
+  animation: md-navitem-in 520ms var(--md-sys-motion-easing-emphasized-decelerate) forwards;
+}
+
+#android-screen.md-screen-revealing .md-bottom-nav .md-bottom-nav-item:nth-child(1) { animation-delay: 80ms; }
+#android-screen.md-screen-revealing .md-bottom-nav .md-bottom-nav-item:nth-child(2) { animation-delay: 140ms; }
+#android-screen.md-screen-revealing .md-bottom-nav .md-bottom-nav-item:nth-child(3) { animation-delay: 200ms; }
+#android-screen.md-screen-revealing .md-bottom-nav .md-bottom-nav-item:nth-child(4) { animation-delay: 260ms; }
+#android-screen.md-screen-revealing .md-bottom-nav .md-bottom-nav-item:nth-child(5) { animation-delay: 320ms; }
+
+@keyframes md-navitem-in {
+  0%   { opacity: 0; transform: translateY(20px) scale(0.86); }
+  60%  { opacity: 1; transform: translateY(-2px) scale(1.04); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Active-pill of the home tab gets an extra bounce so the eye lands on it */
+#android-screen.md-screen-revealing .md-bottom-nav .md-bottom-nav-item.active .md-bottom-nav-pill {
+  animation: md-pill-bounce 600ms var(--md-sys-motion-easing-emphasized-decelerate) 380ms forwards;
+  transform-origin: center;
+}
+
+@keyframes md-pill-bounce {
+  0%   { transform: scale(0.5); opacity: 0.4; }
+  60%  { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+
+/* === M3 Magazines Reader ========================================== */
+
+#android-magazines-reader {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: none;
+  flex-direction: column;
+  background: var(--md-sys-color-surface-dim);
+  color: var(--md-sys-color-on-surface);
+  font-family: 'Roboto', system-ui, sans-serif;
+  padding-top: env(safe-area-inset-top, 0px);
+  box-sizing: border-box;
+}
+#android-magazines-reader.open { display: flex; }
+
+/* ===== Floating M3 expressive controls (no toolbar, no scrim) ===== */
+
+#android-magazines-reader .md-mag-bar {
+  position: absolute;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  left: 0;
+  right: 0;
+  height: 40px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+#android-magazines-reader .md-mag-bar > * { pointer-events: auto; }
+
+#android-magazines-reader .md-mag-spacer { flex: 1; }
+
+/* Floating circular icon buttons — translucent surface tonal pill */
+#android-magazines-reader .md-mag-icon-btn {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: color-mix(in srgb, var(--md-sys-color-inverse-surface) 60%, transparent);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  color: var(--md-sys-color-inverse-on-surface);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard),
+    background var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+#android-magazines-reader .md-mag-icon-btn .bi {
+  font-size: 18px;
+}
+
+#android-magazines-reader .md-mag-icon-btn:active {
+  transform: scale(0.92);
+}
+
+/* Horizontal page strip — scroll-snap one page at a time */
+.md-mag-pages {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.md-mag-pages::-webkit-scrollbar { display: none; }
+
+.md-mag-page {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  scroll-snap-align: start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+}
+
+.md-mag-page img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 0;
+  background: var(--md-sys-color-surface);
+}
+
+.md-mag-indicator {
+  position: absolute;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  background: color-mix(in srgb, var(--md-sys-color-inverse-surface) 80%, transparent);
+  color: var(--md-sys-color-inverse-on-surface);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  padding: 8px 16px;
+  border-radius: var(--md-sys-shape-corner-full);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  font-variant-numeric: tabular-nums;
+  font-family: 'Roboto', system-ui, sans-serif;
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100% - 32px);
+}
+
+.md-mag-indicator #android-mag-title-pill {
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.md-mag-indicator .md-mag-dot { opacity: 0.55; }
+
+
+/* === Magazines grid — proper M3 cards ============================== */
+
+.md-mag-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.md-mag-card {
+  background: var(--md-sys-color-surface-container) !important;
+  border-radius: var(--md-sys-shape-corner-lg) !important;
+  padding: 8px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+  transition: background var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+  position: relative;
+  overflow: hidden;
+}
+
+.md-mag-card:hover { background: var(--md-sys-color-surface-container-high) !important; }
+
+.md-mag-card .md-mag-cover {
+  aspect-ratio: 3 / 4;
+  border-radius: var(--md-sys-shape-corner-md);
+  overflow: hidden;
+  background: var(--md-sys-color-surface-container-highest);
+  position: relative;
+}
+
+.md-mag-card .md-mag-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.md-mag-card .md-mag-meta {
+  padding: 4px 6px 8px;
+}
+
+.md-mag-card .md-mag-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'Roboto', system-ui, sans-serif;
+}
+
+.md-mag-card .md-mag-issue {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--md-sys-color-on-surface-variant);
+  letter-spacing: 0.4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.md-mag-card .md-mag-neu {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  background: var(--md-sys-color-tertiary-container);
+  color: var(--md-sys-color-on-tertiary-container);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  padding: 4px 10px;
+  border-radius: var(--md-sys-shape-corner-full);
+  z-index: 2;
+}
+
+
+/* Filter chips on the magazines tab */
+.md-chip-row {
+  display: flex;
+  gap: 8px;
+  padding: 0 0 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.md-chip-row::-webkit-scrollbar { display: none; }
+
+.md-chip {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: var(--md-sys-shape-corner-sm);
+  border: 1px solid var(--md-sys-color-outline);
+  background: transparent;
+  color: var(--md-sys-color-on-surface);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Roboto', system-ui, sans-serif;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard),
+    color var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard),
+    border-color var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+.md-chip.active {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  border-color: transparent;
+}
+
+
+/* === M3 Custom-seed swatch (the eyedropper color input) =========== */
+
+#ios-seed-custom-wrap {
+  transition: transform var(--md-sys-motion-duration-short2, 100ms) ease;
+}
+#ios-seed-custom-wrap:active { transform: scale(0.92); }
+

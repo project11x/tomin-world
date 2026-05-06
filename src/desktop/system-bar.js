@@ -41,15 +41,15 @@ const magThemeToggle = document.getElementById('mag-theme-toggle');
 function updateThemeCheckmarks() {
   const html = document.documentElement;
   const isDark = html.classList.contains('dark');
-  const isGlass = html.classList.contains('theme-glass');
   const isPink = html.classList.contains('theme-pink');
+  const isMaterial = html.classList.contains('theme-material');
 
   const marks = {
     'theme-item-light': !isDark,
     'theme-item-dark': isDark,
-    'theme-item-default': !isGlass && !isPink,
-    'theme-item-glass': isGlass,
+    'theme-item-default': !isPink && !isMaterial,
     'theme-item-pink': isPink,
+    'theme-item-material': isMaterial,
   };
   Object.entries(marks).forEach(([id, active]) => {
     const el = document.getElementById(id);
@@ -88,19 +88,42 @@ function setDarkMode(isDark) {
 
 function setTheme(mode) {
   const html = document.documentElement;
-  html.classList.remove('theme-glass', 'theme-pink');
-  if (mode === 'glass') html.classList.add('theme-glass');
+  const previous = html.classList.contains('theme-material') ? 'material'
+    : html.classList.contains('theme-pink') ? 'pink' : 'default';
+  html.classList.remove('theme-pink', 'theme-material');
   if (mode === 'pink') html.classList.add('theme-pink');
+  if (mode === 'material') html.classList.add('theme-material');
   try { localStorage.setItem('palette', mode); } catch (e) { /* ignore */ }
   updateThemeCheckmarks();
-  if (window.updateIosFionaToggle) window.updateIosFionaToggle();
+  if (window.updateIosPaletteToggle) window.updateIosPaletteToggle();
+  if (window.applyAndroidScreen) window.applyAndroidScreen();
+  if (window.androidRenderAll) window.androidRenderAll();
+  // Smooth reveal on mobile — replay the relevant entrance animation on
+  // whichever screen is now active. First close any open iOS app overlay
+  // so the user lands cleanly on the new home, not stuck behind a stale
+  // overlay (Contact, Edits, Magazines, BTS) from the previous palette.
+  if (window.innerWidth <= 768 && previous !== mode) {
+    document.querySelectorAll('.ios-app-overlay').forEach(el => {
+      const disp = el.style.display;
+      if (disp === 'flex' || disp.startsWith('flex')) el.style.display = 'none';
+    });
+    document.querySelectorAll('.app-morphing').forEach(el => el.classList.remove('app-morphing'));
+    const iosScreen = document.getElementById('ios-screen');
+    if (iosScreen) iosScreen.classList.remove('ios-screen-blurred');
+
+    if (mode === 'material' && window.androidPlayEnter) {
+      window.androidPlayEnter();
+    } else if (mode !== 'material' && window.iosReplayIntro) {
+      window.iosReplayIntro();
+    }
+  }
 }
 
 // Restore palette from previous session — survives desktop ↔ mobile switches
 try {
   const stored = localStorage.getItem('palette');
   if (stored === 'pink') document.documentElement.classList.add('theme-pink');
-  else if (stored === 'glass') document.documentElement.classList.add('theme-glass');
+  else if (stored === 'material') document.documentElement.classList.add('theme-material');
 } catch (e) { /* ignore */ }
 
 updateThemeCheckmarks();

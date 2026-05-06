@@ -103,6 +103,15 @@ function popURLToRoot() {
     iosScreen.querySelectorAll('.ios-intro-item').forEach(el => el.classList.add('ios-intro-run'));
   }
 
+  // Replay the intro after a palette switch so iOS items animate back in.
+  window.iosReplayIntro = function () {
+    const items = iosScreen.querySelectorAll('.ios-intro-item');
+    items.forEach(el => el.classList.remove('ios-intro-run'));
+    // Force reflow so the animation can re-run from the start
+    void iosScreen.offsetWidth;
+    items.forEach(el => el.classList.add('ios-intro-run'));
+  };
+
   function applyScreen() {
     if (isMobileView()) {
       iosScreen.style.display = 'flex';

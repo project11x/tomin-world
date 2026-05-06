@@ -675,7 +675,7 @@
       pointer-events: none;
     }
 
-    /* Mobile: Hide macOS UI, show iOS screen */
+    /* Mobile: Hide macOS UI, show iOS screen (Android screen is JS-driven) */
     @media (max-width: 768px) {
 
       header,
@@ -688,8 +688,18 @@
         display: flex !important;
       }
 
+      /* Material palette swaps iOS for Android — JS sets display:flex on
+         #android-screen and tokens.css hides #ios-screen via .theme-material */
+
       #quick-look-modal {
         position: fixed !important;
+      }
+    }
+
+    /* Desktop: never show the Android screen */
+    @media (min-width: 769px) {
+      #android-screen {
+        display: none !important;
       }
     }
 

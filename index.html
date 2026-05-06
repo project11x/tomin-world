@@ -23,11 +23,18 @@
         eddie: { src: 'icons/icon%20alts/MugEddie.png', name: 'Eddie' },
         instagram: { src: 'icons/icon%20alts/fuck%20instagram.png', name: 'fuck instagram' }
       };
-      var choice, theme;
+      var choice, theme, palette, seed;
       try {
         choice = localStorage.getItem('app-icon-choice');
         theme = localStorage.getItem('ios-theme') || 'auto';
+        palette = localStorage.getItem('palette') || 'default';
+        seed = localStorage.getItem('material-seed') || 'burgundy';
       } catch (e) { }
+
+      // Pre-apply palette so the right theme paints on first frame.
+      if (palette === 'pink') document.documentElement.classList.add('theme-pink');
+      else if (palette === 'material') document.documentElement.classList.add('theme-material');
+      document.documentElement.setAttribute('data-seed', seed || 'burgundy');
 
       // Determine if we should use dark splash screen colors
       var isDark = false;
@@ -152,6 +159,7 @@
     rel="stylesheet" />
   <link rel="stylesheet" href="tailwind.css" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="src/android/tokens.css" />
   <!-- Umami analytics — privacy-friendly, no cookies. -->
   <script defer src="https://cloud.umami.is/script.js" data-website-id="2ca1be0a-b51f-48d6-9874-ea5176bf30c3"></script>
 </head>
@@ -192,6 +200,9 @@
                 </div>
                 <div class="dropdown-item" id="theme-item-pink">
                   <span>Fiona</span>
+                </div>
+                <div class="dropdown-item" id="theme-item-material">
+                  <span>Material</span>
                 </div>
               </div>
             </div>
@@ -581,6 +592,107 @@
 
     </div>
   </nav>
+
+  <!-- ===== Android Homescreen (Material 3, mobile only) ===== -->
+  <div id="android-screen" class="fixed inset-0 z-[60] select-none">
+    <div class="md-top-app-bar">
+      <h1>Shouli</h1>
+    </div>
+    <div id="android-content">
+      <div data-android-panel="home"></div>
+      <div data-android-panel="edits" style="display:none;"></div>
+      <div data-android-panel="magazines" style="display:none;"></div>
+      <div data-android-panel="contact" style="display:none;"></div>
+    </div>
+    <nav class="md-bottom-nav">
+      <button class="md-bottom-nav-item active" data-android-tab="home">
+        <span class="md-bottom-nav-pill"><i class="bi bi-house-fill"></i></span>
+        <span>Home</span>
+      </button>
+      <button class="md-bottom-nav-item" data-android-tab="edits">
+        <span class="md-bottom-nav-pill"><i class="bi bi-film"></i></span>
+        <span>Edits</span>
+      </button>
+      <button class="md-bottom-nav-item" data-android-tab="magazines">
+        <span class="md-bottom-nav-pill"><i class="bi bi-book"></i></span>
+        <span>Magazin</span>
+      </button>
+      <button class="md-bottom-nav-item" data-android-tab="contact">
+        <span class="md-bottom-nav-pill"><i class="bi bi-person-fill"></i></span>
+        <span>Kontakt</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ===== Material 3 Magazines Reader ===== -->
+  <div id="android-magazines-reader">
+    <!-- Floating M3 expressive controls — no toolbar, no scrim -->
+    <div class="md-mag-bar">
+      <button class="md-mag-icon-btn" data-android-mag-close aria-label="Back">
+        <i class="bi bi-arrow-left"></i>
+      </button>
+      <div class="md-mag-spacer"></div>
+      <button class="md-mag-icon-btn" data-android-mag-share aria-label="Share">
+        <i class="bi bi-share"></i>
+      </button>
+      <button class="md-mag-icon-btn" data-android-mag-fullscreen aria-label="Fullscreen">
+        <i class="bi bi-arrows-fullscreen"></i>
+      </button>
+    </div>
+    <div class="md-mag-pages" id="android-mag-pages">
+      <!-- pages injected by JS -->
+    </div>
+    <div class="md-mag-indicator" id="android-mag-indicator">
+      <span id="android-mag-title-pill">Magazine</span>
+      <span class="md-mag-dot">·</span>
+      <span id="android-mag-counter">1 / 1</span>
+    </div>
+  </div>
+
+  <!-- ===== Material 3 Edits Viewer (full-screen) ===== -->
+  <div id="android-edits-viewer">
+    <div class="md-viewer-bar">
+      <button class="md-icon-button md-list-item" data-android-edits-close aria-label="Back">
+        <i class="bi bi-arrow-left"></i>
+      </button>
+      <h2 class="md-viewer-title" id="android-edits-title">Edit</h2>
+      <button class="md-icon-button md-list-item" data-android-edits-fullscreen aria-label="Fullscreen">
+        <i class="bi bi-arrows-fullscreen"></i>
+      </button>
+    </div>
+    <div class="md-viewer-stage">
+      <video id="android-edits-video" playsinline></video>
+    </div>
+    <div class="md-viewer-controls">
+      <div class="md-viewer-meta">
+        <p class="md-folder" id="android-edits-folder">FOLDER</p>
+        <p class="md-title" id="android-edits-name">Title</p>
+      </div>
+      <!-- M3 Slider for video scrubbing -->
+      <div class="md-slider-row">
+        <span class="md-slider-time" id="android-edits-current">0:00</span>
+        <div class="md-slider" data-android-edits-slider>
+          <div class="md-slider-track">
+            <div class="md-slider-buffered" id="android-edits-buffered"></div>
+            <div class="md-slider-fill" id="android-edits-fill"></div>
+          </div>
+          <div class="md-slider-thumb" id="android-edits-thumb"></div>
+        </div>
+        <span class="md-slider-time" id="android-edits-duration">0:00</span>
+      </div>
+      <div class="md-viewer-actions">
+        <button class="md-icon-button md-list-item" data-android-edits-prev aria-label="Previous">
+          <i class="bi bi-skip-start-fill"></i>
+        </button>
+        <button class="md-viewer-play md-card-button" data-android-edits-play aria-label="Play/Pause">
+          <i class="bi bi-play-fill" id="android-edits-play-icon"></i>
+        </button>
+        <button class="md-icon-button md-list-item" data-android-edits-next aria-label="Next">
+          <i class="bi bi-skip-end-fill"></i>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- ===== iOS Homescreen (mobile only) ===== -->
   <div id="ios-screen" class="fixed inset-0 z-[60] flex flex-col select-none"
@@ -1440,19 +1552,36 @@
             </div>
           </div>
 
-          <!-- Fiona palette toggle -->
+          <!-- Palette picker: Aero / Fiona / Material -->
           <div style="padding:6px 16px 14px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-              <p style="color:#fff; font-size:15px; font-weight:600; margin:0;">Fiona 🎀</p>
-              <button id="ios-fiona-toggle" role="switch" aria-checked="false"
-                style="position:relative; width:51px; height:31px; border:none; border-radius:31px; background:rgba(120,120,128,0.32); cursor:pointer; padding:0; transition:background 0.2s ease; -webkit-tap-highlight-color:transparent; flex-shrink:0;">
-                <span id="ios-fiona-knob"
-                  style="position:absolute; top:2px; left:2px; width:27px; height:27px; border-radius:50%; background:#fff; box-shadow:0 3px 8px rgba(0,0,0,0.15), 0 3px 1px rgba(0,0,0,0.06); transition:transform 0.2s ease;"></span>
-              </button>
+            <p style="color:#fff; font-size:15px; font-weight:600; margin:0 0 10px;">Palette</p>
+            <div id="ios-palette-toggle"
+              style="display:flex; gap:2px; border-radius:9px; padding:2px; background:rgba(255,255,255,0.1);">
+              <button data-palette="default" id="ios-palette-default"
+                style="flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:rgba(255,255,255,0.5); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Aero</button>
+              <button data-palette="pink" id="ios-palette-pink"
+                style="flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:rgba(255,255,255,0.5); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Fiona</button>
+              <button data-palette="material" id="ios-palette-material"
+                style="flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:rgba(255,255,255,0.5); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Material</button>
             </div>
-            <p style="color:rgba(255,255,255,0.6); font-size:13px; line-height:1.45; margin:8px 0 0;">
-              Girlypop-Theme — überall pink.
-            </p>
+          </div>
+
+          <!-- Material seed picker — only visible when Material palette is on -->
+          <div id="ios-seed-row" style="padding:0 16px 14px; display:none;">
+            <p style="color:#fff; font-size:15px; font-weight:600; margin:0 0 10px;">Seed-Farbe</p>
+            <div id="ios-seed-toggle"
+              style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button data-seed="burgundy" title="Burgundy"
+                style="width:32px; height:32px; border-radius:50%; border:2px solid transparent; cursor:pointer; background:#984061; -webkit-tap-highlight-color:transparent;"></button>
+              <button data-seed="green" title="Forest"
+                style="width:32px; height:32px; border-radius:50%; border:2px solid transparent; cursor:pointer; background:#2E7D32; -webkit-tap-highlight-color:transparent;"></button>
+              <button data-seed="blue" title="Deep Blue"
+                style="width:32px; height:32px; border-radius:50%; border:2px solid transparent; cursor:pointer; background:#0061A4; -webkit-tap-highlight-color:transparent;"></button>
+              <button data-seed="coral" title="Coral"
+                style="width:32px; height:32px; border-radius:50%; border:2px solid transparent; cursor:pointer; background:#E55934; -webkit-tap-highlight-color:transparent;"></button>
+              <button data-seed="slate" title="Slate"
+                style="width:32px; height:32px; border-radius:50%; border:2px solid transparent; cursor:pointer; background:#5C6470; -webkit-tap-highlight-color:transparent;"></button>
+            </div>
           </div>
 
           <!-- Benachrichtigungen (push toggle) -->
