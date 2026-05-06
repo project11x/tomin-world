@@ -91,8 +91,17 @@ function setTheme(mode) {
   html.classList.remove('theme-glass', 'theme-pink');
   if (mode === 'glass') html.classList.add('theme-glass');
   if (mode === 'pink') html.classList.add('theme-pink');
+  try { localStorage.setItem('palette', mode); } catch (e) { /* ignore */ }
   updateThemeCheckmarks();
+  if (window.updateIosFionaToggle) window.updateIosFionaToggle();
 }
+
+// Restore palette from previous session — survives desktop ↔ mobile switches
+try {
+  const stored = localStorage.getItem('palette');
+  if (stored === 'pink') document.documentElement.classList.add('theme-pink');
+  else if (stored === 'glass') document.documentElement.classList.add('theme-glass');
+} catch (e) { /* ignore */ }
 
 updateThemeCheckmarks();
 
@@ -162,4 +171,5 @@ document.addEventListener('click', (e) => {
 
 if (magThemeToggle) magThemeToggle.addEventListener('click', toggleTheme);
 
+window.setTheme = setTheme;
 export { setDarkMode, setTheme };

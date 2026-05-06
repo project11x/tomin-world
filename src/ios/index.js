@@ -96,18 +96,16 @@ function popURLToRoot() {
 
   function isMobileView() { return window.innerWidth <= 768; }
 
-  let iosIntroPlayed = false;
   function playIosIntro() {
-    if (iosIntroPlayed) return;
-    iosIntroPlayed = true;
-    const items = iosScreen.querySelectorAll('.ios-intro-item');
-    items.forEach(el => el.classList.add('ios-intro-run'));
+    // Idempotent: adding the class on items that already have it is a no-op,
+    // and we want this to run every time the iOS screen becomes visible
+    // (e.g. desktop → mobile resize) so items never stay stuck at opacity 0.
+    iosScreen.querySelectorAll('.ios-intro-item').forEach(el => el.classList.add('ios-intro-run'));
   }
 
   function applyScreen() {
     if (isMobileView()) {
       iosScreen.style.display = 'flex';
-      // Small delay so the screen is painted before animation starts
       setTimeout(playIosIntro, 80);
     } else {
       iosScreen.style.display = 'none';
@@ -610,6 +608,24 @@ function popURLToRoot() {
 
   function getSystemDark() {
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+
+  // Fiona palette toggle (mobile equivalent of the desktop View → Theme menu)
+  const fionaBtn = document.getElementById('ios-fiona-toggle');
+  const fionaKnob = document.getElementById('ios-fiona-knob');
+  window.updateIosFionaToggle = function () {
+    if (!fionaBtn || !fionaKnob) return;
+    const on = document.documentElement.classList.contains('theme-pink');
+    fionaBtn.setAttribute('aria-checked', on ? 'true' : 'false');
+    fionaBtn.style.background = on ? '#ff3d8b' : 'rgba(120,120,128,0.32)';
+    fionaKnob.style.transform = on ? 'translateX(20px)' : 'translateX(0)';
+  };
+  if (fionaBtn) {
+    fionaBtn.addEventListener('click', () => {
+      const on = document.documentElement.classList.contains('theme-pink');
+      window.setTheme(on ? 'default' : 'pink');
+    });
+    window.updateIosFionaToggle();
   }
 
   window.setIosTheme = function (mode) {

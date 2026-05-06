@@ -598,6 +598,68 @@
       border-bottom-color: rgba(255, 61, 139, 0.25) !important;
     }
 
+    /* Fiona on mobile/iOS — re-skin the iOS variables.
+       Selector is :root.theme-pink (not .theme-pink) so specificity beats
+       the later :root { --ios-bg: #ffffff } block. */
+    :root.theme-pink {
+      --ios-bg: linear-gradient(135deg, #ffd6ec 0%, #ffb8d9 40%, #ff8fc4 100%);
+      --ios-app-bg: #ffe6f2;
+      --ios-text: #5a1a3a;
+      --ios-text-secondary: rgba(90, 26, 58, 0.55);
+      --ios-card-bg: rgba(255, 230, 242, 0.85);
+      --ios-card-border: rgba(255, 61, 139, 0.25);
+      --ios-dock-bg: rgba(255, 230, 242, 0.72);
+      --ios-dock-border: rgba(255, 61, 139, 0.3);
+      --ios-list-border: rgba(255, 61, 139, 0.18);
+      --ios-list-hover: rgba(255, 61, 139, 0.08);
+    }
+
+    :root.dark.theme-pink {
+      --ios-bg: radial-gradient(ellipse at top, #5a1640 0%, #2c0820 55%, #15040d 100%);
+      --ios-app-bg: #2a0a1c;
+      --ios-text: #ffd6ec;
+      --ios-text-secondary: rgba(255, 214, 236, 0.6);
+      --ios-card-bg: rgba(40, 12, 28, 0.78);
+      --ios-card-border: rgba(255, 95, 166, 0.25);
+      --ios-dock-bg: rgba(40, 12, 28, 0.72);
+      --ios-dock-border: rgba(255, 95, 166, 0.3);
+      --ios-list-border: rgba(255, 95, 166, 0.2);
+      --ios-list-hover: rgba(255, 95, 166, 0.12);
+    }
+
+    /* #ios-screen has an inline background — force the pink gradient through */
+    .theme-pink #ios-screen {
+      background: var(--ios-bg) !important;
+    }
+
+    /* Smart-stack cards have hard-coded dark blue/pink backgrounds —
+       tint them so the dock + widgets read as part of the Fiona world */
+    .theme-pink #ios-weather-widget {
+      background: linear-gradient(135deg, #ff8fc4 0%, #d6206b 100%) !important;
+    }
+    .theme-pink #ios-live-activity {
+      background: linear-gradient(135deg, #ff5fa6 0%, #2c0820 100%) !important;
+    }
+    .theme-pink #ios-system-pulse {
+      background: linear-gradient(135deg, #2c0820 0%, #5a1640 55%, #15040d 100%) !important;
+    }
+
+    /* Expanded widget cards — dark wine so light text stays readable */
+    .theme-pink #ios-changelog-card {
+      background: linear-gradient(135deg, #2a0a1c 0%, #15040d 55%, #0d020a 100%) !important;
+    }
+    .theme-pink #ios-portfolio-card {
+      background: linear-gradient(135deg, #3a0e26 0%, #1a0612 100%) !important;
+    }
+    .theme-pink #ios-weather-card {
+      background: linear-gradient(160deg, #2c0820 0%, #5a1640 50%, #15040d 100%) !important;
+    }
+
+    /* Contact app — keep its dark cocoon feel, just shift toward Fiona wine */
+    .theme-pink #ios-contact-app {
+      background: #2a0e1c !important;
+    }
+
     .dark.theme-pink header {
       background: rgba(60, 20, 40, 0.6) !important;
       border-bottom-color: rgba(255, 61, 139, 0.3) !important;
