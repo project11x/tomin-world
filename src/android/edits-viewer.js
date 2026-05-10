@@ -145,8 +145,22 @@ import { portfolioData } from '../../data.js';
   if (fsBtn) {
     fsBtn.addEventListener('click', async () => {
       try {
-        if (document.fullscreenElement) {
-          await document.exitFullscreen();
+        // iOS Safari: only <video> supports fullscreen, via webkitEnterFullscreen.
+        if (typeof video.webkitEnterFullscreen === 'function'
+            && !overlay.requestFullscreen
+            && !overlay.webkitRequestFullscreen) {
+          if (video.readyState < 1) {
+            await new Promise((res) => {
+              video.addEventListener('loadedmetadata', res, { once: true });
+              setTimeout(res, 800);
+            });
+          }
+          video.webkitEnterFullscreen();
+          return;
+        }
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          const exit = document.exitFullscreen || document.webkitExitFullscreen;
+          if (exit) await exit.call(document);
         } else {
           const req = overlay.requestFullscreen
             || overlay.webkitRequestFullscreen

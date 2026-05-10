@@ -46,6 +46,14 @@ if (R2_BASE_URL) {
   });
 }
 
+// The Android shell's tabs.js renders at module-load (before this prefix
+// runs in production), so its initial markup bakes in un-prefixed src
+// values and thumbs 404 on R2-hosted deploys. Re-render now that paths
+// are correct.
+if (typeof window !== 'undefined' && typeof window.androidRenderAll === 'function') {
+  window.androidRenderAll();
+}
+
 // Kick off the live portfolio sync — picks up R2 uploads without rebuild.
 // Fails silently if /api/portfolio isn't reachable (e.g. local dev or the
 // R2 binding isn't configured yet); baked data.js stays as fallback.
