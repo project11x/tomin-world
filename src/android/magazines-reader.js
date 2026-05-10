@@ -46,10 +46,6 @@ import { portfolioData } from '../../data.js';
   }, { passive: true });
 
   overlay.querySelector('[data-android-mag-close]').addEventListener('click', close);
-  overlay.querySelector('[data-android-mag-fullscreen]').addEventListener('click', () => {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else overlay.requestFullscreen && overlay.requestFullscreen().catch(() => { });
-  });
   const shareBtn = overlay.querySelector('[data-android-mag-share]');
   if (shareBtn) {
     shareBtn.addEventListener('click', async () => {

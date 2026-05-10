@@ -20,6 +20,12 @@ import { portfolioData } from '../../data.js';
       p.style.display = p.dataset.androidPanel === name ? 'block' : 'none';
     });
     syncThemeColor();
+    // Mirror tab visits into the shared portfolio tracker so the M3 widget
+    // (and the iOS Smart Stack) update progress as the user navigates.
+    const ilaName = name === 'magazines' ? 'magazin' : name;
+    if (typeof window.ilaVisit === 'function' && ['home', 'edits', 'magazin', 'bts'].includes(ilaName)) {
+      window.ilaVisit(ilaName);
+    }
   }
 
   navItems.forEach(btn => {
@@ -51,26 +57,236 @@ import { portfolioData } from '../../data.js';
         <h2 style="margin:0 0 12px; font-size:28px; font-weight:500; line-height:1.15;">Shouli's Welt</h2>
         <p style="margin:0; font-size:14px; line-height:1.5;">Magazine, Edits und Behind-the-Scenes — alles an einem Ort.</p>
       </section>
-      <div class="md-stagger" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-        ${featureCard('edits', 'film', 'Edits', 'Video-Edits anschauen')}
-        ${featureCard('magazines', 'book', 'Magazin', 'Print + digital')}
+      <div class="md-widgets" data-android-widgets>
+        ${weatherWidgetHTML()}
+        ${portfolioWidgetHTML()}
+        ${changelogWidgetHTML()}
       </div>
     `;
     panel.querySelectorAll('[data-android-jump]').forEach(el => {
       el.addEventListener('click', () => setActiveTab(el.dataset.androidJump));
     });
+    if (window.androidMountWidgets) window.androidMountWidgets(panel);
   }
-  function featureCard(target, icon, title, sub) {
+
+  // === Widget templates (mounted by widgets.js) ======================
+  function weatherWidgetHTML() {
     return `
-      <button data-android-jump="${target}" class="md-card-button"
-        style="background:var(--md-sys-color-surface-container-high); color:var(--md-sys-color-on-surface); border:none; border-radius:var(--md-sys-shape-corner-lg); padding:18px 16px; text-align:left; cursor:pointer; display:flex; flex-direction:column; gap:14px; min-height:120px;">
-        <i class="bi bi-${icon}" style="font-size:24px; color:var(--md-sys-color-primary);"></i>
-        <div>
-          <p style="margin:0 0 2px; font-size:15px; font-weight:500;">${title}</p>
-          <p style="margin:0; font-size:12px; color:var(--md-sys-color-on-surface-variant);">${sub}</p>
+      <article class="md-widget md-widget-weather" data-widget="weather">
+        <div class="md-widget-head">
+          <span class="md-widget-eyebrow" data-w-city>Berlin</span>
+          <span class="md-widget-eyebrow md-widget-eyebrow-dim">Time &amp; Weather</span>
         </div>
-      </button>
+        <div class="md-widget-weather-row">
+          <div class="md-widget-weather-left">
+            <p class="md-widget-time" data-w-time>--:--</p>
+            <p class="md-widget-sub" data-w-desc>–</p>
+          </div>
+          <div class="md-widget-weather-right">
+            <div class="md-widget-temp-row">
+              <span class="md-widget-icon" data-w-icon>—</span>
+              <span class="md-widget-temp" data-w-temp>—°C</span>
+            </div>
+            <p class="md-widget-meta" data-w-wind>– km/h</p>
+            <p class="md-widget-meta md-widget-meta-status">
+              <span data-w-status>—</span>
+              <span class="md-widget-live-dot"></span>
+            </p>
+          </div>
+        </div>
+      </article>
     `;
+  }
+
+  function portfolioWidgetHTML() {
+    return `
+      <article class="md-widget md-widget-portfolio" data-widget="portfolio">
+        <div class="md-widget-head">
+          <span class="md-widget-badge" data-p-badge>HOME</span>
+          <span class="md-widget-eyebrow md-widget-eyebrow-dim">Portfolio</span>
+        </div>
+        <p class="md-widget-title" data-p-title>Up next: Edits</p>
+        <p class="md-widget-sub" data-p-sub>0 of 4 explored</p>
+        <div class="md-widget-progress" data-p-progress>
+          <span class="md-progress-node" data-p-node="0"></span>
+          <span class="md-progress-seg" data-p-seg="0"><span class="md-progress-fill"></span></span>
+          <span class="md-progress-node" data-p-node="1"></span>
+          <span class="md-progress-seg" data-p-seg="1"><span class="md-progress-fill"></span></span>
+          <span class="md-progress-node" data-p-node="2"></span>
+          <span class="md-progress-seg" data-p-seg="2"><span class="md-progress-fill"></span></span>
+          <span class="md-progress-node" data-p-node="3"></span>
+        </div>
+      </article>
+    `;
+  }
+
+  function changelogWidgetHTML() {
+    return `
+      <article class="md-widget md-widget-changelog" data-widget="changelog">
+        <div class="md-widget-head">
+          <span class="md-widget-live-tag">
+            <span class="md-widget-live-dot md-widget-live-dot-anim"></span>
+            <span>LIVE</span>
+          </span>
+          <span class="md-widget-eyebrow md-widget-eyebrow-dim">Changelog</span>
+        </div>
+        <p class="md-widget-title" data-c-headline>Latest commit</p>
+        <pre class="md-widget-code" data-c-message>Connecting…</pre>
+        <div class="md-widget-rail" data-c-rail>
+          <span class="md-widget-rail-fill" data-c-rail-fill></span>
+        </div>
+        <div class="md-widget-foot">
+          <code class="md-widget-hash" data-c-hash>—</code>
+          <span class="md-widget-meta" data-c-time>—</span>
+        </div>
+      </article>
+    `;
+  }
+
+  // === Widget: Latest =================================================
+  function collectLatest(limit = 4) {
+    const out = [];
+    Object.keys(portfolioData).forEach(folderKey => {
+      if (folderKey.includes('/')) return;
+      if (folderKey.startsWith('TOMIN INDEX.TXT') || folderKey === 'icons') return;
+      const items = portfolioData[folderKey];
+      if (!Array.isArray(items)) return;
+      items.forEach((item, idx) => {
+        if (!item.date) return;
+        const t = Date.parse(item.date);
+        if (Number.isNaN(t)) return;
+
+        if (item.isMagazine) {
+          const pages = portfolioData[folderKey + '/' + item.name] || [];
+          const cover = pages[0] ? pages[0].src : null;
+          out.push({ kind: 'magazine', folder: folderKey, name: item.name, indexInFolder: idx, src: cover, t });
+          return;
+        }
+        if (item.isVideo) {
+          const nameNoExt = item.name.replace(/\.[^/.]+$/, '');
+          const digits = (nameNoExt.match(/\d/g) || []).length;
+          if (digits <= 3) {
+            // curated edit
+            out.push({ kind: 'edit', folder: folderKey, name: nameNoExt.replace(/_(web|compressed)$/i, '').trim(), src: item.src, t });
+            return;
+          }
+        }
+        // Otherwise treat as BTS
+        const nameNoExt2 = item.name.replace(/\.[^/.]+$/, '');
+        const digits2 = (nameNoExt2.match(/\d/g) || []).length;
+        if (digits2 >= 4) {
+          out.push({ kind: 'bts', folder: folderKey, name: item.name, src: item.src, isVideo: !!item.isVideo, t });
+        }
+      });
+    });
+    out.sort((a, b) => b.t - a.t);
+    // Dedupe by src
+    const seen = new Set();
+    const uniq = [];
+    for (const it of out) {
+      if (seen.has(it.src)) continue;
+      seen.add(it.src);
+      uniq.push(it);
+      if (uniq.length >= limit) break;
+    }
+    return uniq;
+  }
+
+  function latestKindLabel(kind) {
+    return kind === 'edit' ? 'Edit' : kind === 'magazine' ? 'Magazin' : 'BTS';
+  }
+  function latestKindIcon(kind) {
+    return kind === 'edit' ? 'bi-film' : kind === 'magazine' ? 'bi-book' : 'bi-camera-reels-fill';
+  }
+
+  function latestWidget() {
+    const items = collectLatest(4);
+    if (items.length === 0) {
+      return `
+        <button data-android-jump="edits" class="md-card-button"
+          style="background:var(--md-sys-color-surface-container-high); color:var(--md-sys-color-on-surface); border:none; border-radius:var(--md-sys-shape-corner-xl); padding:20px; width:100%; text-align:left; cursor:pointer;">
+          <p style="margin:0; font-size:14px; color:var(--md-sys-color-on-surface-variant);">Noch nichts hochgeladen.</p>
+        </button>`;
+    }
+    const hero = items[0];
+    const rest = items.slice(1, 4);
+    return `
+      <article class="md-latest-card">
+        <header class="md-latest-head">
+          <p class="md-latest-eyebrow">Aktuell</p>
+          <h3 class="md-latest-title">Frisch reingekommen</h3>
+        </header>
+
+        <button class="md-latest-hero" data-latest-index="0" type="button">
+          <div class="md-latest-hero-media">
+            ${hero.src
+              ? (hero.kind === 'edit' || (hero.kind === 'bts' && hero.isVideo))
+                ? `<video src="${hero.src}#t=0.1" muted playsinline preload="metadata"></video>`
+                : `<img src="${hero.src}" loading="lazy" />`
+              : ''}
+            <span class="md-latest-chip">
+              <i class="bi ${latestKindIcon(hero.kind)}"></i>
+              ${latestKindLabel(hero.kind)}
+            </span>
+          </div>
+          <div class="md-latest-hero-meta">
+            <p class="md-latest-name">${hero.name}</p>
+            <p class="md-latest-folder">${hero.folder}</p>
+          </div>
+        </button>
+
+        ${rest.length > 0 ? `
+          <div class="md-latest-strip">
+            ${rest.map((it, i) => `
+              <button class="md-latest-tile" data-latest-index="${i + 1}" type="button">
+                ${it.src
+                  ? (it.kind === 'edit' || (it.kind === 'bts' && it.isVideo))
+                    ? `<video src="${it.src}#t=0.1" muted playsinline preload="metadata"></video>`
+                    : `<img src="${it.src}" loading="lazy" />`
+                  : ''}
+                <span class="md-latest-chip md-latest-chip-sm">
+                  <i class="bi ${latestKindIcon(it.kind)}"></i>
+                </span>
+              </button>
+            `).join('')}
+          </div>
+        ` : ''}
+      </article>
+    `;
+  }
+
+  function openLatest(item) {
+    if (!item) return;
+    if (item.kind === 'magazine') {
+      if (window.androidOpenMagazinesReader) {
+        window.androidOpenMagazinesReader({ folder: item.folder, index: item.indexInFolder, name: item.name });
+      }
+      return;
+    }
+    if (item.kind === 'edit') {
+      const edits = collectEdits();
+      const idx = edits.findIndex(e => e.folder === item.folder && e.name === item.name);
+      if (window.androidOpenEditsViewer) window.androidOpenEditsViewer(idx >= 0 ? idx : 0);
+      return;
+    }
+    if (item.kind === 'bts') {
+      const files = (portfolioData[item.folder] || []).filter(f => {
+        const noExt = f.name.replace(/\.[^/.]+$/, '');
+        return (noExt.match(/\d/g) || []).length >= 4 && !f.isMagazine;
+      });
+      const idx = files.findIndex(f => f.name === item.name);
+      if (window.androidOpenBtsViewer) window.androidOpenBtsViewer(item.folder, idx >= 0 ? idx : 0);
+    }
+  }
+
+  function wireLatestWidget(panel) {
+    const items = collectLatest(4);
+    panel.querySelectorAll('[data-latest-index]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const i = parseInt(btn.dataset.latestIndex, 10);
+        openLatest(items[i]);
+      });
+    });
   }
 
   // === Render: Edits ==================================================
@@ -211,6 +427,112 @@ import { portfolioData } from '../../data.js';
       });
     });
     paintGrid('all');
+  }
+
+  // === Render: BTS ====================================================
+  function collectBtsFolders() {
+    const folders = [];
+    Object.keys(portfolioData).forEach(key => {
+      if (key.includes('/')) return;
+      if (key.startsWith('TOMIN INDEX.TXT') || key === 'icons') return;
+      const items = portfolioData[key];
+      if (!Array.isArray(items)) return;
+      const btsFiles = items.filter(item => {
+        const nameNoExt = item.name.replace(/\.[^/.]+$/, '');
+        const digitCount = (nameNoExt.match(/\d/g) || []).length;
+        return digitCount >= 4 && !item.isMagazine;
+      });
+      if (btsFiles.length > 0) {
+        const cover = btsFiles.find(f => !f.isVideo) || btsFiles[0];
+        folders.push({ name: key, count: btsFiles.length, cover });
+      }
+    });
+    return folders;
+  }
+
+  function collectBtsFiles(folderName) {
+    const items = portfolioData[folderName] || [];
+    return items.filter(item => {
+      const nameNoExt = item.name.replace(/\.[^/.]+$/, '');
+      const digitCount = (nameNoExt.match(/\d/g) || []).length;
+      return digitCount >= 4 && !item.isMagazine;
+    });
+  }
+
+  function renderBts() {
+    const panel = document.querySelector('[data-android-panel="bts"]');
+    if (!panel) return;
+    const folders = collectBtsFolders();
+    if (folders.length === 0) {
+      panel.innerHTML = `<p style="text-align:center; color:var(--md-sys-color-on-surface-variant); padding:60px 0;">Keine BTS-Ordner.</p>`;
+      return;
+    }
+    panel.innerHTML = `
+      <div data-bts-view="folders">
+        <p style="margin:0 0 12px; font-size:14px; color:var(--md-sys-color-on-surface-variant);">${folders.length} Ordner</p>
+        <ul style="list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:4px;">
+          ${folders.map(f => `
+            <li>
+              <button class="md-bts-folder-row" data-bts-folder="${f.name.replace(/"/g, '&quot;')}">
+                <div class="md-bts-folder-thumb">
+                  ${f.cover && f.cover.src && !f.cover.isVideo
+                    ? `<img src="${f.cover.src}" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" />`
+                    : `<i class="bi bi-camera-reels-fill"></i>`}
+                </div>
+                <div style="flex:1; min-width:0;">
+                  <p style="margin:0 0 2px; font-size:15px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${f.name}</p>
+                  <p style="margin:0; font-size:13px; color:var(--md-sys-color-on-surface-variant);">${f.count} Item${f.count === 1 ? '' : 's'}</p>
+                </div>
+                <i class="bi bi-chevron-right" style="font-size:14px; color:var(--md-sys-color-on-surface-variant);"></i>
+              </button>
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+      <div data-bts-view="files" style="display:none;">
+        <div style="display:flex; align-items:center; gap:8px; margin:0 0 12px;">
+          <button data-bts-back class="md-icon-button md-list-item" aria-label="Back"
+            style="border:none; background:transparent; padding:6px; cursor:pointer; color:var(--md-sys-color-on-surface);">
+            <i class="bi bi-arrow-left" style="font-size:20px;"></i>
+          </button>
+          <h2 data-bts-folder-title style="margin:0; font-size:18px; font-weight:500; color:var(--md-sys-color-on-surface); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></h2>
+        </div>
+        <div class="md-bts-grid" data-bts-grid></div>
+      </div>
+    `;
+
+    const foldersView = panel.querySelector('[data-bts-view="folders"]');
+    const filesView = panel.querySelector('[data-bts-view="files"]');
+    const titleEl = panel.querySelector('[data-bts-folder-title]');
+    const gridEl = panel.querySelector('[data-bts-grid]');
+
+    panel.querySelectorAll('[data-bts-folder]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const folder = btn.dataset.btsFolder;
+        const files = collectBtsFiles(folder);
+        titleEl.textContent = folder;
+        gridEl.innerHTML = files.map((f, i) => `
+          <div class="md-bts-tile" data-bts-file-index="${i}">
+            ${f.isVideo
+              ? `<video src="${f.src}#t=0.1" muted playsinline preload="metadata"></video><span class="md-bts-play"><i class="bi bi-play-fill"></i></span>`
+              : `<img src="${f.src}" loading="lazy" />`}
+          </div>
+        `).join('');
+        gridEl.querySelectorAll('[data-bts-file-index]').forEach(tile => {
+          tile.addEventListener('click', () => {
+            const idx = parseInt(tile.dataset.btsFileIndex, 10);
+            if (window.androidOpenBtsViewer) window.androidOpenBtsViewer(folder, idx);
+          });
+        });
+        foldersView.style.display = 'none';
+        filesView.style.display = 'block';
+      });
+    });
+
+    panel.querySelector('[data-bts-back]').addEventListener('click', () => {
+      filesView.style.display = 'none';
+      foldersView.style.display = 'block';
+    });
   }
 
   // === Render: Contact ================================================
@@ -401,6 +723,7 @@ import { portfolioData } from '../../data.js';
     renderHome();
     renderEdits();
     renderMagazines();
+    renderBts();
     renderContact();
   }
 

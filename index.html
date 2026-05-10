@@ -602,6 +602,7 @@
       <div data-android-panel="home"></div>
       <div data-android-panel="edits" style="display:none;"></div>
       <div data-android-panel="magazines" style="display:none;"></div>
+      <div data-android-panel="bts" style="display:none;"></div>
       <div data-android-panel="contact" style="display:none;"></div>
     </div>
     <nav class="md-bottom-nav">
@@ -617,6 +618,10 @@
         <span class="md-bottom-nav-pill"><i class="bi bi-book"></i></span>
         <span>Magazin</span>
       </button>
+      <button class="md-bottom-nav-item" data-android-tab="bts">
+        <span class="md-bottom-nav-pill"><i class="bi bi-camera-reels-fill"></i></span>
+        <span>BTS</span>
+      </button>
       <button class="md-bottom-nav-item" data-android-tab="contact">
         <span class="md-bottom-nav-pill"><i class="bi bi-person-fill"></i></span>
         <span>Kontakt</span>
@@ -626,7 +631,7 @@
 
   <!-- ===== Material 3 Magazines Reader ===== -->
   <div id="android-magazines-reader">
-    <!-- Floating M3 expressive controls — no toolbar, no scrim -->
+    <!-- Floating M3 controls: back + share, no scrim -->
     <div class="md-mag-bar">
       <button class="md-mag-icon-btn" data-android-mag-close aria-label="Back">
         <i class="bi bi-arrow-left"></i>
@@ -634,9 +639,6 @@
       <div class="md-mag-spacer"></div>
       <button class="md-mag-icon-btn" data-android-mag-share aria-label="Share">
         <i class="bi bi-share"></i>
-      </button>
-      <button class="md-mag-icon-btn" data-android-mag-fullscreen aria-label="Fullscreen">
-        <i class="bi bi-arrows-fullscreen"></i>
       </button>
     </div>
     <div class="md-mag-pages" id="android-mag-pages">
@@ -656,9 +658,7 @@
         <i class="bi bi-arrow-left"></i>
       </button>
       <h2 class="md-viewer-title" id="android-edits-title">Edit</h2>
-      <button class="md-icon-button md-list-item" data-android-edits-fullscreen aria-label="Fullscreen">
-        <i class="bi bi-arrows-fullscreen"></i>
-      </button>
+      <span style="width:40px; height:40px;"></span>
     </div>
     <div class="md-viewer-stage">
       <video id="android-edits-video" playsinline></video>
@@ -690,7 +690,29 @@
         <button class="md-icon-button md-list-item" data-android-edits-next aria-label="Next">
           <i class="bi bi-skip-end-fill"></i>
         </button>
+        <button class="md-icon-button md-edits-fs" data-android-edits-fullscreen aria-label="Fullscreen">
+          <i class="bi bi-arrows-fullscreen" data-edits-fs-icon></i>
+        </button>
       </div>
+    </div>
+  </div>
+
+  <!-- ===== Material 3 BTS Viewer (full-screen swipe gallery) ===== -->
+  <div id="android-bts-viewer">
+    <div class="md-mag-bar">
+      <button class="md-mag-icon-btn" data-android-bts-close aria-label="Back">
+        <i class="bi bi-arrow-left"></i>
+      </button>
+      <div class="md-mag-spacer"></div>
+      <button class="md-mag-icon-btn" data-android-bts-share aria-label="Share">
+        <i class="bi bi-share"></i>
+      </button>
+    </div>
+    <div class="md-mag-pages" id="android-bts-pages"></div>
+    <div class="md-mag-indicator" id="android-bts-indicator">
+      <span id="android-bts-title-pill">BTS</span>
+      <span class="md-mag-dot">·</span>
+      <span id="android-bts-counter">1 / 1</span>
     </div>
   </div>
 

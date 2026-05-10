@@ -134,10 +134,31 @@ import { portfolioData } from '../../data.js';
   overlay.querySelector('[data-android-edits-prev]').addEventListener('click', () => load(cursor - 1));
   overlay.querySelector('[data-android-edits-next]').addEventListener('click', () => load(cursor + 1));
   overlay.querySelector('[data-android-edits-play]').addEventListener('click', togglePlay);
-  overlay.querySelector('[data-android-edits-fullscreen]').addEventListener('click', () => {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else overlay.requestFullscreen && overlay.requestFullscreen().catch(() => { });
-  });
+  const fsBtn = overlay.querySelector('[data-android-edits-fullscreen]');
+  const fsIcon = fsBtn ? fsBtn.querySelector('[data-edits-fs-icon]') : null;
+  function paintFsIcon() {
+    if (!fsIcon) return;
+    fsIcon.className = document.fullscreenElement
+      ? 'bi bi-fullscreen-exit'
+      : 'bi bi-arrows-fullscreen';
+  }
+  if (fsBtn) {
+    fsBtn.addEventListener('click', async () => {
+      try {
+        if (document.fullscreenElement) {
+          await document.exitFullscreen();
+        } else {
+          const req = overlay.requestFullscreen
+            || overlay.webkitRequestFullscreen
+            || overlay.msRequestFullscreen;
+          if (req) await req.call(overlay);
+        }
+      } catch (err) {
+        console.warn('[edits] fullscreen toggle failed:', err);
+      }
+    });
+  }
+  document.addEventListener('fullscreenchange', paintFsIcon);
 
   // Tap stage to toggle play
   overlay.querySelector('.md-viewer-stage').addEventListener('click', togglePlay);
