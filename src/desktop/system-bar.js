@@ -43,14 +43,21 @@ function updateThemeCheckmarks() {
   const isDark = html.classList.contains('dark');
   const isPink = html.classList.contains('theme-pink');
   const isMaterial = html.classList.contains('theme-material');
+  const isTui = html.classList.contains('theme-tui');
+  // What the user *chose* — TUI may be active in storage even while a fallback
+  // theme is painted because we're on mobile.
+  let storedPalette = 'default';
+  try { storedPalette = localStorage.getItem('palette') || 'default'; } catch (e) { /* ignore */ }
 
   const marks = {
     'theme-item-light': !isDark,
     'theme-item-dark': isDark,
-    'theme-item-default': !isPink && !isMaterial,
-    'theme-item-pink': isPink,
-    'theme-item-material': isMaterial,
+    'theme-item-default': storedPalette === 'default',
+    'theme-item-pink': storedPalette === 'pink',
+    'theme-item-material': storedPalette === 'material',
+    'theme-item-tui': storedPalette === 'tui',
   };
+  void isTui;
   Object.entries(marks).forEach(([id, active]) => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -89,10 +96,23 @@ function setDarkMode(isDark) {
 function setTheme(mode) {
   const html = document.documentElement;
   const previous = html.classList.contains('theme-material') ? 'material'
-    : html.classList.contains('theme-pink') ? 'pink' : 'default';
-  html.classList.remove('theme-pink', 'theme-material');
-  if (mode === 'pink') html.classList.add('theme-pink');
-  if (mode === 'material') html.classList.add('theme-material');
+    : html.classList.contains('theme-pink') ? 'pink'
+    : html.classList.contains('theme-tui') ? 'tui' : 'default';
+  // Remember the non-TUI palette so mobile can fall back to it.
+  try {
+    if (mode === 'tui' && previous !== 'tui') {
+      localStorage.setItem('palette-prev', previous);
+    }
+  } catch (e) { /* ignore */ }
+  html.classList.remove('theme-pink', 'theme-material', 'theme-tui');
+  const isMobile = window.matchMedia('(max-width: 767px)').matches;
+  let effective = mode;
+  if (mode === 'tui' && isMobile) {
+    try { effective = localStorage.getItem('palette-prev') || 'default'; } catch (e) { effective = 'default'; }
+  }
+  if (effective === 'pink') html.classList.add('theme-pink');
+  if (effective === 'material') html.classList.add('theme-material');
+  if (effective === 'tui') html.classList.add('theme-tui');
   try { localStorage.setItem('palette', mode); } catch (e) { /* ignore */ }
   updateThemeCheckmarks();
   if (window.updateIosPaletteToggle) window.updateIosPaletteToggle();
@@ -119,12 +139,40 @@ function setTheme(mode) {
   }
 }
 
-// Restore palette from previous session — survives desktop ↔ mobile switches
+// Restore palette from previous session — survives desktop ↔ mobile switches.
+// TUI is desktop-only, so fall back to the user's previous palette on mobile.
 try {
   const stored = localStorage.getItem('palette');
-  if (stored === 'pink') document.documentElement.classList.add('theme-pink');
-  else if (stored === 'material') document.documentElement.classList.add('theme-material');
+  const isMobile = window.matchMedia('(max-width: 767px)').matches;
+  let effective = stored;
+  if (stored === 'tui' && isMobile) {
+    effective = localStorage.getItem('palette-prev') || 'default';
+  }
+  if (effective === 'pink') document.documentElement.classList.add('theme-pink');
+  else if (effective === 'material') document.documentElement.classList.add('theme-material');
+  else if (effective === 'tui') document.documentElement.classList.add('theme-tui');
 } catch (e) { /* ignore */ }
+
+// Re-apply on viewport changes so resizing the window past the mobile threshold
+// swaps TUI ↔ fallback without a reload.
+window.addEventListener('resize', () => {
+  let stored = 'default';
+  try { stored = localStorage.getItem('palette') || 'default'; } catch (e) { /* ignore */ }
+  if (stored !== 'tui') return;
+  const isMobile = window.matchMedia('(max-width: 767px)').matches;
+  const html = document.documentElement;
+  const hasTui = html.classList.contains('theme-tui');
+  if (isMobile && hasTui) {
+    html.classList.remove('theme-tui');
+    let prev = 'default';
+    try { prev = localStorage.getItem('palette-prev') || 'default'; } catch (e) { /* ignore */ }
+    if (prev === 'pink') html.classList.add('theme-pink');
+    else if (prev === 'material') html.classList.add('theme-material');
+  } else if (!isMobile && !hasTui) {
+    html.classList.remove('theme-pink', 'theme-material');
+    html.classList.add('theme-tui');
+  }
+});
 
 updateThemeCheckmarks();
 

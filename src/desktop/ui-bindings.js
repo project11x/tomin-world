@@ -16,6 +16,7 @@ import { setDarkMode, setTheme } from './system-bar.js';
   on($('theme-item-default'), () => setTheme('default'));
   on($('theme-item-pink'), () => setTheme('pink'));
   on($('theme-item-material'), () => setTheme('material'));
+  on($('theme-item-tui'), () => setTheme('tui'));
 
   // Desktop dock
   $$('[data-dock]').forEach((el) => {
