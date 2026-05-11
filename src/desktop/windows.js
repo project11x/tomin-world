@@ -113,14 +113,15 @@ export function createWindow(folderName) {
   });
 
   // UI setup
-  win.querySelector('.btn-close-window').onclick = () => {
-    withViewTransition(() => win.remove());
-    emitWindowChange();
+  const animateClose = () => {
+    if (win.classList.contains('closing')) return;
+    win.classList.add('closing');
+    const done = () => { win.remove(); emitWindowChange(); };
+    win.addEventListener('animationend', done, { once: true });
+    setTimeout(done, 260);
   };
-  win.querySelector('.btn-minimize-window').onclick = () => {
-    withViewTransition(() => win.remove());
-    emitWindowChange();
-  };
+  win.querySelector('.btn-close-window').onclick = animateClose;
+  win.querySelector('.btn-minimize-window').onclick = animateClose;
   win.querySelector('.btn-fullscreen-window').onclick = () => toggleFullscreen(win);
 
   const btnGrid = win.querySelector('#btn-view-grid');
