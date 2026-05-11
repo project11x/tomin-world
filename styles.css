@@ -869,8 +869,12 @@
       color: #fff;
     }
 
+    .finder-icon-name {
+      --finder-name-color: rgb(51, 65, 85);
+    }
+
     .dark .finder-icon-name {
-      color: rgb(203, 213, 225);
+      --finder-name-color: rgb(226, 232, 240);
     }
 
     .dark .finder-icon-item:hover .finder-icon-name {

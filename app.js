@@ -14,6 +14,7 @@ import './src/desktop/windows.js';
 import './src/desktop/quick-look.js';
 import './src/desktop/spaces.js';
 import './src/desktop/edits-viewer.js';
+import './src/desktop/m3-shell.js';
 import './src/ios/index.js';
 import './src/android/index.js';
 import './src/android/widgets.js';

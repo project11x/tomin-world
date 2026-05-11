@@ -32,6 +32,8 @@ const W = /** @type {any} */ (window);
     const hints = [
       document.getElementById('ios-push-hint'),
       document.getElementById('desktop-push-hint'),
+      document.getElementById('android-push-hint'),
+      document.getElementById('m3d-push-hint'),
     ].filter((h) => h);
     hints.forEach((hint) => {
       hint.textContent = text;
@@ -43,10 +45,14 @@ const W = /** @type {any} */ (window);
     const toggles = [
       document.getElementById('ios-push-toggle'),
       document.getElementById('desktop-push-toggle'),
+      document.getElementById('android-push-toggle'),
+      document.getElementById('m3d-push-toggle'),
     ].filter((t) => t);
     const knobs = [
       document.getElementById('ios-push-knob'),
       document.getElementById('desktop-push-knob'),
+      document.getElementById('android-push-knob'),
+      document.getElementById('m3d-push-knob'),
     ].filter((k) => k);
 
     if (toggles.length === 0) return;
@@ -184,6 +190,7 @@ const W = /** @type {any} */ (window);
     }
   }
   W.togglePushSubscription = togglePushSubscription;
+  W.refreshPushToggleUI = refreshPushToggleUI;
 
   function bindOneSignal(OneSignal) {
     if (__osRef || !OneSignal || !OneSignal.User) return;

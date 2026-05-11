@@ -1,0 +1,977 @@
+/* Material 3 Desktop Shell
+   Active only when html.theme-material is set AND viewport is desktop-sized.
+   Hides the entire macOS-style desktop chrome and replaces it with a
+   Rail + List + Detail layout that matches the M3 expanded canonical layout. */
+
+#m3-desktop {
+  display: none;
+}
+
+/* Activate only on desktop viewports under Material theme.
+   Mobile breakpoint (<=900px) keeps using #android-screen instead. */
+@media (min-width: 901px) {
+  .theme-material body > header,
+  .theme-material #desktop-main,
+  .theme-material #macos-dock,
+  .theme-material #ios-screen,
+  .theme-material #android-screen {
+    display: none !important;
+  }
+
+  .theme-material #m3-desktop {
+    display: grid;
+    grid-template-columns: 80px minmax(280px, 360px) 1fr;
+    gap: 16px;
+    padding: 16px;
+    position: fixed;
+    inset: 0;
+    background: var(--md-sys-color-surface-container-lowest, #fff);
+    color: var(--md-sys-color-on-surface, #1d1b20);
+    font-family: 'Roboto', 'Roboto Flex', system-ui, -apple-system, sans-serif;
+    overflow: hidden;
+  }
+}
+
+/* === Navigation Rail =============================================== */
+
+.m3d-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 12px;
+  gap: 12px;
+  background: var(--md-sys-color-surface-container, #f3edf7);
+  border-radius: 28px;
+}
+
+.m3d-rail-icon,
+.m3d-rail-item {
+  width: 100%;
+  height: 56px;
+  border: none;
+  background: transparent;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  /* Icon column is 24px wide. Equal side padding (16px) keeps the icon
+     vertically aligned with the rail center even when the item widens
+     for the expanded drawer — the icon never moves horizontally. */
+  padding: 0 16px;
+  gap: 16px;
+  overflow: hidden;
+  white-space: nowrap;
+  cursor: pointer;
+  color: var(--md-sys-color-on-surface-variant, #49454f);
+  transition: width 200ms cubic-bezier(0.2, 0, 0, 1), background 150ms ease, color 150ms ease;
+}
+
+.m3d-rail-icon .material-symbols-rounded,
+.m3d-rail-item .material-symbols-rounded,
+.m3d-rail-icon .bi,
+.m3d-rail-item .bi {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.m3d-rail-icon:hover,
+.m3d-rail-item:hover {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface, #1d1b20) 8%, transparent);
+}
+
+.m3d-rail-item.is-active {
+  background: var(--md-sys-color-secondary-container, #e8def8);
+  color: var(--md-sys-color-on-secondary-container, #1d192b);
+}
+
+.m3d-rail-item.is-active .material-symbols-rounded {
+  font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+}
+
+.m3d-rail-menu {
+  margin-bottom: 4px;
+}
+
+.m3d-rail-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
+  width: 100%;
+}
+
+/* === Panes ========================================================= */
+
+.m3d-pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+}
+
+.m3d-pane--list {
+  gap: 12px;
+}
+
+/* Search pill */
+.m3d-search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  height: 56px;
+  background: var(--md-sys-color-surface-container-high, #ece6f0);
+  border-radius: 28px;
+  flex-shrink: 0;
+}
+
+.m3d-search-icon {
+  font-size: 22px;
+  color: var(--md-sys-color-on-surface-variant, #49454f);
+}
+
+.m3d-search input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font: inherit;
+  font-size: 15px;
+  color: var(--md-sys-color-on-surface, #1d1b20);
+}
+
+.m3d-search input::placeholder {
+  color: var(--md-sys-color-on-surface-variant, #49454f);
+}
+
+/* List card */
+.m3d-list-card {
+  flex: 1;
+  min-height: 0;
+  background: var(--md-sys-color-surface-container-low, #f7f2fa);
+  border-radius: 28px;
+  padding: 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.m3d-list-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.m3d-list-item:hover {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface, #1d1b20) 6%, transparent);
+}
+
+.m3d-list-item.is-active {
+  background: var(--md-sys-color-secondary-container, #e8def8);
+  color: var(--md-sys-color-on-secondary-container, #1d192b);
+}
+
+.m3d-list-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: var(--md-sys-color-surface-container-highest, #e6e0e9);
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+.m3d-list-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.m3d-list-title {
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.m3d-list-subtitle {
+  font-size: 13px;
+  color: var(--md-sys-color-on-surface-variant, #49454f);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Detail card */
+.m3d-detail-card {
+  flex: 1;
+  min-height: 0;
+  background: var(--md-sys-color-surface-container-low, #f7f2fa);
+  border-radius: 28px;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.m3d-detail-empty {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--md-sys-color-on-surface-variant, #49454f);
+  font-size: 14px;
+}
+
+.m3d-detail-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.m3d-detail-title {
+  font-size: 28px;
+  font-weight: 400;
+  margin: 0;
+}
+
+.m3d-detail-meta {
+  font-size: 13px;
+  color: var(--md-sys-color-on-surface-variant, #49454f);
+}
+
+.m3d-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.m3d-tile {
+  aspect-ratio: 1;
+  background: var(--md-sys-color-surface-container-highest, #e6e0e9);
+  background-size: cover;
+  background-position: center;
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.m3d-tile-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #fff;
+  background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* === FAB =========================================================== */
+
+.m3d-fab {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  border: none;
+  background: var(--md-sys-color-primary-container, #eaddff);
+  color: var(--md-sys-color-on-primary-container, #21005d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 4px 8px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 150ms ease, transform 150ms ease;
+}
+
+.m3d-fab:hover {
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.16),
+    0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.m3d-fab:active {
+  transform: scale(0.97);
+}
+
+.m3d-fab .material-symbols-rounded {
+  font-size: 24px;
+}
+
+/* === Drawer (expanded rail) ======================================== */
+
+@media (min-width: 901px) {
+  .theme-material #m3-desktop.is-drawer-open {
+    grid-template-columns: 256px minmax(280px, 360px) 1fr;
+  }
+  .theme-material #m3-desktop.no-list {
+    grid-template-columns: 80px 1fr;
+  }
+  .theme-material #m3-desktop.is-drawer-open.no-list {
+    grid-template-columns: 256px 1fr;
+  }
+}
+
+.m3d-rail-item::after {
+  content: attr(aria-label);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.1px;
+  opacity: 0;
+  transition: opacity 160ms ease;
+  pointer-events: none;
+}
+
+#m3-desktop.is-drawer-open .m3d-rail-item::after {
+  opacity: 1;
+}
+
+/* === Preview (file detail) ========================================= */
+
+.m3d-preview {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.m3d-preview-media {
+  max-width: 100%;
+  max-height: calc(100vh - 220px);
+  border-radius: 16px;
+  background: #000;
+}
+
+/* === M3 Video Player =============================================== */
+
+/* === Inline Magazine Reader ========================================
+   Lives inside the detail pane. Pages snap horizontally one-at-a-time,
+   counter pill at bottom updates live on scroll. */
+
+.m3d-mag-reader {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 200px);
+  background: var(--md-sys-color-surface-container, #f3edf7);
+  border-radius: 28px;
+  overflow: hidden;
+}
+
+.m3d-mag-pages {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+  /* Lateral padding so the first and last page can still center while we
+     show half of the neighbouring pages on either side (carousel peek). */
+  padding-inline: 15%;
+}
+
+.m3d-mag-pages::-webkit-scrollbar { display: none; }
+
+.m3d-mag-page {
+  flex: 0 0 70%;
+  width: 70%;
+  height: 100%;
+  scroll-snap-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+}
+
+.m3d-mag-page img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 0;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.m3d-mag-pages.is-dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+  scroll-behavior: auto;
+}
+
+.m3d-mag-pages {
+  cursor: grab;
+}
+
+/* Prev / Next arrows — M3 IconButton tonal, sit inside the reader. */
+.m3d-mag-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--md-sys-color-inverse-surface, #322f35) 80%, transparent);
+  color: var(--md-sys-color-inverse-on-surface, #f5eff7);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 150ms ease, transform 150ms ease, background 150ms ease;
+  z-index: 2;
+}
+
+.m3d-mag-nav:hover {
+  background: var(--md-sys-color-inverse-surface, #322f35);
+}
+
+.m3d-mag-nav:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.m3d-mag-nav .material-symbols-rounded,
+.m3d-mag-nav .bi {
+  font-size: 22px;
+}
+
+.m3d-mag-nav--prev { left: 16px; }
+.m3d-mag-nav--next { right: 16px; }
+
+.m3d-mag-indicator {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: color-mix(in srgb, var(--md-sys-color-inverse-surface, #322f35) 88%, transparent);
+  color: var(--md-sys-color-inverse-on-surface, #f5eff7);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  max-width: calc(100% - 32px);
+  white-space: nowrap;
+}
+
+.m3d-mag-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.m3d-mag-dot { opacity: 0.55; }
+
+/* === M3 Media Player ================================================
+   Spec target: Material 3 Expressive video player.
+   - Container uses surface-container tokens with 28px shape (large)
+   - Big center play = M3 FAB (primary-container)
+   - Control row sits OUTSIDE the video frame, on the player surface
+   - Icon buttons follow M3 IconButton (40dp circle, on-surface)
+   - Slider follows M3 Slider (4dp inactive, 16dp active handle, gap) */
+
+.m3d-player {
+  position: relative;
+  width: 100%;
+  background: var(--md-sys-color-surface-container, #f3edf7);
+  border-radius: 28px;
+  padding: 12px 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--md-sys-color-on-surface, #1d1b20);
+}
+
+.m3d-player-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: calc(100vh - 280px);
+  background: #000;
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.m3d-player-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: #000;
+}
+
+/* Big center FAB-style play button (M3 large FAB, primary container). */
+.m3d-player-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.32), rgba(0, 0, 0, 0.08));
+  border: none;
+  cursor: pointer;
+  transition: opacity 200ms ease, background 200ms ease;
+}
+
+.m3d-player-overlay-fab {
+  width: 96px;
+  height: 96px;
+  border-radius: 28px;
+  background: var(--md-sys-color-primary-container, #eaddff);
+  color: var(--md-sys-color-on-primary-container, #21005d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.18),
+    0 8px 24px rgba(0, 0, 0, 0.28);
+  transition: transform 160ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.m3d-player-overlay:hover .m3d-player-overlay-fab {
+  transform: scale(1.04);
+}
+
+.m3d-player-overlay-fab .material-symbols-rounded,
+.m3d-player-overlay-fab .bi {
+  font-size: 44px;
+}
+
+.m3d-player[data-state="playing"] .m3d-player-overlay {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Control row — sits on the player surface, OUTSIDE the video frame.
+   Uses on-surface tokens so it stays themable in light/dark/seed swaps. */
+.m3d-player-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  color: var(--md-sys-color-on-surface, #1d1b20);
+  transition: opacity 220ms ease;
+}
+
+.m3d-player.is-idle {
+  cursor: none;
+}
+
+.m3d-player-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 20px;
+  background: transparent;
+  color: var(--md-sys-color-on-surface, #1d1b20);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.m3d-player-btn:hover {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface, #1d1b20) 8%, transparent);
+}
+
+.m3d-player-btn:active {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface, #1d1b20) 12%, transparent);
+}
+
+.m3d-player-btn .material-symbols-rounded,
+.m3d-player-btn .bi {
+  font-size: 22px;
+}
+
+/* Filled play/pause button — primary FAB token, sits flush in the bar. */
+.m3d-player-play {
+  background: var(--md-sys-color-primary, #6750a4);
+  color: var(--md-sys-color-on-primary, #fff);
+}
+
+.m3d-player-play:hover {
+  background: color-mix(in srgb, var(--md-sys-color-primary, #6750a4) 92%, #000);
+}
+
+.m3d-player-time {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--md-sys-color-on-surface-variant, #49454f);
+  min-width: 40px;
+  text-align: center;
+  letter-spacing: 0.15px;
+}
+
+/* M3 Slider — track sits at 4dp, with a 4dp gap before the handle.
+   Inactive track is surface-container-highest; active is primary. */
+.m3d-player-scrub {
+  position: relative;
+  flex: 1;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.m3d-player-scrub-track {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--md-sys-color-secondary-container, #e8def8);
+}
+
+.m3d-player-scrub-buffer {
+  position: absolute;
+  left: 4px;
+  width: 0;
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--md-sys-color-on-surface-variant, #49454f) 24%, transparent);
+}
+
+.m3d-player-scrub-fill {
+  position: absolute;
+  left: 4px;
+  width: 0;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--md-sys-color-primary, #6750a4);
+  /* Leave a 6px gap before the active handle, per M3 Slider 2024 spec. */
+  margin-right: 6px;
+  transition: width 80ms linear;
+}
+
+.m3d-player-scrub-thumb {
+  position: absolute;
+  top: 50%;
+  left: 4px;
+  width: 4px;
+  height: 28px;
+  border-radius: 4px;
+  background: var(--md-sys-color-primary, #6750a4);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: width 160ms cubic-bezier(0.2, 0, 0, 1),
+              height 160ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.m3d-player-scrub:hover .m3d-player-scrub-thumb {
+  width: 6px;
+  height: 32px;
+}
+
+.m3d-player-scrub-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  margin: 0;
+}
+
+/* Dark mode: surface tokens already flip via .dark.theme-material,
+   so the player follows automatically. Just soften the stage gradient
+   so the overlay scrim doesn't fight the dark UI. */
+.dark.theme-material .m3d-player-overlay {
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.12));
+}
+
+.m3d-tile-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 40px !important;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* === About view ==================================================== */
+
+/* About / Contact desktop layout — two-column grid: hero on the left,
+   actions + cards stack on the right. Reuses the mobile .md-hero,
+   .md-loc-chip, .md-action-btn primitives. */
+
+.m3d-about-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.9fr) 1.1fr;
+  gap: 20px;
+  align-items: stretch;
+  width: 100%;
+}
+
+.m3d-about-hero {
+  position: relative;
+  border-radius: var(--md-sys-shape-corner-xl, 28px);
+  overflow: hidden;
+  grid-row: span 3;
+  min-height: 420px;
+}
+
+.m3d-about-actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.m3d-about-card {
+  background: var(--md-sys-color-surface-container, #f3edf7);
+  border-radius: var(--md-sys-shape-corner-lg, 16px);
+  padding: 20px 22px;
+}
+
+.m3d-about-eyebrow {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--md-sys-color-primary, #6750a4);
+}
+
+.m3d-about-body {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--md-sys-color-on-surface, #1d1b20);
+  font-family: 'Roboto', system-ui, sans-serif;
+}
+
+.m3d-about-label {
+  margin: 14px 0 8px;
+  color: var(--md-sys-color-on-surface, #1d1b20);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.m3d-about-label:first-of-type {
+  margin-top: 0;
+}
+
+.m3d-about-segmented {
+  display: flex;
+  padding: 4px;
+  background: var(--md-sys-color-surface-container-high, #ece6f0);
+  border-radius: var(--md-sys-shape-corner-full, 999px);
+}
+
+.m3d-about-seeds {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* !important because push.js writes an iOS-tinted inline color on the
+   hint paragraph that's unreadable on the M3 surface. */
+.m3d-about-hint,
+#m3d-push-hint {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--md-sys-color-on-surface-variant, #49454f) !important;
+}
+
+#android-push-hint {
+  color: var(--md-sys-color-on-surface-variant, #49454f) !important;
+}
+
+.m3d-push-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* M3-style switch — track + knob, picked up by push.js inline styles
+   (background-color, knob transform). Tokens fall back to Material light. */
+/* !important needed because push.js sets inline iOS-style colors that we
+   override here to stay on the Material switch spec. */
+.m3d-push-toggle {
+  position: relative;
+  width: 52px;
+  height: 32px;
+  border-radius: 16px !important;
+  border: 2px solid var(--md-sys-color-outline, #79747e) !important;
+  background: var(--md-sys-color-surface-container-highest, #e6e0e9) !important;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background 200ms ease, border-color 200ms ease;
+}
+
+.m3d-push-toggle[aria-checked="true"] {
+  background: var(--md-sys-color-primary, #6750a4) !important;
+  border-color: var(--md-sys-color-primary, #6750a4) !important;
+}
+
+.m3d-push-knob {
+  position: absolute;
+  top: 6px !important;
+  left: 6px !important;
+  width: 16px !important;
+  height: 16px !important;
+  border-radius: 50% !important;
+  background: var(--md-sys-color-outline, #79747e) !important;
+  transform: translateX(0) !important;
+  box-shadow: none !important;
+  transition: transform 200ms cubic-bezier(0.2, 0, 0, 1), background 200ms ease, width 200ms ease, height 200ms ease, top 200ms ease, left 200ms ease;
+}
+
+.m3d-push-toggle[aria-checked="true"] .m3d-push-knob {
+  top: 4px !important;
+  left: 4px !important;
+  width: 20px !important;
+  height: 20px !important;
+  background: var(--md-sys-color-on-primary, #fff) !important;
+  transform: translateX(20px) !important;
+}
+
+/* === Lightbox ====================================================== */
+
+.m3d-lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.m3d-lightbox.is-open {
+  display: flex;
+}
+
+.m3d-lightbox-stage {
+  max-width: 90vw;
+  max-height: 85vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.m3d-lightbox-stage img,
+.m3d-lightbox-stage video {
+  max-width: 90vw;
+  max-height: 85vh;
+  border-radius: 12px;
+  background: #000;
+}
+
+.m3d-lightbox-stage .m3d-player {
+  width: min(90vw, 1400px);
+  max-height: 85vh;
+}
+
+.m3d-lightbox-stage .m3d-player-stage {
+  max-height: calc(85vh - 80px);
+}
+
+.m3d-lightbox-close,
+.m3d-lightbox-prev,
+.m3d-lightbox-next {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.m3d-lightbox-close:hover,
+.m3d-lightbox-prev:hover,
+.m3d-lightbox-next:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.m3d-lightbox-close { top: 24px; right: 24px; }
+.m3d-lightbox-prev  { left: 24px; top: 50%; transform: translateY(-50%); }
+.m3d-lightbox-next  { right: 24px; top: 50%; transform: translateY(-50%); }
+
+.m3d-lightbox-close .material-symbols-rounded,
+.m3d-lightbox-close .bi,
+.m3d-lightbox-prev .material-symbols-rounded,
+.m3d-lightbox-prev .bi,
+.m3d-lightbox-next .material-symbols-rounded,
+.m3d-lightbox-next .bi {
+  font-size: 22px;
+}
+
+.m3d-lightbox-caption {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 6px 14px;
+  border-radius: 14px;
+}
+
+/* === Snackbar ====================================================== */
+
+.m3d-snackbar {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translate(-50%, 24px);
+  background: var(--md-sys-color-inverse-surface, #322f35);
+  color: var(--md-sys-color-inverse-on-surface, #f5eff7);
+  padding: 14px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+  z-index: 10000;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16), 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.m3d-snackbar.is-open {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* Dark mode tweaks rely on .dark.theme-material tokens already defined. */
+.dark.theme-material #m3-desktop {
+  background: var(--md-sys-color-surface, #141218);
+}

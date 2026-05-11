@@ -160,6 +160,7 @@
   <link rel="stylesheet" href="tailwind.css" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="src/android/tokens.css" />
+  <link rel="stylesheet" href="src/desktop/m3-shell.css" />
   <!-- Umami analytics — privacy-friendly, no cookies. -->
   <script defer src="https://cloud.umami.is/script.js" data-website-id="2ca1be0a-b51f-48d6-9874-ea5176bf30c3"></script>
 </head>
@@ -428,6 +429,57 @@
     </template>
 
   </main>
+
+  <!-- Material 3 Desktop Shell — only visible under .theme-material on desktop -->
+  <div id="m3-desktop" aria-hidden="true">
+    <nav class="m3d-rail" role="navigation" aria-label="Primary">
+      <button class="m3d-rail-icon m3d-rail-menu" data-action="menu" aria-label="Menu">
+        <span class="material-symbols-rounded">menu</span>
+      </button>
+      <div class="m3d-rail-items">
+        <button class="m3d-rail-item is-active" data-tab="edits" aria-label="Edits">
+          <span class="material-symbols-rounded">smart_display</span>
+        </button>
+        <button class="m3d-rail-item" data-tab="shoots" aria-label="Shoots">
+          <span class="material-symbols-rounded">photo_camera</span>
+        </button>
+        <button class="m3d-rail-item" data-tab="magazines" aria-label="Magazines">
+          <span class="material-symbols-rounded">menu_book</span>
+        </button>
+        <button class="m3d-rail-item" data-tab="about" aria-label="About">
+          <span class="material-symbols-rounded">person</span>
+        </button>
+      </div>
+    </nav>
+
+    <section class="m3d-pane m3d-pane--list" aria-label="List">
+      <div class="m3d-search" role="search">
+        <span class="material-symbols-rounded m3d-search-icon">search</span>
+        <input type="text" id="m3d-search-input" placeholder="Search" aria-label="Search" />
+      </div>
+      <div class="m3d-list-card" id="m3d-list"></div>
+    </section>
+
+    <section class="m3d-pane m3d-pane--detail" aria-label="Detail">
+      <div class="m3d-detail-card" id="m3d-detail"></div>
+    </section>
+
+    <div class="m3d-lightbox" id="m3d-lightbox" role="dialog" aria-modal="true">
+      <button class="m3d-lightbox-close" aria-label="Close">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+      <button class="m3d-lightbox-prev" aria-label="Previous">
+        <span class="material-symbols-rounded">chevron_left</span>
+      </button>
+      <div class="m3d-lightbox-stage" id="m3d-lightbox-stage"></div>
+      <button class="m3d-lightbox-next" aria-label="Next">
+        <span class="material-symbols-rounded">chevron_right</span>
+      </button>
+      <div class="m3d-lightbox-caption" id="m3d-lightbox-caption"></div>
+    </div>
+
+    <div class="m3d-snackbar" id="m3d-snackbar" role="status"></div>
+  </div>
 
   <!-- About Me Modal (outside desktop-main for mobile support) -->
   <div id="about-me-modal"

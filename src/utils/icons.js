@@ -36,6 +36,19 @@ const ICON_MAP = {
   auto_stories: 'book',
   new_releases: 'stars',
   close: 'x-lg',
+  menu: 'list',
+  home: 'house-fill',
+  group: 'people-fill',
+  inventory_2: 'box-seam-fill',
+  smart_display: 'play-btn-fill',
+  search: 'search',
+  add: 'plus-lg',
+  photo_camera: 'camera-fill',
+  person: 'person-fill',
+  volume_up: 'volume-up-fill',
+  volume_off: 'volume-mute-fill',
+  play_arrow: 'play-fill',
+  pause: 'pause-fill',
 };
 
 function biClass(name) {

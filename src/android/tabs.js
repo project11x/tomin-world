@@ -571,6 +571,19 @@ import { portfolioData } from '../../data.js';
         <p style="margin:0; font-size:15px; line-height:1.55; color:var(--md-sys-color-on-surface); font-family:'Roboto', system-ui, sans-serif;">Eddie shoots, edits, and prints. Magazine work, music videos, and a steady stream of behind-the-scenes — built up over late nights in Berlin.</p>
       </section>
 
+      <!-- Notifications card -->
+      <section class="md-stagger" style="background:var(--md-sys-color-surface-container); border-radius:var(--md-sys-shape-corner-lg); padding:18px 20px; margin-bottom:16px;">
+        <p style="margin:0 0 12px; font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--md-sys-color-primary);">Benachrichtigungen</p>
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+          <p style="margin:0; color:var(--md-sys-color-on-surface); font-size:14px; font-weight:500;">Updates direkt aufs Handy.</p>
+          <button id="android-push-toggle" role="switch" aria-checked="false"
+            class="m3d-push-toggle" data-android-push>
+            <span id="android-push-knob" class="m3d-push-knob"></span>
+          </button>
+        </div>
+        <p id="android-push-hint" style="margin:8px 0 0; color:var(--md-sys-color-on-surface-variant); font-size:13px; line-height:1.45;">Updates direkt auf dieses Gerät.</p>
+      </section>
+
       <!-- Settings card -->
       <section class="md-stagger" style="background:var(--md-sys-color-surface-container); border-radius:var(--md-sys-shape-corner-lg); padding:18px 20px; margin-bottom:8px;">
         <p style="margin:0 0 14px; font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--md-sys-color-primary);">Theme</p>
@@ -638,6 +651,17 @@ import { portfolioData } from '../../data.js';
     panel.querySelectorAll('[data-android-jump]').forEach(el => {
       el.addEventListener('click', () => setActiveTab(el.dataset.androidJump));
     });
+    // Push toggle
+    const pushBtn = panel.querySelector('#android-push-toggle');
+    if (pushBtn) {
+      pushBtn.addEventListener('click', () => {
+        if (typeof window.togglePushSubscription === 'function') window.togglePushSubscription();
+      });
+      // Reflect current state once the DOM is mounted.
+      setTimeout(() => {
+        if (typeof window.refreshPushToggleUI === 'function') window.refreshPushToggleUI();
+      }, 0);
+    }
     // Action buttons (Save / Share)
     const saveBtn = panel.querySelector('[data-action="save"]');
     if (saveBtn) saveBtn.addEventListener('click', (e) => {
