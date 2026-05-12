@@ -787,6 +787,32 @@ export const portfolioData = {
       "src": "tipsy%20triad/Movie%20on%2003.03.25%20at%2021.18-0001.png",
       "isVideo": false
     }
+  ],
+  "valueME": [
+    {
+      "name": "valueME.mp4",
+      "type": "Video",
+      "size": "34.2 MB",
+      "date": "May 12, 2026",
+      "src": "valueME/valueME.mp4",
+      "isVideo": true
+    },
+    {
+      "name": "IMG_004195.JPG",
+      "type": "Image",
+      "size": "1.7 MB",
+      "date": "May 12, 2026",
+      "src": "valueME/IMG_004195.JPG",
+      "isVideo": false
+    },
+    {
+      "name": "IMG_004204.JPG",
+      "type": "Image",
+      "size": "1.6 MB",
+      "date": "May 9, 2026",
+      "src": "valueME/IMG_004204.JPG",
+      "isVideo": false
+    }
   ]
 };
-export const globalLatestFileTime = 1777845600000;
+export const globalLatestFileTime = 1778536800000;
