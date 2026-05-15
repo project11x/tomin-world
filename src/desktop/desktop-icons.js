@@ -88,9 +88,9 @@ function slotToPx(slot) {
 // Convert a free pixel position (during drag) back to the nearest slot.
 // Returns null if not close enough to any slot — caller can decide to
 // keep the free position or snap.
-function pxToNearestSlot(leftPx, topPx, containerWidth) {
+function pxToNearestSlot(leftPx, topPx, containerWidth, iconWidth) {
   // Convert left → right offset
-  const rightPx = containerWidth - leftPx - 80; // ~icon width
+  const rightPx = containerWidth - leftPx - iconWidth;
   const col = Math.round((rightPx - COL_ORIGIN) / COL_STEP);
   const row = Math.round((topPx - ROW_ORIGIN) / ROW_STEP);
   if (col < 0 || row < 0) return null;
@@ -204,21 +204,30 @@ function escapeHtml(s) {
 // position and rewrites it if a snap is warranted.
 function bindSnapOnDrop(container) {
   let pressed = null;
+  let pressStart = null;
   container.addEventListener('mousedown', (e) => {
     const icon = e.target.closest('.desktop-icon');
     pressed = icon || null;
+    pressStart = icon ? { x: e.clientX, y: e.clientY } : null;
   });
-  document.addEventListener('mouseup', () => {
+  document.addEventListener('mouseup', (e) => {
     const icon = pressed;
+    const start = pressStart;
     pressed = null;
-    if (!icon) return;
+    pressStart = null;
+    if (!icon || !start) return;
+    // Skip pure clicks — windows.js rewrites style.left on every mousedown,
+    // so without this guard a non-drag click would re-snap (and the rounding
+    // walks the icon one slot left each time).
+    const moved = Math.abs(e.clientX - start.x) > 3 || Math.abs(e.clientY - start.y) > 3;
+    if (!moved) return;
     // Defer one frame so windows.js has finished writing left/top.
     requestAnimationFrame(() => {
       const left = parseFloat(icon.style.left);
       const top = parseFloat(icon.style.top);
       if (Number.isNaN(left) || Number.isNaN(top)) return;
       const containerWidth = container.getBoundingClientRect().width;
-      const slot = pxToNearestSlot(left, top, containerWidth);
+      const slot = pxToNearestSlot(left, top, containerWidth, icon.offsetWidth);
       if (!slot) return; // dropped far from any slot — leave it where it is
       const px = slotToPx(slot);
       icon.style.left = 'auto';
