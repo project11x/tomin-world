@@ -2,9 +2,11 @@
 module.exports = {
   content: [
     "./index.html",
+    "./admin.html",
     "./app.js",
     "./changelog.js",
     "./admin.js",
+    "./src/**/*.{js,ts,html}",
   ],
   darkMode: "class",
   theme: {
