@@ -14,7 +14,8 @@
 #   5. Upload the project folder to R2 (bucket: tomin-media) via wrangler.
 #   6. Verify R2 contains the expected files.
 #   7. Commit data.js (only) with a project-specific message and push.
-#   8. Print the live URL.
+#   8. Build + deploy to Cloudflare Pages directly via wrangler.
+#   9. Print the live URL.
 #
 # Requires:
 #   ffmpeg, npx (wrangler is invoked via npx — first run pulls it).
@@ -334,7 +335,7 @@ fi
 # 7. Commit + push (only data.js)
 # ─────────────────────────────────────────────────────────────────────
 echo ""
-echo -e "${YELLOW}[7/7] Publishing to Git…${NC}"
+echo -e "${YELLOW}[7/8] Publishing to Git…${NC}"
 if $DRY_RUN; then
   echo -e "${DIM}  (skipped in dry-run)${NC}"
 else
@@ -349,6 +350,23 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────────────
+# 8. Deploy to Cloudflare Pages directly (bypasses the flaky CF Pages
+#    git auto-build, which has been producing 500-on-/ deployments).
+# ─────────────────────────────────────────────────────────────────────
+echo ""
+echo -e "${YELLOW}[8/8] Deploying to Cloudflare Pages…${NC}"
+if $DRY_RUN; then
+  echo -e "${DIM}  (skipped in dry-run)${NC}"
+else
+  if npm run deploy 2>&1 | tail -3; then
+    echo -e "${GREEN}✓ Deployed${NC}"
+  else
+    echo -e "${RED}✗ Deploy failed — check output above${NC}"
+    exit 1
+  fi
+fi
+
+# ─────────────────────────────────────────────────────────────────────
 # Done
 # ─────────────────────────────────────────────────────────────────────
 echo ""
@@ -357,6 +375,6 @@ if $DRY_RUN; then
   echo -e "  Dry-run complete. No changes made."
 else
   echo -e "  ✓ ${PROJECT} published"
-  echo -e "  Live in ~1 min: ${LIVE_URL}"
+  echo -e "  Live: ${LIVE_URL}"
 fi
 echo -e "========================================${NC}"
