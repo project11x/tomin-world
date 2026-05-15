@@ -46,7 +46,8 @@ export function renderAndroidBadges() {
     .md-nav-badge {
       position: absolute; top: -2px; right: -6px;
       min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box;
-      background: var(--md-sys-color-error, #b3261e); color: var(--md-sys-color-on-error, #fff);
+      background: var(--md-sys-color-tertiary-container, #ffd8e4);
+      color: var(--md-sys-color-on-tertiary-container, #31111d);
       font-family: 'Roboto', system-ui, sans-serif;
       font-size: 11px; font-weight: 600; line-height: 1;
       border-radius: 999px;
