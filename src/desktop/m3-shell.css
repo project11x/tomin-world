@@ -9,7 +9,7 @@
 
 /* Activate only on desktop viewports under Material theme.
    Mobile breakpoint (<=900px) keeps using #android-screen instead. */
-@media (min-width: 901px) {
+@media (min-width: 769px) {
   .theme-material body > header,
   .theme-material #desktop-main,
   .theme-material #macos-dock,
@@ -338,7 +338,7 @@
 
 /* === Drawer (expanded rail) ======================================== */
 
-@media (min-width: 901px) {
+@media (min-width: 769px) {
   .theme-material #m3-desktop.is-drawer-open {
     grid-template-columns: 256px minmax(280px, 360px) 1fr;
   }
