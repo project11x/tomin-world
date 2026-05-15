@@ -402,9 +402,12 @@ function renderRecentView(win) {
 }
 
 // Refresh sidebar + main area on every open finder window when the live
-// R2 sync surfaces new folders or files.
+// R2 sync surfaces new folders or files. The per-window thumbnail cache
+// must be cleared so the new data is picked up.
 window.addEventListener('portfolio-updated', () => {
   document.querySelectorAll('.finder-window').forEach(win => {
+    const mainArea = win.querySelector('.finder-main-area');
+    if (mainArea) mainArea.innerHTML = '';
     injectFavorites(win);
     if (win.dataset.folder) renderFolderContent(win, win.dataset.folder);
   });
@@ -418,6 +421,22 @@ function renderFolderContent(win, folderName) {
   if (title) title.innerText = folderName;
 
   const viewMode = win.dataset.viewMode || 'grid';
+
+  // Cache rendered folder views per (folder, viewMode) inside this window.
+  // Switching folders or view-modes hides the previous wrapper instead of
+  // tearing it down, so <img>/<video> nodes stay alive and decoded — no
+  // re-paint flash when revisiting a folder.
+  const cacheKey = `${folderName}::${viewMode}`;
+  let cached = null;
+  mainArea.childNodes.forEach(node => {
+    if (node.nodeType !== 1) return;
+    if (node.dataset && node.dataset.folderCache === cacheKey) cached = node;
+    if (node.style) node.style.display = 'none';
+  });
+  if (cached) {
+    cached.style.display = '';
+    return;
+  }
 
   // Update fav selection — Finder-style blue tint with bold blue text so the
   // label stays clearly readable against the light pill (the previous
@@ -441,11 +460,16 @@ function renderFolderContent(win, folderName) {
     return a.name.localeCompare(b.name);
   });
 
+  const wrapper = document.createElement('div');
+  wrapper.dataset.folderCache = cacheKey;
+  wrapper.style.height = '100%';
+
   if (sortedData.length === 0) {
-    mainArea.innerHTML = `<div class="flex flex-col items-center justify-center h-full opacity-40">
+    wrapper.innerHTML = `<div class="flex flex-col items-center justify-center h-full opacity-40">
       <span class="material-symbols-rounded text-6xl">folder_open</span>
       <p class="mt-2 text-sm font-medium">This folder is empty</p>
     </div>`;
+    mainArea.appendChild(wrapper);
     return;
   }
 
@@ -475,7 +499,8 @@ function renderFolderContent(win, folderName) {
       `;
     });
     html += `</tbody></table>`;
-    mainArea.innerHTML = html;
+    wrapper.innerHTML = html;
+    mainArea.appendChild(wrapper);
   } else {
     // macOS-Finder Icon View:
     //  • auto-fill grid that re-flows with the window width
@@ -521,7 +546,8 @@ function renderFolderContent(win, folderName) {
       `;
     });
     html += `</div>`;
-    mainArea.innerHTML = html;
+    wrapper.innerHTML = html;
+    mainArea.appendChild(wrapper);
   }
 }
 
