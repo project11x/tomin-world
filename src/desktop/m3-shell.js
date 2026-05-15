@@ -9,6 +9,7 @@
 
 import { portfolioData } from '../../data.js';
 import { setIcon } from '../utils/icons.js';
+import { isItemRecent, isFolderRecent } from '../utils/recency.js';
 
 const TAB_LABELS = {
   edits: 'Edits',
@@ -138,6 +139,10 @@ function renderList() {
         const displayName = activeTab === 'magazines' && name.startsWith(MAGAZINE_PREFIX + '/')
           ? name.slice(MAGAZINE_PREFIX.length + 1)
           : name;
+        // NEU pill on Magazines only — Shoots are BTS, treated as project
+        // extras and intentionally not flagged.
+        const recent = activeTab === 'magazines' && isFolderRecent(name);
+        const neu = recent ? '<span class="m3d-neu">NEU</span>' : '';
         return `
           <div class="${cls}" data-project="${encodeURIComponent(name)}">
             <div class="m3d-list-thumb" ${bg}></div>
@@ -145,6 +150,7 @@ function renderList() {
               <span class="m3d-list-title">${displayName}</span>
               <span class="m3d-list-subtitle">${meta}</span>
             </div>
+            ${neu}
           </div>`;
       })
       .join('');
@@ -168,6 +174,7 @@ function renderList() {
         const icon = f.item.isVideo
           ? '<span class="material-symbols-rounded m3d-thumb-play">play_circle</span>'
           : '';
+        const neu = isItemRecent(f.item) ? '<span class="m3d-neu">NEU</span>' : '';
         return `
           <div class="${cls}" data-idx="${idx}">
             <div class="m3d-list-thumb" ${bg}>${icon}</div>
@@ -175,6 +182,7 @@ function renderList() {
               <span class="m3d-list-title">${f.item.name}</span>
               <span class="m3d-list-subtitle">${f.project} · ${f.item.size || ''}</span>
             </div>
+            ${neu}
           </div>`;
       })
       .join('');

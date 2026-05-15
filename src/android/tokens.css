@@ -1603,10 +1603,7 @@
   white-space: nowrap;
 }
 
-.md-mag-card .md-mag-neu {
-  position: absolute;
-  top: 14px;
-  left: 14px;
+.md-mag-neu {
   background: var(--md-sys-color-tertiary-container);
   color: var(--md-sys-color-on-tertiary-container);
   font-size: 10px;
@@ -1614,6 +1611,13 @@
   letter-spacing: 0.6px;
   padding: 4px 10px;
   border-radius: var(--md-sys-shape-corner-full);
+  flex-shrink: 0;
+}
+
+.md-mag-card .md-mag-neu {
+  position: absolute;
+  top: 14px;
+  left: 14px;
   z-index: 2;
 }
 

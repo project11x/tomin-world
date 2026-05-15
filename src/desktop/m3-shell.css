@@ -175,6 +175,18 @@
   color: var(--md-sys-color-on-secondary-container, #1d192b);
 }
 
+.m3d-neu {
+  flex-shrink: 0;
+  background: var(--md-sys-color-tertiary-container, #ffd8e4);
+  color: var(--md-sys-color-on-tertiary-container, #31111d);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-left: auto;
+}
+
 .m3d-list-thumb {
   position: relative;
   width: 56px;

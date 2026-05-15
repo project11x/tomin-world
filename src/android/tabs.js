@@ -311,7 +311,7 @@ import { portfolioData } from '../../data.js';
       });
       Object.entries(videosByBase).forEach(([baseName, versions]) => {
         const v = versions.web || versions.compressed || versions.original;
-        out.push({ folder: folderKey, name: baseName, src: v.src });
+        out.push({ folder: folderKey, name: baseName, src: v.src, date: v.date });
       });
     });
     return out;
@@ -336,6 +336,7 @@ import { portfolioData } from '../../data.js';
                 <p style="margin:0 0 2px; font-size:15px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${e.name}</p>
                 <p style="margin:0; font-size:13px; color:var(--md-sys-color-on-surface-variant); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${e.folder}</p>
               </div>
+              ${isItemRecent(e) ? `<span class="md-mag-neu" style="position:static;">NEU</span>` : ''}
               <i class="bi bi-play-fill" style="font-size:20px; color:var(--md-sys-color-primary);"></i>
             </button>
           </li>
