@@ -10,6 +10,7 @@ import { bootstrapPortfolioSync } from './src/utils/portfolio-sync.js';
 import './src/utils/icons.js';
 import './src/utils/video.js';
 import './src/desktop/system-bar.js';
+import './src/desktop/desktop-icons.js'; // must come BEFORE windows.js — renders icons that windows.js then wires up
 import './src/desktop/windows.js';
 import './src/desktop/quick-look.js';
 import './src/desktop/spaces.js';
