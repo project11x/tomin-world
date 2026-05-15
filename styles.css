@@ -147,6 +147,13 @@
       position: relative;
     }
 
+    .menu-disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+      pointer-events: auto;
+    }
+    .menu-disabled:hover { background: transparent; }
+
     .dropdown-menu {
       position: absolute;
       top: calc(100% + 2px);
