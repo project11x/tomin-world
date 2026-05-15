@@ -12,13 +12,21 @@ import { portfolioData } from '../../data.js';
   const navItems = document.querySelectorAll('#android-screen [data-android-tab]');
   const panels = document.querySelectorAll('#android-screen [data-android-panel]');
 
+  // Per-tab scroll memory — without this, switching tabs leaves the
+  // shared #android-content scrolled to the previous tab's y-position.
+  const scrollMemory = {};
+  let lastTab = null;
   function setActiveTab(name) {
+    const scroller = document.getElementById('android-content');
+    if (scroller && lastTab) scrollMemory[lastTab] = scroller.scrollTop;
     navItems.forEach(btn => {
       btn.classList.toggle('active', btn.dataset.androidTab === name);
     });
     panels.forEach(p => {
       p.style.display = p.dataset.androidPanel === name ? 'block' : 'none';
     });
+    if (scroller) scroller.scrollTop = scrollMemory[name] || 0;
+    lastTab = name;
     syncThemeColor();
     // Mirror tab visits into the shared portfolio tracker so the M3 widget
     // (and the iOS Smart Stack) update progress as the user navigates.
