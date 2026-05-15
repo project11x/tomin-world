@@ -12,6 +12,7 @@
     "watch:css": "tailwindcss -i ./src/tailwind.css -o ./tailwind.css --watch",
     "build": "npm run build:css && npm run sync && vite build && npm run clean:appledouble",
     "clean:appledouble": "find dist public functions -name '._*' -delete 2>/dev/null; true",
+    "deploy": "npm run build && npx wrangler pages deploy dist --project-name=tomin-world --branch=main --commit-dirty=true",
     "dev": "vite",
     "publish": "npm run compress && npm run build",
     "lint": "eslint .",
