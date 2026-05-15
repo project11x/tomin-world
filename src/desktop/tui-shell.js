@@ -630,9 +630,17 @@ function cmdAbout() {
   printPlain('Try: ls, cd ldn, play, theme fiona, exit', 'dim');
 }
 function cmdContact() {
-  print(`<span class="accent">contact</span>`);
-  print(`  <span class="dim">email   </span><span class="info">eddie@shouli.de</span>`);
-  print(`  <span class="dim">github  </span><span class="info">github.com/your-handle</span>`);
+  const mail = `<a href="mailto:eddie@shouli.de" class="info">eddie@shouli.de</a>`;
+  const ig   = `<a href="https://instagram.com/edpz" target="_blank" rel="noopener" class="info">@edpz</a>`;
+  state.contactMenu = true;
+  print(`<span class="accent">╔══════════════════════════════════════════╗</span>`);
+  print(`<span class="accent">║</span>  EDDIE                         shouli.de <span class="accent">║</span>`);
+  print(`<span class="accent">║</span>  <span class="dim">───────────────────────────────────────</span> <span class="accent">║</span>`);
+  print(`<span class="accent">║</span>    <span class="dim">email     </span> ${mail}            <span class="accent">║</span>`);
+  print(`<span class="accent">║</span>    <span class="dim">instagram </span> ${ig}                      <span class="accent">║</span>`);
+  print(`<span class="accent">║</span>                                          <span class="accent">║</span>`);
+  print(`<span class="accent">║</span>  <span class="dim">[</span><span class="info">m</span><span class="dim">] mail   [</span><span class="info">i</span><span class="dim">] instagram   [</span><span class="info">q</span><span class="dim">] back</span>     <span class="accent">║</span>`);
+  print(`<span class="accent">╚══════════════════════════════════════════╝</span>`);
 }
 function cmdTheme(args) {
   const name = (args[0] || '').toLowerCase();
@@ -859,6 +867,25 @@ function onKey(e) {
     if (e.key === 'c') { echoCommand(state.input); state.input = ''; updateInputDisplay(); e.preventDefault(); return; }
     if (e.key === 'u') { state.input = ''; updateInputDisplay(); e.preventDefault(); return; }
     return;
+  }
+
+  if (state.contactMenu && !state.input) {
+    if (e.key === 'm' || e.key === 'M') {
+      state.contactMenu = false;
+      window.location.href = 'mailto:eddie@shouli.de';
+      e.preventDefault(); return;
+    }
+    if (e.key === 'i' || e.key === 'I') {
+      state.contactMenu = false;
+      window.open('https://instagram.com/edpz', '_blank', 'noopener');
+      e.preventDefault(); return;
+    }
+    if (e.key === 'q' || e.key === 'Q' || e.key === 'Escape') {
+      state.contactMenu = false;
+      e.preventDefault(); return;
+    }
+    // Any other input dismisses the menu and falls through.
+    state.contactMenu = false;
   }
 
   switch (e.key) {
