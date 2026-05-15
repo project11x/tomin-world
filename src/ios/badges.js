@@ -36,26 +36,12 @@ function countRecentEdits() {
   return n;
 }
 
-function countRecentBts() {
-  let n = 0;
-  Object.keys(portfolioData).forEach((folder) => {
-    if (folder.includes('/')) return;
-    (portfolioData[folder] || []).forEach((it) => {
-      if (it.isMagazine) return;
-      const nameNoExt = it.name.replace(/\.[^/.]+$/, '');
-      const digits = (nameNoExt.match(/\d/g) || []).length;
-      if (digits < 4) return;
-      if (isItemRecent(it)) n++;
-    });
-  });
-  return n;
-}
-
 export function renderIosBadges() {
+  // BTS is intentionally excluded — those items are small extras, not
+  // standalone projects, so they shouldn't generate notifications.
   const targets = [
     { app: 'edits', count: countRecentEdits() },
     { app: 'magazines', count: recentMagazines().length },
-    { app: 'bts', count: countRecentBts() },
   ];
   targets.forEach(({ app, count }) => {
     const item = document.querySelector(`.ios-dock-item[data-ios-app="${app}"]`);
