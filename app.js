@@ -27,6 +27,7 @@ import './src/android/magazines-reader.js';
 import './src/android/bts-viewer.js';
 import './src/ios/edge-swipe.js';
 import './src/ios/badges.js';
+import './src/android/badges.js';
 import './src/widgets/weather.js';
 import './src/widgets/smart-stack.js';
 import './src/widgets/portfolio-timeline.js';
