@@ -37,21 +37,40 @@ const listMode = () => {
   return 'projects';
 };
 
+// Behind-the-scenes filter: matches the iOS BTS app — files whose
+// name (sans extension) contains 4+ digits and isn't a magazine page.
+function isBtsFile(item) {
+  if (item.isMagazine) return false;
+  const nameNoExt = item.name.replace(/\.[^/.]+$/, '');
+  return (nameNoExt.match(/\d/g) || []).length >= 4;
+}
+
 function projectsForTab() {
   const names = Object.keys(portfolioData);
   if (activeTab === 'magazines') return names.filter((n) => n.startsWith(MAGAZINE_PREFIX + '/'));
-  if (activeTab === 'shoots') return names.filter((n) => !n.startsWith(MAGAZINE_PREFIX));
+  if (activeTab === 'shoots') {
+    return names.filter((n) => {
+      if (n.startsWith(MAGAZINE_PREFIX)) return false;
+      return (portfolioData[n] || []).some(isBtsFile);
+    });
+  }
   return names;
 }
 
 function thumbForProject(name) {
   const items = portfolioData[name] || [];
-  const firstImage = items.find((i) => !i.isVideo && i.src);
+  const preferBts = activeTab === 'shoots';
+  const firstImage = items.find((i) => !i.isVideo && i.src && (!preferBts || isBtsFile(i)))
+    || items.find((i) => !i.isVideo && i.src);
   return firstImage ? firstImage.src : '';
 }
 
 function projectMeta(name) {
   const items = portfolioData[name] || [];
+  if (activeTab === 'shoots') {
+    const n = items.filter(isBtsFile).length;
+    return n ? `${n} photo${n === 1 ? '' : 's'}` : 'Empty';
+  }
   const v = items.filter((i) => i.isVideo).length;
   const p = items.length - v;
   const parts = [];
@@ -144,9 +163,10 @@ function renderList() {
         const isActive =
           activeFile && activeFile.project === f.project && activeFile.item.src === f.item.src;
         const cls = isActive ? 'm3d-list-item is-active' : 'm3d-list-item';
-        const bg = !f.item.isVideo ? `style="background-image:url('${f.item.src}')"` : '';
+        const poster = f.item.isVideo ? thumbForProject(f.project) : f.item.src;
+        const bg = poster ? `style="background-image:url('${poster}')"` : '';
         const icon = f.item.isVideo
-          ? '<span class="material-symbols-rounded" style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--md-sys-color-on-surface-variant);font-size:22px;">smart_display</span>'
+          ? '<span class="material-symbols-rounded m3d-thumb-play">play_circle</span>'
           : '';
         return `
           <div class="${cls}" data-idx="${idx}">
@@ -218,34 +238,51 @@ function renderDetail() {
       return;
     }
 
-    if (activeTab === 'people') items = items.filter((i) => !i.isVideo);
+    if (activeTab === 'shoots') items = items.filter(isBtsFile);
     detail.innerHTML = `
       <div class="m3d-detail-header">
         <h1 class="m3d-detail-title">${activeProject}</h1>
         <span class="m3d-detail-meta">${items.length} item${items.length === 1 ? '' : 's'}</span>
       </div>
-      <div class="m3d-detail-grid">
-        ${items
-          .map((it, idx) => {
-            const bg = it.isVideo ? '' : `style="background-image:url('${it.src}')"`;
-            const icon = it.isVideo
-              ? '<span class="material-symbols-rounded m3d-tile-play">play_circle</span>'
-              : '';
-            return `
-              <div class="m3d-tile" data-project="${encodeURIComponent(activeProject)}" data-idx="${idx}" ${bg}>
-                ${icon}
-                <div class="m3d-tile-label">${it.name}</div>
-              </div>`;
-          })
-          .join('')}
+      <div class="m3d-gallery">
+        <div class="m3d-gallery-strip">
+          ${items
+            .map((it, idx) => {
+              const bg = it.isVideo ? '' : `style="background-image:url('${it.src}')"`;
+              const icon = it.isVideo
+                ? '<span class="material-symbols-rounded m3d-thumb-play">play_circle</span>'
+                : '';
+              return `<button class="m3d-gallery-thumb${idx === 0 ? ' is-active' : ''}" data-idx="${idx}" ${bg} aria-label="${it.name}">${icon}</button>`;
+            })
+            .join('')}
+        </div>
+        <div class="m3d-gallery-stage">
+          ${items
+            .map((it, idx) => it.isVideo
+              ? `<div class="m3d-gallery-frame" data-idx="${idx}" ${idx === 0 ? 'data-active' : ''}>${buildPlayerHTML(it)}</div>`
+              : `<img class="m3d-gallery-frame" data-idx="${idx}" ${idx === 0 ? 'data-active' : ''} src="${it.src}" alt="${it.name}" draggable="false" />`)
+            .join('')}
+        </div>
+        <div class="m3d-gallery-caption" data-caption>${items[0]?.name || ''}</div>
       </div>`;
-    detail.querySelectorAll('.m3d-tile').forEach((el) => {
-      el.addEventListener('click', () => {
-        const proj = decodeURIComponent(el.dataset.project);
-        const idx = parseInt(el.dataset.idx, 10);
-        openLightbox(portfolioData[proj], idx);
+    const frames = detail.querySelectorAll('.m3d-gallery-frame');
+    const thumbs = detail.querySelectorAll('.m3d-gallery-thumb');
+    const caption = detail.querySelector('[data-caption]');
+    const players = detail.querySelectorAll('.m3d-player');
+    players.forEach((p) => wirePlayer(p));
+    const select = (idx) => {
+      frames.forEach((f) => f.toggleAttribute('data-active', parseInt(f.dataset.idx, 10) === idx));
+      thumbs.forEach((t) => t.classList.toggle('is-active', parseInt(t.dataset.idx, 10) === idx));
+      caption && (caption.textContent = items[idx]?.name || '');
+      players.forEach((p) => {
+        const v = p.querySelector('video');
+        if (!v) return;
+        if (parseInt(p.closest('.m3d-gallery-frame').dataset.idx, 10) !== idx) v.pause();
       });
-    });
+      const activeThumb = thumbs[idx];
+      activeThumb?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    };
+    thumbs.forEach((t) => t.addEventListener('click', () => select(parseInt(t.dataset.idx, 10))));
   } else {
     if (!activeFile) {
       detail.innerHTML = `<div class="m3d-detail-empty">Select an item from ${TAB_LABELS[activeTab]}</div>`;
@@ -353,6 +390,7 @@ function renderAbout(detail) {
           ${paletteBtn('default', 'Aero')}
           ${paletteBtn('pink', 'Fiona')}
           ${paletteBtn('material', 'Material')}
+          ${paletteBtn('tui', 'Terminal')}
         </div>
 
         <p class="m3d-about-label">Helligkeit</p>
