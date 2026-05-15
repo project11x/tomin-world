@@ -600,7 +600,6 @@ import { portfolioData } from '../../data.js';
         <p style="margin:0 0 8px; color:var(--md-sys-color-on-surface); font-size:14px; font-weight:500;">Palette</p>
         <div data-md-palette-toggle style="display:flex; gap:0; padding:4px; background:var(--md-sys-color-surface-container-high); border-radius:var(--md-sys-shape-corner-full); margin-bottom:18px;">
           ${paletteBtn('default', 'Aero')}
-          ${paletteBtn('pink', 'Fiona')}
           ${paletteBtn('material', 'Material')}
         </div>
 

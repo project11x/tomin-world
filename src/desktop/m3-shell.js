@@ -396,7 +396,6 @@ function renderAbout(detail) {
         <p class="m3d-about-label">Palette</p>
         <div class="m3d-about-segmented" data-md-palette-toggle>
           ${paletteBtn('default', 'Aero')}
-          ${paletteBtn('pink', 'Fiona')}
           ${paletteBtn('material', 'Material')}
           ${paletteBtn('tui', 'Terminal')}
         </div>
