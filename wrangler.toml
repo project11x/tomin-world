@@ -1,0 +1,38 @@
+# Cloudflare Workers (Static Assets) — successor to the Pages project.
+#
+# Why we moved off Pages:
+#   The Pages deployment for tomin-world got into a corrupted asset-storage
+#   state where individual JS/CSS files would respond 500 even though the
+#   deploy reported "complete". Re-deploys were a coin flip. Workers with
+#   Static Assets ships atomic deployments and is the platform CF actively
+#   develops, so this is also the long-term path.
+#
+# Routing model:
+#   • /api/portfolio  → src/api/portfolio.js (R2 listing)
+#   • /api/status     → src/api/status.js    (Access-protected GH commit)
+#   • everything else → ASSETS binding serves dist/ as static
+#
+# Deploy: `npm run deploy`
+
+name = "tomin-world"
+main = "src/worker.js"
+compatibility_date = "2026-05-15"
+compatibility_flags = ["nodejs_compat"]
+
+# Static asset serving — the dist/ output of `npm run build`.
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+# Live R2 listing for /api/portfolio.
+[[r2_buckets]]
+binding = "PORTFOLIO_BUCKET"
+bucket_name = "tomin-media"
+
+# Non-secret env vars. Secrets (GH_TOKEN, CF_ACCESS_AUD) live separately —
+# set them once with `npx wrangler secret put <NAME>`.
+[vars]
+GH_REPO = "project11x/tomin-world"
+ADMIN_EMAILS = "ed.wut@icloud.com"
+CF_ACCESS_TEAM_DOMAIN = "shouli-admin.cloudflareaccess.com"

@@ -192,3 +192,13 @@ function jsonResponse(body, status = 200, extraHeaders = {}) {
     },
   });
 }
+
+// Workers entrypoint shim — same module also serves the Pages-style
+// onRequestGet for as long as the legacy functions/ tree still loads it.
+export async function onRequest(context) {
+  if (context.request.method === 'GET') return onRequestGet(context);
+  return new Response(JSON.stringify({ error: 'method not allowed' }), {
+    status: 405,
+    headers: { 'content-type': 'application/json; charset=utf-8' },
+  });
+}
