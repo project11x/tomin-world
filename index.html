@@ -179,9 +179,9 @@
 
 <body class="bg-background dark:bg-black text-on-surface h-screen overflow-hidden select-none">
   <!-- TopAppBar -->
-  <header
+  <header id="top-menu-bar"
     class="fixed top-0 left-0 w-full z-50 flex items-center h-8 px-4 justify-between bg-white/40 dark:bg-black/40 backdrop-blur-2xl border-b border-white/30 dark:border-white/8 transition-colors duration-150 ease-in-out"
-    style="z-index:9000;">
+    style="z-index:9000; transition: transform 600ms cubic-bezier(0.32,0.72,0,1), background-color 150ms ease-in-out, border-color 150ms ease-in-out;">
     <div class="flex items-center space-x-4">
       <span id="top-eddie"
         class="text-[14px] font-bold text-slate-900 dark:text-slate-100 px-2 tracking-normal cursor-pointer"
@@ -250,7 +250,7 @@
   </header>
   <!-- Desktop Canvas -->
   <main id="desktop-main" class="desktop-bg w-full h-full pt-8 flex relative origin-left"
-    style="transition: transform 480ms cubic-bezier(0.25,1,0.5,1);">
+    style="transition: transform 600ms cubic-bezier(0.32,0.72,0,1);">
 
     <!-- Dark Mode Gradient Overlay for seamless transition -->
     <div class="absolute inset-0 opacity-0 dark:opacity-100 transition-opacity duration-300 pointer-events-none z-0"
@@ -1633,7 +1633,7 @@
 
   <!-- Magazine Reader Workspace -->
   <section id="magazine-reader" class="fixed inset-0 z-[100] pointer-events-none overflow-hidden"
-    style="z-index: 9500; transform: translateX(100%); transition: transform 480ms cubic-bezier(0.25,1,0.5,1);">
+    style="z-index: 9500; transform: translateX(100%); transition: transform 600ms cubic-bezier(0.32,0.72,0,1);">
 
     <!-- Dark mode bg overlay -->
     <div class="absolute inset-0 opacity-0 dark:opacity-100 transition-opacity duration-300 pointer-events-none z-0"
@@ -1689,7 +1689,7 @@
   <!-- Edits Viewer: full-screen "desktop space", slides in from LEFT (edits is left of desktop) -->
   <section id="edits-viewer"
     class="fixed inset-0 z-[100] pointer-events-none flex items-center justify-center gap-5 p-8 overflow-hidden"
-    style="z-index: 9500; transform: translateX(-100%); transition: transform 480ms cubic-bezier(0.25,1,0.5,1);">
+    style="z-index: 9500; transform: translateX(-100%); transition: transform 600ms cubic-bezier(0.32,0.72,0,1);">
 
     <!-- Dark mode bg overlay -->
     <div class="absolute inset-0 opacity-0 dark:opacity-100 transition-opacity duration-300 pointer-events-none"

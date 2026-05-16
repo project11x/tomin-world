@@ -31,6 +31,7 @@ import { makeShareButton } from '../utils/share.js';
 
 const editsViewer = document.getElementById('edits-viewer');
 const desktopMain = document.getElementById('desktop-main');
+const topMenuBar = document.getElementById('top-menu-bar');
 
 const magazineReader = document.getElementById('magazine-reader');
 const btnCloseMagazine = document.getElementById('btn-close-magazine');
@@ -46,6 +47,12 @@ export function switchToSpace(target) {
   editsViewer.style.transform = `translateX(${(-1 - o) * 100}%)`;
   desktopMain.style.transform = `translateX(${(0 - o) * 100}%)`;
   magazineReader.style.transform = `translateX(${(1 - o) * 100}%)`;
+  // Status bar belongs to the desktop space: slide it with the desktop so it
+  // visibly travels out when entering edits / magazine, and is not present in
+  // the destination space.
+  if (topMenuBar) {
+    topMenuBar.style.transform = `translateX(${(0 - o) * 100}%)`;
+  }
   editsViewer.classList.toggle('pointer-events-auto', target === 'edits');
   editsViewer.classList.toggle('pointer-events-none', target !== 'edits');
   magazineReader.classList.toggle('pointer-events-auto', target === 'magazine');
