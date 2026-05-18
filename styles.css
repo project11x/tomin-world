@@ -1359,13 +1359,13 @@
   animation-timing-function: ease;
 }
 
-/* Preserve the finder window's rounded corners during the open view
-   transition. Without this the snapshot pseudos render as rectangles and
-   the user sees a brief flash of square corners before the real element
-   (with `rounded-xl`) takes over. */
-::view-transition-group(finder-opening),
-::view-transition-old(finder-opening),
-::view-transition-new(finder-opening) {
+/* Preserve the finder window's rounded corners during view transitions.
+   Each finder window gets its own dynamic view-transition-name
+   (finder-1, finder-2…), so use the wildcard form to cover them all.
+   More specific named rules (e.g. app-expansion) still win on iOS. */
+::view-transition-group(*),
+::view-transition-old(*),
+::view-transition-new(*) {
   border-radius: 12px;
   overflow: clip;
 }

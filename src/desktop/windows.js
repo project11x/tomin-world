@@ -173,10 +173,11 @@ export function createWindow(folderName) {
   // surfaces new folders after the live R2 sync.
   injectFavorites(win);
 
-  // Tag for the open view-transition. Use a constant name (cleared once the
-  // animation ends) so the matching ::view-transition-* rule in styles.css
-  // can preserve the window's rounded corners during the morph.
-  win.style.viewTransitionName = 'finder-opening';
+  // Unique, persistent view-transition-name so each window is its own
+  // snapshot group — without this, existing windows fall into the root
+  // crossfade and briefly fade during every open. The matching wildcard
+  // ::view-transition-* rule in styles.css preserves rounded corners.
+  win.style.viewTransitionName = `finder-${windowCount}`;
 
   // Render content *before* the window is attached so video/img elements
   // have a tick to start loading metadata and are present in the new-state
@@ -189,11 +190,6 @@ export function createWindow(folderName) {
   const { transition } = withViewTransition(() => {
     document.getElementById('desktop-main').appendChild(win);
   });
-  // Clear the constant name once the open transition is over so the next
-  // window can claim 'finder-opening' without colliding with this one.
-  const clearVTName = () => { win.style.viewTransitionName = ''; };
-  if (transition?.finished) transition.finished.then(clearVTName, clearVTName);
-  else queueMicrotask(clearVTName);
   // Chromium captures the view-transition snapshot before <video preload="metadata">
   // has decoded its first frame, and the captured-blank state can persist past the
   // animation. After the transition finishes, kick each video so the poster frame
