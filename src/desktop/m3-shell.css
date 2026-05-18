@@ -1073,3 +1073,8 @@
 .dark.theme-material #m3-desktop {
   background: var(--md-sys-color-surface, #141218);
 }
+
+/* Keep the dock above any view-transition group during finder-window
+   open/close morphs. Without an explicit z-index on the dock's snapshot,
+   the finder-N group can briefly paint over it. */
+::view-transition-group(macos-dock) { z-index: 9999; }
