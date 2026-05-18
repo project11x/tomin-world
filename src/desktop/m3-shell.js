@@ -169,15 +169,17 @@ function renderList() {
         const isActive =
           activeFile && activeFile.project === f.project && activeFile.item.src === f.item.src;
         const cls = isActive ? 'm3d-list-item is-active' : 'm3d-list-item';
-        const poster = f.item.isVideo ? thumbForProject(f.project) : f.item.src;
-        const bg = poster ? `style="background-image:url('${poster}')"` : '';
+        const bg = !f.item.isVideo ? `style="background-image:url('${f.item.src}')"` : '';
+        const videoThumb = f.item.isVideo
+          ? `<video class="m3d-thumb-video" src="${f.item.src}#t=0.1" muted playsinline preload="metadata"></video>`
+          : '';
         const icon = f.item.isVideo
           ? '<span class="material-symbols-rounded m3d-thumb-play">play_circle</span>'
           : '';
         const neu = isItemRecent(f.item) ? '<span class="m3d-neu">NEU</span>' : '';
         return `
           <div class="${cls}" data-idx="${idx}">
-            <div class="m3d-list-thumb" ${bg}>${icon}</div>
+            <div class="m3d-list-thumb" ${bg}>${videoThumb}${icon}</div>
             <div class="m3d-list-text">
               <span class="m3d-list-title">${f.item.name}</span>
               <span class="m3d-list-subtitle">${f.project} · ${f.item.size || ''}</span>
