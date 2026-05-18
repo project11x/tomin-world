@@ -28,6 +28,18 @@ export default {
     }
     // Static asset (handles SPA fallback per wrangler.toml's
     // not_found_handling = "single-page-application").
-    return env.ASSETS.fetch(request);
+    const response = await env.ASSETS.fetch(request);
+
+    // Long-cache media assets. Filenames are versioned via ?v=<mtime> in
+    // data.js (see sync.cjs), so replacing a file produces a new URL —
+    // safe to mark as immutable. _headers can't pattern-match by
+    // extension across nested paths, hence doing it here.
+    if (/\.(mp4|webm|mov|jpe?g|png|webp|gif|avif|svg)$/i.test(url.pathname)
+        && response.status === 200) {
+      const headers = new Headers(response.headers);
+      headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+      return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+    }
+    return response;
   },
 };

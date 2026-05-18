@@ -83,7 +83,7 @@ export function dismissShareOverlay() {
   const m = location.pathname.match(/^\/projects\/([^/]+)\/[^/]+\/?$/);
   if (m) {
     const folder = slugToFolder(m[1]);
-    if (folder && !document.querySelector(`.finder-window[data-folder="${CSS.escape(folder)}"]`)) {
+    if (folder && !document.querySelector(`.finder-window[data-folder="${CSS.escape(folder)}"]:not([data-hidden-closed])`)) {
       createWindow(folder);
     }
   }
@@ -110,7 +110,7 @@ function syncURL() {
   if (applying) return;
   if (window.innerWidth <= 768) return;
 
-  const wins = Array.from(document.querySelectorAll('.finder-window'))
+  const wins = Array.from(document.querySelectorAll('.finder-window:not([data-hidden-closed])'))
     .sort((a, b) => Number(a.style.zIndex || 0) - Number(b.style.zIndex || 0));
 
   let target = '/';
@@ -215,7 +215,7 @@ function applyURL() {
       document.querySelectorAll('.finder-window').forEach((w) => w.remove());
     } else {
       // Make sure the folder is open behind, like a normal in-app open.
-      const open = Array.from(document.querySelectorAll('.finder-window'))
+      const open = Array.from(document.querySelectorAll('.finder-window:not([data-hidden-closed])'))
         .some((w) => w.dataset.folder === folder);
       if (!open) createWindow(folder);
     }

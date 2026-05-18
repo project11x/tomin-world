@@ -70,6 +70,20 @@ window.openMagazineReader = function (folder, index) {
   const magKey = folder + "/" + magItem.name;
   const images = portfolioData[magKey] || [];
 
+  // Fast path: same magazine reopened — DOM and decoded media stay alive,
+  // but scroll back to the cover (page 1). A returning reader expects the
+  // magazine to start from the beginning, not where they last left off.
+  if (magazineScroller.dataset.magKey === magKey && magazineScroller.childElementCount > 0) {
+    magazineTitle.innerText = magItem.name;
+    magazineScroller.scrollLeft = 0;
+    switchToSpace('magazine');
+    // Resume the cover-page video if any (the IntersectionObserver paused
+    // off-screen ones on close).
+    const firstVid = magazineScroller.querySelector('video');
+    if (firstVid) firstVid.play().catch(() => {});
+    return;
+  }
+
   let cachedViews = [];
   const updateCachedViews = () => {
     cachedViews = getMagazineViews();
@@ -77,6 +91,7 @@ window.openMagazineReader = function (folder, index) {
 
   // magazine reader is full-screen overlay, no bringToFront needed
   magazineTitle.innerText = magItem.name;
+  magazineScroller.dataset.magKey = magKey;
   magazineScroller.innerHTML = "";
 
   if (images.length === 0) {
@@ -337,10 +352,11 @@ if (magFullscreenToggle) {
 
 btnCloseMagazine.addEventListener('click', () => {
   switchToSpace('desktop');
-
-  setTimeout(() => {
-    magazineScroller.innerHTML = "";
-  }, 500); // clear after animation
+  // Pause every video so nothing keeps playing offscreen, but keep the DOM
+  // and scroll position intact — reopening the same magazine restores
+  // exactly where the reader left off (handled in openMagazineReader's
+  // same-magKey fast path).
+  magazineScroller.querySelectorAll('video').forEach((v) => { try { v.pause(); } catch {} });
   window.dispatchEvent(new CustomEvent('item-closed'));
 });
 

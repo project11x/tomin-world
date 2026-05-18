@@ -26,6 +26,7 @@ import './src/android/edits-viewer.js';
 import './src/android/magazines-reader.js';
 import './src/android/bts-viewer.js';
 import './src/ios/edge-swipe.js';
+import './src/ios/rotation-lock.js';
 import './src/ios/badges.js';
 import './src/android/badges.js';
 import './src/widgets/weather.js';

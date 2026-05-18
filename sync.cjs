@@ -39,6 +39,15 @@ function formatDate(date) {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+// Authoritative publication dates for magazines. mtime gets clobbered every
+// time files are re-touched (copies, re-uploads), so these are the source of
+// truth instead.
+const MAGAZINE_DATE_OVERRIDES = {
+    'RUSSH':         'Jan 10, 2025',
+    '032C':          'Apr 20, 2025',
+    'Numéro Berlin': 'May 4, 2026',
+};
+
 // Project infrastructure folders that live in the repo but are NOT mirrored
 // to the Cloudflare R2 bucket — they shouldn't surface in the Finder
 // favorites or anywhere else portfolioData is iterated.
@@ -85,7 +94,7 @@ function generateData() {
                             name: mag,
                             type: 'Magazine',
                             size: '--',
-                            date: formatDate(magStat.mtime),
+                            date: MAGAZINE_DATE_OVERRIDES[mag.normalize('NFC')] || formatDate(magStat.mtime),
                             src: '',
                             isVideo: false,
                             isMagazine: true
@@ -101,12 +110,13 @@ function generateData() {
                             const fileStat = fs.statSync(filePath);
                             if (fileStat.isFile()) {
                                 const meta = getFileMeta(file);
+                                const v = fileStat.mtime.getTime();
                                 portfolioData[magKey].push({
                                     name: file,
                                     type: meta.type,
                                     size: formatBytes(fileStat.size),
                                     date: formatDate(fileStat.mtime),
-                                    src: `${encodeURIComponent(item)}/${encodeURIComponent(mag)}/${encodeURIComponent(file)}`,
+                                    src: `${encodeURIComponent(item)}/${encodeURIComponent(mag)}/${encodeURIComponent(file)}?v=${v}`,
                                     isVideo: meta.isVideo
                                 });
                             }
@@ -136,19 +146,29 @@ function generateData() {
 
                         // For videos, prefer the _web version for playback if it exists
                         let srcFile = file;
+                        let srcStat = fileStat;
                         if (meta.isVideo) {
                             const ext = path.extname(file);
                             const base = file.slice(0, -ext.length);
                             const webFile = `${base}_web${ext}`;
-                            if (folderFileSet.has(webFile)) srcFile = webFile;
+                            if (folderFileSet.has(webFile)) {
+                                srcFile = webFile;
+                                srcStat = fs.statSync(path.join(itemPath, webFile));
+                            }
                         }
 
+                        // ?v=<mtime ms> busts the browser cache when the
+                        // underlying file is replaced. Combined with the
+                        // long media Cache-Control set in worker.js, this
+                        // gives "instant from disk" for unchanged files
+                        // and a hard refresh on replace.
+                        const v = srcStat.mtime.getTime();
                         portfolioData[item].push({
                             name: file,
                             type: meta.type,
                             size: formatBytes(fileStat.size),
                             date: formatDate(fileStat.mtime),
-                            src: `${encodeURIComponent(item)}/${encodeURIComponent(srcFile)}`,
+                            src: `${encodeURIComponent(item)}/${encodeURIComponent(srcFile)}?v=${v}`,
                             isVideo: meta.isVideo
                         });
                     }

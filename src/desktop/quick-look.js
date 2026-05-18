@@ -12,6 +12,12 @@ import { setIcon } from '../utils/icons.js';
   header.appendChild(btn);
 })();
 
+// DOM-level cache so re-opening a recently-viewed item shows the already-
+// decoded <video>/<img> instantly instead of remounting + re-decoding.
+// Keyed by item.src (URL is content-addressed via ?v=<mtime>, so a replaced
+// file gets a fresh entry).
+const qlCache = new Map();
+
 window.openQuickLook = function (item) {
   const quickLookTitle = document.getElementById('quick-look-title');
   const quickLookContent = document.getElementById('quick-look-content');
@@ -19,25 +25,37 @@ window.openQuickLook = function (item) {
   quickLookTitle.innerText = item.name;
 
   const qlControls = document.getElementById('quick-look-controls');
-  let contentHtml;
-  if (item.isVideo) {
-    // Default 16:9 size so modal opens at correct dimensions before video loads
-    contentHtml = `<video class="object-contain block" src="${item.src}" loop playsinline style="width:min(640px,85vw);aspect-ratio:16/9;max-height:75vh;"></video>`;
-    qlControls.style.display = '';
-  } else {
-    // Lock the image to a constant viewport height so every Quick Look
-    // window opens at roughly the same Y size, regardless of whether
-    // the photo is portrait, square or landscape — the WIDTH adapts to
-    // the photo's aspect ratio (capped at 85vw for very wide shots).
-    contentHtml = `<img class="block object-contain"
-                        style="height:70vh; width:auto; max-width:85vw; max-height:70vh;"
-                        src="${item.src}" />`;
-    qlControls.style.display = 'none';
-  }
-  quickLookContent.innerHTML = contentHtml;
+  qlControls.style.display = item.isVideo ? '' : 'none';
 
-  // Setup custom media controls
-  const videoEl = quickLookContent.querySelector('video');
+  // Hide any previously-cached wrapper still in the tree and pause its video.
+  [...quickLookContent.children].forEach((c) => {
+    const v = c.tagName === 'VIDEO' ? c : c.querySelector?.('video');
+    if (v) { try { v.pause(); } catch {} }
+    c.style.display = 'none';
+  });
+
+  let wrapper = qlCache.get(item.src);
+  if (!wrapper) {
+    wrapper = document.createElement('div');
+    wrapper.style.display = 'contents';
+    if (item.isVideo) {
+      wrapper.innerHTML = `<video class="object-contain block" src="${item.src}" loop playsinline style="width:min(640px,85vw);aspect-ratio:16/9;max-height:75vh;"></video>`;
+    } else {
+      wrapper.innerHTML = `<img class="block object-contain"
+                                style="height:70vh; width:auto; max-width:85vw; max-height:70vh;"
+                                src="${item.src}" />`;
+    }
+    quickLookContent.appendChild(wrapper);
+    qlCache.set(item.src, wrapper);
+  } else {
+    wrapper.style.display = 'contents';
+  }
+
+  // Setup custom media controls — pull the video from the just-revealed
+  // wrapper, NOT from quickLookContent (which still holds hidden wrappers
+  // from previously-viewed items — querySelector would return the first
+  // one, leaving the old video playing and the new one silent).
+  const videoEl = wrapper.querySelector('video');
   const playPauseBtn = document.getElementById('ql-play-pause');
   const progressBar = document.getElementById('ql-progress-bar');
   const progressBg = document.getElementById('ql-progress-bg');
@@ -127,9 +145,13 @@ window.closeQuickLook = function () {
   // window once the snapshot dissolved.
   quickLookModal.classList.remove('opacity-100');
   quickLookModal.classList.add('opacity-0');
+  // Pause the currently-visible video but keep the DOM around so re-opening
+  // the same item is instant. qlCache holds the wrappers.
+  const visible = [...quickLookContent.children].find((c) => c.style.display !== 'none');
+  const v = visible?.querySelector?.('video') || (visible?.tagName === 'VIDEO' ? visible : null);
+  if (v) { try { v.pause(); } catch {} }
   setTimeout(() => {
     quickLookModal.classList.add('hidden');
-    quickLookContent.innerHTML = '';
   }, 300);
   window.dispatchEvent(new CustomEvent('item-closed'));
 };
@@ -143,7 +165,11 @@ document.addEventListener('keydown', (e) => {
     window.closeQuickLook();
   } else if (e.code === 'Space') {
     e.preventDefault();
-    const v = quickLookModal.querySelector('video');
+    // Find the currently-visible video (querySelector would grab the first
+    // hidden cached one).
+    const content = document.getElementById('quick-look-content');
+    const visible = [...content.children].find((c) => c.style.display !== 'none');
+    const v = visible?.querySelector?.('video') || (visible?.tagName === 'VIDEO' ? visible : null);
     if (v) { if (v.paused) v.play(); else v.pause(); }
   }
 });

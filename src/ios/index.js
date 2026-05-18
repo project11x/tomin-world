@@ -285,7 +285,9 @@ function popURLToRoot() {
       iosMagScreenReader.style.transform = '';
       iosMagScreenGrid.style.transform = '';
       iosMagScreenGrid.style.opacity = '';
-      iosMagReaderPages.innerHTML = '';
+      // Keep iosMagReaderPages content cached for next open of the same
+      // magazine (videos already paused by iosCloseReader).
+      iosMagReaderPages.querySelectorAll('video').forEach((v) => { try { v.pause(); } catch {} });
       // Animate the portfolio route only once the user is actually back on home.
       if (window.ilaVisit) window.ilaVisit('magazin');
     }, 300);
@@ -321,15 +323,32 @@ function popURLToRoot() {
     pushItemURL(folder, index);
     window.umami?.track('item-open', { folder, item: magItem?.name || String(index) });
     iosMagReaderTitle.textContent = magItem.name;
-    const pageStyle = 'flex:0 0 100vw; width:100vw; min-width:100vw; height:100%; scroll-snap-align:start; overflow:hidden; display:flex; align-items:center; justify-content:center; background:transparent;';
-    iosMagReaderPages.innerHTML = pages.length === 0
-      ? '<div style="flex:0 0 100%;display:flex;align-items:center;justify-content:center;color:var(--ios-text-secondary);font-size:14px;">No pages found.</div>'
-      : pages.map(p => p.isVideo
-        ? `<div style="${pageStyle}"><video src="${p.src}" style="width:100%;height:100%;object-fit:contain;" autoplay loop muted playsinline preload="auto"></video></div>`
-        : `<div style="${pageStyle}"><img src="${p.src}" style="width:100%;height:auto;flex-shrink:0;" /></div>`
-      ).join('');
 
+    // Always start a fresh open at the cover, regardless of where the
+    // previous magazine was scrolled to. The label is updated synchronously
+    // too so the previous magazine's page number never flashes in the bar.
+    const sameMag = iosMagReaderPages.dataset.magKey === magKey && iosMagReaderPages.childElementCount > 0;
+    if (!sameMag) {
+      const pageStyle = 'flex:0 0 100%; width:100%; min-width:100%; height:100%; scroll-snap-align:start; overflow:hidden; display:flex; align-items:center; justify-content:center; background:transparent;';
+      iosMagReaderPages.innerHTML = pages.length === 0
+        ? '<div style="flex:0 0 100%;display:flex;align-items:center;justify-content:center;color:var(--ios-text-secondary);font-size:14px;">No pages found.</div>'
+        : pages.map(p => p.isVideo
+          ? `<div style="${pageStyle}"><video src="${p.src}" style="width:100%;height:100%;object-fit:contain;" autoplay loop muted playsinline preload="auto"></video></div>`
+          : `<div style="${pageStyle}"><img src="${p.src}" style="width:100%;height:auto;flex-shrink:0;" /></div>`
+        ).join('');
+      iosMagReaderPages.dataset.magKey = magKey;
+    }
+    // Force layout to commit the new (or cached) content, then snap to 0.
+    // Without the reflow nudge, scrollLeft = 0 occasionally gets clobbered
+    // by the prior scroll position when the new content hasn't laid out yet.
+    void iosMagReaderPages.offsetWidth;
     iosMagReaderPages.scrollLeft = 0;
+    requestAnimationFrame(() => { iosMagReaderPages.scrollLeft = 0; });
+    // Reset the page indicator label *now* so the previous magazine's
+    // "5 / 12" never lingers in the bar between open and the first scroll
+    // event of the new magazine.
+    iosMagPageLabel.textContent = '1 / ' + (pages.length || 1);
+    if (iosMagPageProgress) iosMagPageProgress.style.width = pages.length > 1 ? '0%' : '100%';
     setTimeout(iosMagUpdatePageIndicator, 50);
 
     // Play only visible video, pause others
@@ -370,9 +389,12 @@ function popURLToRoot() {
     iosMagScreenGrid.style.opacity = '1';
     iosMagScreenReader.style.transform = 'translateX(100%)';
     popURLToRoot();
+    // Pause videos but keep DOM + scroll position — reopening the same
+    // magazine restores where the reader left off (handled by the
+    // same-magKey fast path above).
+    iosMagReaderPages.querySelectorAll('video').forEach((v) => { try { v.pause(); } catch {} });
     setTimeout(() => {
       iosMagScreenReader.style.display = 'none';
-      iosMagReaderPages.innerHTML = '';
     }, 350);
   };
 
@@ -464,7 +486,12 @@ function popURLToRoot() {
     const item = iosEditsItems[index];
     pushItemURL(item.folder, null, item.name);
     window.umami?.track('item-open', { folder: item.folder, item: item.name });
-    iosEditsVideo.src = item.src;
+    // Skip reassigning .src to the same URL — reassigning forces the video
+    // to redownload metadata and discard the buffered/decoded frames.
+    if (iosEditsVideo.dataset.currentSrc !== item.src) {
+      iosEditsVideo.src = item.src;
+      iosEditsVideo.dataset.currentSrc = item.src;
+    }
     iosEditsBB.hide();
     if (autoPlay) {
       iosEditsBB.show();
@@ -510,7 +537,9 @@ function popURLToRoot() {
     setThemeColorForApp();
     iosEditsItems = iosCollectEdits();
     iosRenderEditsList();
-    iosEditsVideo.src = '';
+    // Don't clear .src — if the user previously viewed an edit, that video
+    // is still in the element ready to resume. iosSelectEdit(0) reassigns
+    // only if needed.
 
     iosEditsApp.classList.remove('closing');
     performIosAppTransition(iosEditsApp, iconEl, true);
@@ -523,7 +552,8 @@ function popURLToRoot() {
     setThemeColorForScreen();
     iosEditsApp.classList.add('closing');
     iosEditsVideo.pause();
-    iosEditsVideo.src = '';
+    // Keep .src so reopening the same edit resumes instantly from the
+    // already-decoded frames.
     popURLToRoot();
     performIosAppTransition(iosEditsApp, null, false);
     setTimeout(() => {
@@ -991,8 +1021,17 @@ function popURLToRoot() {
   window.iosBtsOpenViewer = function (index) {
     iosBtsViewer.style.display = 'flex';
 
+    // Reset the counter + progress *now* so the previous file's "3 / 10"
+    // doesn't linger in the bar between display and the rAF that resnaps
+    // scrollLeft and calls iosBtsUpdateViewerCounter.
+    const totalNew = iosBtsCurrentFiles.length;
+    iosBtsViewerCounter.textContent = (index + 1) + ' / ' + totalNew;
+    if (iosBtsViewerProgress) {
+      iosBtsViewerProgress.style.width = totalNew > 1 ? (index / (totalNew - 1) * 100) + '%' : '100%';
+    }
+
     iosBtsViewerPages.innerHTML = iosBtsCurrentFiles.map((f) => {
-      const pageStyle = 'flex:0 0 100vw; width:100vw; min-width:100vw; height:100%; scroll-snap-align:start; display:flex; align-items:center; justify-content:center; overflow:hidden; background:transparent;';
+      const pageStyle = 'flex:0 0 100%; width:100%; min-width:100%; height:100%; scroll-snap-align:start; display:flex; align-items:center; justify-content:center; overflow:hidden; background:transparent;';
       if (f.isVideo) {
         return `<div style="${pageStyle}"><video src="${f.src}" style="width:100%;height:100%;object-fit:contain;" loop playsinline preload="none"></video></div>`;
       } else {

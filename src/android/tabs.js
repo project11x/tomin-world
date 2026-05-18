@@ -518,21 +518,26 @@ import { portfolioData } from '../../data.js';
     panel.querySelectorAll('[data-bts-folder]').forEach(btn => {
       btn.addEventListener('click', () => {
         const folder = btn.dataset.btsFolder;
-        const files = collectBtsFiles(folder);
-        titleEl.textContent = folder;
-        gridEl.innerHTML = files.map((f, i) => `
-          <div class="md-bts-tile" data-bts-file-index="${i}">
-            ${f.isVideo
-              ? `<video src="${f.src}#t=0.1" muted playsinline preload="metadata"></video><span class="md-bts-play"><i class="bi bi-play-fill"></i></span>`
-              : `<img src="${f.src}" loading="lazy" />`}
-          </div>
-        `).join('');
-        gridEl.querySelectorAll('[data-bts-file-index]').forEach(tile => {
-          tile.addEventListener('click', () => {
-            const idx = parseInt(tile.dataset.btsFileIndex, 10);
-            if (window.androidOpenBtsViewer) window.androidOpenBtsViewer(folder, idx);
+        // Skip rebuild if user is reopening the same BTS folder — keeps
+        // already-decoded thumbnail videos alive.
+        if (gridEl.dataset.btsFolder !== folder) {
+          const files = collectBtsFiles(folder);
+          titleEl.textContent = folder;
+          gridEl.dataset.btsFolder = folder;
+          gridEl.innerHTML = files.map((f, i) => `
+            <div class="md-bts-tile" data-bts-file-index="${i}">
+              ${f.isVideo
+                ? `<video src="${f.src}#t=0.1" muted playsinline preload="metadata"></video><span class="md-bts-play"><i class="bi bi-play-fill"></i></span>`
+                : `<img src="${f.src}" loading="lazy" />`}
+            </div>
+          `).join('');
+          gridEl.querySelectorAll('[data-bts-file-index]').forEach(tile => {
+            tile.addEventListener('click', () => {
+              const idx = parseInt(tile.dataset.btsFileIndex, 10);
+              if (window.androidOpenBtsViewer) window.androidOpenBtsViewer(folder, idx);
+            });
           });
-        });
+        }
         foldersView.style.display = 'none';
         filesView.style.display = 'block';
       });

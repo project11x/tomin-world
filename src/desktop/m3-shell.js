@@ -698,6 +698,12 @@ function wirePlayer(root) {
 
 // === Lightbox ====================================================
 
+// DOM cache for the lightbox so navigating between items (or closing and
+// reopening) doesn't tear down and remount decoded <video>/<img> elements.
+// Keyed by item.src — URL is content-addressed via ?v=<mtime>, so a replaced
+// file gets a fresh entry.
+const m3LbCache = new Map();
+
 function openLightbox(items, startIdx) {
   let idx = startIdx;
   const lb = document.getElementById('m3d-lightbox');
@@ -706,19 +712,36 @@ function openLightbox(items, startIdx) {
 
   function render() {
     const it = items[idx];
-    if (it.isVideo) {
-      stage.innerHTML = buildPlayerHTML(it);
-      const player = stage.querySelector('.m3d-player');
-      wirePlayer(player);
-      player.querySelector('.m3d-player-video')?.play?.().catch(() => {});
+    // Hide and pause any currently-visible wrapper.
+    [...stage.children].forEach((c) => {
+      const v = c.querySelector?.('video') || (c.tagName === 'VIDEO' ? c : null);
+      if (v) { try { v.pause(); } catch {} }
+      c.style.display = 'none';
+    });
+    let wrap = m3LbCache.get(it.src);
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.style.display = 'contents';
+      if (it.isVideo) {
+        wrap.innerHTML = buildPlayerHTML(it);
+        stage.appendChild(wrap);
+        const player = wrap.querySelector('.m3d-player');
+        wirePlayer(player);
+      } else {
+        wrap.innerHTML = `<img src="${it.src}" alt="${it.name}" />`;
+        stage.appendChild(wrap);
+      }
+      m3LbCache.set(it.src, wrap);
     } else {
-      stage.innerHTML = `<img src="${it.src}" alt="${it.name}" />`;
+      wrap.style.display = 'contents';
     }
+    if (it.isVideo) wrap.querySelector('.m3d-player-video')?.play?.().catch(() => {});
     caption.textContent = `${it.name} — ${idx + 1} / ${items.length}`;
   }
   function close() {
     lb.classList.remove('is-open');
-    stage.innerHTML = '';
+    // Pause but don't tear down — reopening is instant.
+    stage.querySelectorAll('video').forEach((v) => { try { v.pause(); } catch {} });
     document.removeEventListener('keydown', onKey);
   }
   function onKey(e) {
