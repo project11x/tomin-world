@@ -4,6 +4,36 @@
       color: #2e3336;
       transition: background-color 0.3s ease;
     }
+
+    /* Smooth light↔dark switch: briefly animate colour-related props on
+       every element while the theme flips. Toggled by JS for ~320ms so it
+       never interferes with normal interaction transitions. */
+    html.theme-switching,
+    html.theme-switching *,
+    html.theme-switching *::before,
+    html.theme-switching *::after {
+      transition:
+        background-color 280ms ease,
+        color 280ms ease,
+        border-color 280ms ease,
+        fill 280ms ease,
+        stroke 280ms ease,
+        box-shadow 280ms ease,
+        outline-color 280ms ease !important;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html.theme-switching,
+      html.theme-switching *,
+      html.theme-switching *::before,
+      html.theme-switching *::after {
+        transition:
+          background-color 140ms linear,
+          color 140ms linear,
+          border-color 140ms linear,
+          fill 140ms linear,
+          stroke 140ms linear !important;
+      }
+    }
     .dark body {
       color: #ffffff;
     }
@@ -1358,6 +1388,7 @@
   animation-duration: 160ms;
   animation-timing-function: ease;
 }
+
 
 /* macOS-style window close: shrink + fade, anchored at the close button.
    Only the closing window animates — other open windows stay perfectly still. */

@@ -73,16 +73,28 @@ function updateThemeCheckmarks() {
   });
 }
 
+let _themeSwitchTimer = null;
+function endThemeSwitchSoon() {
+  const html = document.documentElement;
+  if (_themeSwitchTimer) clearTimeout(_themeSwitchTimer);
+  _themeSwitchTimer = setTimeout(() => {
+    html.classList.remove('theme-switching');
+    _themeSwitchTimer = null;
+  }, 320);
+}
+
 function setDarkMode(isDark) {
   const html = document.documentElement;
   const themeToggle = document.getElementById('theme-toggle');
   const magThemeToggle = document.getElementById('mag-theme-toggle');
 
-  if (isDark) {
-    html.classList.add('dark');
-  } else {
-    html.classList.remove('dark');
-  }
+  html.classList.add('theme-switching');
+  // Force a style flush so Safari registers the transition rule before the
+  // colour-defining class flips in the same frame.
+  void html.offsetWidth;
+  if (isDark) html.classList.add('dark');
+  else html.classList.remove('dark');
+  endThemeSwitchSoon();
 
   const icon = isDark ? 'light_mode' : 'dark_mode';
   if (themeToggle) setIcon(themeToggle, icon);
