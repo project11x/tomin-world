@@ -103,6 +103,7 @@ function setDarkMode(isDark) {
     if (iconSpan) setIcon(iconSpan, icon);
   }
   updateThemeCheckmarks();
+  document.dispatchEvent(new Event('theme-change'));
 }
 
 function setTheme(mode) {
@@ -127,6 +128,7 @@ function setTheme(mode) {
   if (effective === 'tui') html.classList.add('theme-tui');
   try { localStorage.setItem('palette', mode); } catch (e) { /* ignore */ }
   updateThemeCheckmarks();
+  document.dispatchEvent(new Event('theme-change'));
   if (window.updateIosPaletteToggle) window.updateIosPaletteToggle();
   if (window.applyAndroidScreen) window.applyAndroidScreen();
   if (window.androidRenderAll) window.androidRenderAll();

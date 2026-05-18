@@ -826,6 +826,9 @@ function init() {
   bindFab();
   renderList();
   renderDetail();
+  document.addEventListener('theme-change', () => {
+    if (activeTab === 'about') renderDetail();
+  });
 }
 
 if (document.readyState === 'loading') {
