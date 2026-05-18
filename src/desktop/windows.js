@@ -647,23 +647,52 @@ window.handleItemClick = function (folder, index) {
 };
 
 function toggleFullscreen(win) {
-  if (win.dataset.isMaximized === 'true') {
+  const rect = win.getBoundingClientRect();
+  const rootH = window.innerHeight;
+  const rootW = window.innerWidth;
+  const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+
+  // Step 1: pin current geometry as px (no transition active yet) so the
+  // window's visible position doesn't jump when we drop the transform/%.
+  win.style.transform = 'none';
+  win.style.left = `${rect.left}px`;
+  win.style.top = `${rect.top}px`;
+  win.style.width = `${rect.width}px`;
+  win.style.height = `${rect.height}px`;
+
+  // Step 2: flush, then enable the transition rule, then flush again — Safari
+  // needs the transition to be live BEFORE the target values are written,
+  // otherwise it batches and skips straight to the end state.
+  void win.offsetWidth;
+  win.classList.add('fs-animating');
+  void win.offsetWidth;
+
+  // Step 3: write target geometry. Now the change is animated.
+  const willMaximize = win.dataset.isMaximized !== 'true';
+  if (willMaximize) {
+    win.dataset.prevLeftPx = rect.left;
+    win.dataset.prevTopPx = rect.top;
+    win.style.width = `${rootW}px`;
+    win.style.height = `${rootH - 2 * remPx}px`;
+    win.style.left = '0px';
+    win.style.top = `${2 * remPx}px`;
+    win.dataset.isMaximized = 'true';
+  } else {
+    const restoreLeft = win.dataset.prevLeftPx;
+    const restoreTop = win.dataset.prevTopPx;
     win.style.width = '960px';
     win.style.height = '620px';
-    win.style.left = win.dataset.prevLeft || '50%';
-    win.style.top = win.dataset.prevTop || '50%';
-    win.style.transform = win.dataset.prevLeft ? 'none' : 'translate(-50%, -50%)';
+    win.style.left = restoreLeft != null ? `${restoreLeft}px` : `${(rootW - 960) / 2}px`;
+    win.style.top = restoreTop != null ? `${restoreTop}px` : `${(rootH - 620) / 2}px`;
     win.dataset.isMaximized = 'false';
-  } else {
-    win.dataset.prevLeft = win.style.left;
-    win.dataset.prevTop = win.style.top;
-    win.style.width = '100vw';
-    win.style.height = 'calc(100vh - 2rem)';
-    win.style.left = '0';
-    win.style.top = '2rem';
-    win.style.transform = 'none';
-    win.dataset.isMaximized = 'true';
   }
+
+  const cleanup = () => {
+    win.classList.remove('fs-animating');
+    win.removeEventListener('transitionend', cleanup);
+  };
+  win.addEventListener('transitionend', cleanup);
+  setTimeout(cleanup, 400);
 }
 
 // --- Desktop Icons Dragging Logic ---

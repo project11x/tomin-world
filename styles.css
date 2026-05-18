@@ -1402,6 +1402,21 @@
   animation: window-close-out 180ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
   will-change: transform, opacity;
 }
+
+/* Animate the green-button fullscreen toggle. The template uses
+   `transition-colors` (to avoid backdrop-filter flashbang on mount), so
+   size/position changes don't animate by default — add them explicitly. */
+.app-window.fs-animating {
+  transition-property: width, height, left, top, transform, background-color, color, border-color !important;
+  transition-duration: 280ms, 280ms, 280ms, 280ms, 280ms, 300ms, 300ms, 300ms !important;
+  transition-timing-function:
+    cubic-bezier(0.4, 0, 0.2, 1),
+    cubic-bezier(0.4, 0, 0.2, 1),
+    cubic-bezier(0.4, 0, 0.2, 1),
+    cubic-bezier(0.4, 0, 0.2, 1),
+    cubic-bezier(0.4, 0, 0.2, 1),
+    ease, ease, ease !important;
+}
 @media (prefers-reduced-motion: reduce) {
   .app-window.closing { animation-duration: 1ms; }
 }
