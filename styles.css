@@ -1359,6 +1359,17 @@
   animation-timing-function: ease;
 }
 
+/* Preserve the finder window's rounded corners during the open view
+   transition. Without this the snapshot pseudos render as rectangles and
+   the user sees a brief flash of square corners before the real element
+   (with `rounded-xl`) takes over. */
+::view-transition-group(finder-opening),
+::view-transition-old(finder-opening),
+::view-transition-new(finder-opening) {
+  border-radius: 12px;
+  overflow: clip;
+}
+
 /* macOS-style window close: shrink + fade, anchored at the close button.
    Only the closing window animates — other open windows stay perfectly still. */
 @keyframes window-close-out {
