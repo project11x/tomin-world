@@ -1359,27 +1359,6 @@
   animation-timing-function: ease;
 }
 
-/* Preserve the finder window's rounded corners during view transitions.
-   Each finder window gets its own dynamic view-transition-name
-   (finder-1, finder-2…), so use the wildcard form to cover them all.
-   More specific named rules (e.g. app-expansion) still win on iOS. */
-::view-transition-group(*),
-::view-transition-old(*),
-::view-transition-new(*) {
-  border-radius: 12px;
-  overflow: clip;
-}
-/* The snapshot image is clipped to the group's border box, so the window's
-   box-shadow vanishes mid-transition and pops back when the real element
-   re-appears. Reapply the same ambient + 2xl shadow to the group itself —
-   group shadows draw outside the clip and survive the morph. */
-::view-transition-group(*) {
-  box-shadow:
-    0 20px 50px rgba(12, 14, 16, 0.08),
-    0 25px 50px -12px rgb(0 0 0 / 0.25);
-}
-::view-transition-group(root) { box-shadow: none; }
-
 /* macOS-style window close: shrink + fade, anchored at the close button.
    Only the closing window animates — other open windows stay perfectly still. */
 @keyframes window-close-out {

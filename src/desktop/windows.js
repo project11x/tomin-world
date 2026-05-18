@@ -173,36 +173,19 @@ export function createWindow(folderName) {
   // surfaces new folders after the live R2 sync.
   injectFavorites(win);
 
-  // Unique, persistent view-transition-name so each window is its own
-  // snapshot group — without this, existing windows fall into the root
-  // crossfade and briefly fade during every open. The matching wildcard
-  // ::view-transition-* rule in styles.css preserves rounded corners.
-  win.style.viewTransitionName = `finder-${windowCount}`;
-
-  // Render content *before* the window is attached so video/img elements
-  // have a tick to start loading metadata and are present in the new-state
-  // snapshot that startViewTransition captures right after appendChild.
-  // Without this, the first folder opened via a desktop icon shows a blank
-  // poster for its (often only) video — sidebar navigation, which has no
-  // view-transition, was unaffected.
   updateViewTabs();
   renderFolderContent(win, folderName);
-  const { transition } = withViewTransition(() => {
-    document.getElementById('desktop-main').appendChild(win);
-  });
-  // Chromium captures the view-transition snapshot before <video preload="metadata">
-  // has decoded its first frame, and the captured-blank state can persist past the
-  // animation. After the transition finishes, kick each video so the poster frame
-  // (currentTime=0.001 via onloadedmetadata) actually paints. Safari has no VT, so
-  // this is a no-op there.
-  const refreshVideoPosters = () => {
+  // No view-transition on open: the snapshot pseudo dropped the window's
+  // rounded corners and box-shadow, causing a brief square-edge flash and
+  // a shadow pop at the end of the animation. Appending directly lets the
+  // window appear with its real chrome already in place.
+  document.getElementById('desktop-main').appendChild(win);
+  queueMicrotask(() => {
     win.querySelectorAll('video').forEach((v) => {
       if (v.readyState < 1) { try { v.load(); } catch {} }
       else if (v.videoWidth && v.currentTime === 0) { v.currentTime = 0.001; }
     });
-  };
-  if (transition?.finished) transition.finished.then(refreshVideoPosters, () => {});
-  else queueMicrotask(refreshVideoPosters);
+  });
   window.umami?.track('folder-open', { folder: folderName });
 
   // Share button in the title bar (right of view toggles)
