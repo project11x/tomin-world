@@ -247,13 +247,26 @@ fi
 echo ""
 echo -e "${YELLOW}[5/7] Uploading to R2 (${R2_BUCKET})…${NC}"
 
-# Files we actually serve: skip _compressed variants, dotfiles. _web.mp4 are kept.
+# Files we actually serve: skip _compressed variants, dotfiles, and video
+# originals when a sibling _web variant exists (sync.cjs prefers _web for
+# playback, so the original would just bloat R2).
 UPLOAD_FILES=()
 while IFS= read -r -d '' f; do
   name=$(basename "$f")
   case "$name" in
     .*) continue ;;
     *_compressed.*) continue ;;
+  esac
+  case "$name" in
+    *.mp4|*.mov|*.webm|*.mkv)
+      dir=$(dirname "$f")
+      ext="${name##*.}"
+      base="${name%.*}"
+      # Skip the original if it's not already a _web file AND a _web sibling exists.
+      if [[ "$base" != *_web ]] && [ -f "$dir/${base}_web.${ext}" ]; then
+        continue
+      fi
+      ;;
   esac
   UPLOAD_FILES+=("$f")
 done < <(find "$PROJECT_DIR" -type f -print0)

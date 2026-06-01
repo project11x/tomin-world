@@ -630,6 +630,32 @@ export const portfolioData = {
       "isVideo": true
     }
   ],
+  "debut": [
+    {
+      "name": "debut.mp4",
+      "type": "Video",
+      "size": "809.6 MB",
+      "date": "May 27, 2026",
+      "src": "debut/debut_web.mp4?v=1780313825370",
+      "isVideo": true
+    },
+    {
+      "name": "IMG_004216.mov",
+      "type": "QuickTime Movie",
+      "size": "11.3 MB",
+      "date": "May 22, 2026",
+      "src": "debut/IMG_004216.mov?v=1779459331000",
+      "isVideo": true
+    },
+    {
+      "name": "IMG_004222.mov",
+      "type": "QuickTime Movie",
+      "size": "8.1 MB",
+      "date": "May 22, 2026",
+      "src": "debut/IMG_004222.mov?v=1779463052000",
+      "isVideo": true
+    }
+  ],
   "ftlotg": [
     {
       "name": "ftlotg.mp4",
@@ -815,4 +841,4 @@ export const portfolioData = {
     }
   ]
 };
-export const globalLatestFileTime = 1778536800000;
+export const globalLatestFileTime = 1779832800000;
