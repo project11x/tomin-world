@@ -2,9 +2,10 @@
 // Path: /api/status (PUT)
 //
 // Auth: validates the CF_Authorization JWT cookie issued by Cloudflare Access
-// directly against the team's JWKS. This works whether or not Access injects
-// the Cf-Access-Authenticated-User-Email header (which has been flaky during
-// Access service degradations).
+// directly against the team's JWKS. We do NOT trust the
+// Cf-Access-Authenticated-User-Email header — any client that can reach the
+// Worker outside Access (e.g. the workers.dev preview URL, or a path Access
+// doesn't cover) could spoof it and impersonate any allowlisted email.
 //
 // Required Pages env vars:
 //   GH_TOKEN              GitHub fine-grained PAT with contents:write
@@ -50,7 +51,8 @@ export async function onRequestPut(context) {
   const fileData = await getResp.json();
 
   const body = {
-    message: `chore(status): update via admin (${email})`,
+    // Don't leak the admin's email into the public commit history.
+    message: 'chore(status): update via admin panel',
     content: btoa(unescape(encodeURIComponent(JSON.stringify(newStatus, null, 2)))),
     sha: fileData.sha,
   };
@@ -77,11 +79,9 @@ export async function onRequest(context) {
 // ─────────────────────────────────────────────────────────────────────────
 
 async function authenticate(request, env) {
-  // Fast path: header (present when Access injects it normally).
-  const headerEmail = request.headers.get('Cf-Access-Authenticated-User-Email');
-  if (headerEmail) return headerEmail;
-
-  // Fallback: validate the CF_Authorization cookie ourselves.
+  // Always verify the JWT cookie directly against the team's JWKS. The
+  // Cf-Access-Authenticated-User-Email header is intentionally ignored —
+  // any client that bypasses Access can forge it.
   if (!env.CF_ACCESS_TEAM_DOMAIN || !env.CF_ACCESS_AUD) return null;
 
   const cookie = request.headers.get('Cookie') || '';

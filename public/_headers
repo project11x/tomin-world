@@ -1,14 +1,24 @@
-# Hashed assets — content-addressed by filename, never change.
+# Default — every reload revalidates with the origin, but the response
+# can still be served from the in-memory cache during a single session.
+/*
+  Cache-Control: no-cache
+  # Refuse to be loaded inside someone else's <iframe> — prevents
+  # clickjacking attacks where the site is wrapped in a transparent overlay.
+  X-Frame-Options: DENY
+  # Browser must honour the Content-Type we send; no MIME-sniffing tricks.
+  X-Content-Type-Options: nosniff
+  # When linking out, send the origin but not the full URL/path.
+  Referrer-Policy: strict-origin-when-cross-origin
+  # We don't use these device APIs anywhere; lock them down so no third-party
+  # script (OneSignal, fonts) can quietly probe them.
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=()
+  # Force HTTPS for 1 year, including subdomains. Once a browser has seen
+  # this header on shouli.de, it will refuse plain HTTP entirely.
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+
+# Hashed assets — content-addressed by filename, safe to cache forever.
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
-
-# HTML — points to the current asset hashes, must revalidate on every visit.
-/
-  Cache-Control: public, max-age=0, must-revalidate
-/index.html
-  Cache-Control: public, max-age=0, must-revalidate
-/admin.html
-  Cache-Control: public, max-age=0, must-revalidate
 
 # Live status — stale up to 60s at the edge, fresh on origin.
 /status.json

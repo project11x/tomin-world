@@ -32,6 +32,9 @@ dist/
 test-results/
 playwright-report/
 
+# Wrangler local state (cache, dev-mode artifacts, temp files).
+.wrangler/
+
 # Folder typo (renamed)
 5am in munich/
 

@@ -19,6 +19,20 @@ main = "src/worker.js"
 compatibility_date = "2026-05-15"
 compatibility_flags = ["nodejs_compat"]
 
+# Disable the workers.dev preview URL. The Worker is only reachable via the
+# custom domains below, which Cloudflare Access can gate. With this off,
+# /api/status cannot be hit on a URL that bypasses Access.
+workers_dev = false
+preview_urls = false
+
+# Custom domains — must stay declared here so they aren't dropped by a deploy
+# that picks up local-vs-remote config drift.
+routes = [
+  { pattern = "shouli.de", custom_domain = true },
+  { pattern = "www.shouli.de", custom_domain = true },
+  { pattern = "tomin.world", custom_domain = true },
+]
+
 # Static asset serving — the dist/ output of `npm run build`.
 [assets]
 directory = "./dist"
