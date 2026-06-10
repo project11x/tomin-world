@@ -60,13 +60,15 @@ function animateWindowOpen(win, sourceEl) {
       scale = Math.max(0.08, r.width / winRect.width);
     }
   }
+  // Mostly opaque from the first frame — a long fade would hide the small
+  // early phase of the morph and the "grows out of the icon" read is lost.
   win.style.transformOrigin = 'center center';
   win.style.transition = 'none';
   win.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
-  win.style.opacity = '0';
+  win.style.opacity = '0.45';
   void win.offsetWidth;
   win.style.transition =
-    'transform 320ms cubic-bezier(0.32, 0.72, 0, 1), opacity 180ms ease';
+    'transform 380ms cubic-bezier(0.32, 0.72, 0, 1), opacity 120ms ease';
   win.style.transform = 'none';
   win.style.opacity = '1';
   setTimeout(() => {
@@ -74,7 +76,7 @@ function animateWindowOpen(win, sourceEl) {
     win.style.transform = 'none';
     win.style.opacity = '';
     win.style.transformOrigin = '';
-  }, 360);
+  }, 420);
 }
 
 export function createWindow(folderName, sourceEl = null) {

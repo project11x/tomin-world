@@ -56,15 +56,21 @@ function qlMorphFrom(modal, sourceEl) {
   modal.style.transformOrigin = 'center center';
   modal.style.transition = 'none';
   modal.style.transform = `${base}translate(${dx}px, ${dy}px) scale(${scale})`;
+  // Drive opacity inline during the morph — the element's own
+  // `transition-opacity duration-300` class would keep the modal nearly
+  // invisible through the small early phase where the morph reads best.
+  modal.style.opacity = '0.5';
   void modal.offsetWidth;
   modal.style.transition =
-    'transform 300ms cubic-bezier(0.32, 0.72, 0, 1), opacity 160ms ease';
+    'transform 320ms cubic-bezier(0.32, 0.72, 0, 1), opacity 120ms ease';
   modal.style.transform = base.trim() || '';
+  modal.style.opacity = '1';
   setTimeout(() => {
     modal.style.transition = '';
     modal.style.transform = '';
     modal.style.transformOrigin = '';
-  }, 340);
+    modal.style.opacity = '';
+  }, 360);
 }
 
 (function injectQuickLookShare() {
