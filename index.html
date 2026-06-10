@@ -38,8 +38,10 @@
       if (palette === 'tui' && isMobile) {
         try { effectivePalette = localStorage.getItem('palette-prev') || 'default'; } catch (e) { effectivePalette = 'default'; }
       }
-      if (effectivePalette === 'pink') document.documentElement.classList.add('theme-pink');
-      else if (effectivePalette === 'material') document.documentElement.classList.add('theme-material');
+      // Legacy: users with the retired "pink"/Fiona palette in localStorage
+      // get silently demoted to default Aero. No theme-pink class is ever
+      // applied so the styling can't pop back even briefly.
+      if (effectivePalette === 'material') document.documentElement.classList.add('theme-material');
       else if (effectivePalette === 'tui') document.documentElement.classList.add('theme-tui');
       document.documentElement.setAttribute('data-seed', seed || 'burgundy');
 
@@ -173,6 +175,7 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="src/android/tokens.css" />
   <link rel="stylesheet" href="src/desktop/m3-shell.css" />
+  <link rel="stylesheet" href="src/desktop/journal-shell.css" />
   <!-- Umami analytics — privacy-friendly, no cookies. -->
   <script defer src="https://cloud.umami.is/script.js" data-website-id="2ca1be0a-b51f-48d6-9874-ea5176bf30c3"></script>
 </head>
@@ -211,9 +214,6 @@
                 <div class="dropdown-separator"></div>
                 <div class="dropdown-item" id="theme-item-default">
                   <span>Aero Blue</span>
-                </div>
-                <div class="dropdown-item" id="theme-item-pink" style="display:none;">
-                  <span>Fiona</span>
                 </div>
                 <div class="dropdown-item" id="theme-item-material">
                   <span>Material</span>
@@ -325,6 +325,94 @@
             <div
               class="finder-main-area flex-1 overflow-y-auto bg-white/50 dark:bg-white/0 relative transition-colors duration-300">
             </div>
+          </div>
+        </section>
+      </div>
+    </template>
+
+    <!-- ─── Journal Window Template ───────────────────────────────
+         Cloned by src/desktop/journal-app.js when the Journal dock icon
+         is clicked. Sidebar (hero cards + Today rings + Sections list)
+         on the left, main content area on the right. Sections are
+         swapped in by JS based on which sidebar item is active. -->
+    <template id="journal-window-template">
+      <div
+        class="app-window absolute w-[860px] h-[600px] bg-white/80 dark:bg-slate-900/90 glass-panel rounded-xl ambient-shadow border border-white/40 dark:border-white/10 flex overflow-hidden ring-1 ring-black/5 shadow-2xl transition-colors duration-300">
+        <!-- Sidebar -->
+        <aside
+          class="journal-sidebar bg-slate-100/40 dark:bg-black/20 backdrop-blur-lg border-r border-slate-200/20 dark:border-white/5">
+          <!-- Traffic lights — pinned, never scrolls. draggable-handle here
+               so window can still be dragged by the title-bar area without
+               the hero cards/list below capturing the click. -->
+          <div class="journal-titlebar draggable-handle">
+            <div
+              class="btn-close-window w-3 h-3 relative rounded-full bg-red-500 hover:bg-red-600 transition-colors shadow-sm cursor-pointer before:absolute before:-inset-1.5 before:content-['']"
+              title="Close"></div>
+            <div
+              class="btn-minimize-window w-3 h-3 relative rounded-full bg-yellow-500 hover:bg-yellow-600 transition-colors shadow-sm cursor-pointer before:absolute before:-inset-1.5 before:content-['']"
+              title="Minimize"></div>
+            <div
+              class="btn-fullscreen-window w-3 h-3 relative rounded-full bg-green-500 hover:bg-green-600 transition-colors shadow-sm cursor-pointer before:absolute before:-inset-1.5 before:content-['']"
+              title="Full Screen"></div>
+          </div>
+
+          <!-- Scrollable inner — hero cards + Today rings + Sections list. -->
+          <div class="journal-sidebar-scroll">
+            <!-- Hero card 1 — Insights summary (placeholder grey) -->
+            <div class="journal-hero" data-jhero="insights">
+              <div class="journal-hero-eyebrow">Insights</div>
+              <div class="journal-hero-big" data-jhero-big>—</div>
+              <div class="journal-hero-sub">Perfect days</div>
+            </div>
+
+            <!-- Hero card 2 — Today's puzzle promo (placeholder grey) -->
+            <div class="journal-hero" data-jhero="today">
+              <div class="journal-hero-eyebrow">Today</div>
+              <div class="journal-hero-big" data-jhero-big>#—</div>
+              <div class="journal-hero-sub">Daily Frame</div>
+            </div>
+
+            <!-- Today rings section -->
+            <div class="journal-section-label">Today</div>
+            <div class="journal-today-items" data-jrings>
+              <!-- Populated by journal-app.js: three rings as list items -->
+            </div>
+
+            <!-- Sections nav -->
+            <div class="journal-section-label">Sections</div>
+            <div class="journal-sections-items">
+              <div class="journal-item" data-jsection="today">
+                <span class="journal-item-icon">◯</span>
+                <span class="journal-item-label">Today</span>
+              </div>
+              <div class="journal-item" data-jsection="play">
+                <span class="journal-item-icon">🎮</span>
+                <span class="journal-item-label">Play</span>
+                <span class="journal-item-count">6</span>
+              </div>
+              <div class="journal-item" data-jsection="board">
+                <span class="journal-item-icon">📌</span>
+                <span class="journal-item-label">Board</span>
+              </div>
+              <div class="journal-item" data-jsection="passport">
+                <span class="journal-item-icon">🪪</span>
+                <span class="journal-item-label">Passport</span>
+              </div>
+              <div class="journal-item" data-jsection="insights">
+                <span class="journal-item-icon">📊</span>
+                <span class="journal-item-label">Insights</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Main area -->
+        <section class="journal-main bg-white/60 dark:bg-white/0 transition-colors duration-300">
+          <div class="journal-main-titlebar draggable-handle">
+            <h2 class="journal-main-title" data-jmain-title>Today</h2>
+          </div>
+          <div class="journal-main-content" data-jmain-content>
+            <!-- Populated by journal-app.js based on selected section -->
           </div>
         </section>
       </div>
@@ -530,7 +618,7 @@
 
       <!-- Edits -->
       <div
-        class="dock-item relative flex flex-col items-center cursor-pointer transition-all duration-200 ease-out hover:scale-125 hover:-translate-y-3 group"
+        class="dock-item relative flex flex-col items-center cursor-pointer group"
         title="Edits" data-dock="edits">
         <div class="w-14 h-14 drop-shadow-lg group-hover:drop-shadow-xl transition-all">
           <img src="icons/edits.png" class="w-full h-full object-contain" draggable="false" />
@@ -541,7 +629,7 @@
 
       <!-- Finder -->
       <div
-        class="dock-item relative flex flex-col items-center cursor-pointer transition-all duration-200 ease-out hover:scale-125 hover:-translate-y-3 group"
+        class="dock-item relative flex flex-col items-center cursor-pointer group"
         title="Finder" data-dock="finder">
         <div class="w-14 h-14 drop-shadow-lg group-hover:drop-shadow-xl transition-all">
           <img src="icons/finder.png" class="w-full h-full object-contain" draggable="false" />
@@ -550,9 +638,21 @@
           class="absolute -bottom-5 text-[10px] font-medium text-slate-600 dark:text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Finder</span>
       </div>
 
+      <!-- Journal — swapped left of Contact (Journal is now the primary
+           engagement surface, so it gets the more prominent dock slot). -->
+      <div
+        class="dock-item relative flex flex-col items-center cursor-pointer group"
+        title="Journal" data-dock="journal">
+        <div class="w-14 h-14 drop-shadow-lg group-hover:drop-shadow-xl transition-all">
+          <img src="icons/journal.png" class="w-full h-full object-contain" draggable="false" />
+        </div>
+        <span
+          class="absolute -bottom-5 text-[10px] font-medium text-slate-600 dark:text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Journal</span>
+      </div>
+
       <!-- Contact -->
       <div
-        class="dock-item relative flex flex-col items-center cursor-pointer transition-all duration-200 ease-out hover:scale-125 hover:-translate-y-3 group"
+        class="dock-item relative flex flex-col items-center cursor-pointer group"
         title="Contact" data-dock="contact">
         <div class="w-14 h-14 drop-shadow-lg group-hover:drop-shadow-xl transition-all">
           <img src="icons/contact.png" class="w-full h-full object-contain" draggable="false" />
@@ -1257,13 +1357,19 @@
           </div>
         </div>
 
+        <!-- Journal — swapped left of Contact, mirrors the desktop dock. -->
+        <div class="ios-dock-item ios-intro-item cursor-pointer" data-ios-app="journal">
+          <div class="w-[62px] h-[62px] drop-shadow-md">
+            <img src="icons/journal.png" class="w-full h-full object-contain" draggable="false" />
+          </div>
+        </div>
+
         <!-- Contact -->
         <div class="ios-dock-item ios-intro-item cursor-pointer" data-ios-app="contact">
           <div class="w-[62px] h-[62px] drop-shadow-md">
             <img src="icons/contact.png" class="w-full h-full object-contain" draggable="false" />
           </div>
         </div>
-
 
       </div>
     </div>
@@ -1452,6 +1558,174 @@
     </div>
   </div>
 
+  <!-- ─── iOS Journal App ───────────────────────────────────────
+       Mobile counterpart to the desktop Journal window. Scrolling page
+       in Apple Journal mobile aesthetic. Driven by src/ios/journal-app.js,
+       opened from the iOS dock entry data-ios-app="journal". -->
+  <div id="ios-journal-app" class="ios-app-overlay fixed inset-0 z-[90] flex flex-col"
+    style="display:none; background:var(--ios-app-bg); transform:scale(0.4); opacity:0; border-radius:40px;">
+
+    <!-- Header -->
+    <div class="shrink-0 px-5 flex items-center justify-between"
+      style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:16px;">
+      <h1 class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text)">Journal</h1>
+      <button data-ios-close="journal"
+        class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
+        style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
+        <span class="material-symbols-rounded"
+          style="font-size:20px; color:var(--ios-text-secondary);">chevron_right</span>
+      </button>
+    </div>
+
+    <!-- Scrolling content -->
+    <div class="ios-journal-scroll flex-1 overflow-y-auto px-4"
+      style="padding-bottom: max(28px, env(safe-area-inset-bottom, 28px));">
+
+      <!-- Hero summary card (placeholder grey gradient) -->
+      <div class="ios-journal-hero" data-ios-jhero="insights">
+        <div class="ios-journal-hero-row">
+          <div>
+            <div class="ios-journal-hero-eyebrow">Insights</div>
+            <div class="ios-journal-hero-big" data-ios-jhero-big-insights>—</div>
+            <div class="ios-journal-hero-sub">Perfect days</div>
+          </div>
+          <div class="ios-journal-hero-stats">
+            <div data-ios-jstat="played">— Played</div>
+            <div data-ios-jstat="solved">— Solved</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compact 3-ring card with "Today" eyebrow inside (mirrors the
+           Vote card's "This Week" pattern — the label belongs with the
+           content, not as a free-floating section header). -->
+      <div class="ios-journal-card ios-journal-rings-card" data-ios-jrings>
+        <!-- Populated by src/ios/journal-app.js — three rings reflecting
+             today's actual picks + closed state. -->
+      </div>
+
+      <!-- Daily Frame card (clickable, opens game) -->
+      <div class="ios-journal-card is-clickable" data-ios-jcard="daily-frame">
+        <div class="ios-journal-card-row">
+          <div class="ios-journal-card-thumb" data-ios-df-thumb>
+            <div style="width:100%; height:100%; background:rgba(255,255,255,0.08);"></div>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div class="ios-journal-card-eyebrow">Daily Frame</div>
+            <div class="ios-journal-card-title" data-ios-df-title>Loading…</div>
+            <div class="ios-journal-card-sub" data-ios-df-sub>Tap to play</div>
+          </div>
+          <span class="material-symbols-rounded"
+            style="font-size:22px; color:var(--ios-text-secondary);">chevron_right</span>
+        </div>
+      </div>
+
+      <!-- Weekly Vote card — populated by src/ios/journal-app.js -->
+      <div data-ios-jvote></div>
+
+      <!-- Sections list -->
+      <div class="ios-journal-section-label">Sections</div>
+      <div class="ios-journal-sublist">
+        <div class="ios-journal-row" data-ios-jsection="play">
+          <span class="ios-journal-row-icon">🎮</span>
+          <span class="ios-journal-row-label">Play</span>
+          <span class="ios-journal-row-sub">6</span>
+          <span class="material-symbols-rounded ios-journal-row-chev">chevron_right</span>
+        </div>
+        <div class="ios-journal-row" data-ios-jsection="board">
+          <span class="ios-journal-row-icon">📌</span>
+          <span class="ios-journal-row-label">Board</span>
+          <span class="material-symbols-rounded ios-journal-row-chev">chevron_right</span>
+        </div>
+        <div class="ios-journal-row" data-ios-jsection="passport">
+          <span class="ios-journal-row-icon">🪪</span>
+          <span class="ios-journal-row-label">Passport</span>
+          <span class="material-symbols-rounded ios-journal-row-chev">chevron_right</span>
+        </div>
+        <div class="ios-journal-row" data-ios-jsection="insights">
+          <span class="ios-journal-row-icon">📊</span>
+          <span class="ios-journal-row-label">Insights</span>
+          <span class="material-symbols-rounded ios-journal-row-chev">chevron_right</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ─── Play sub-screen — game grid -->
+    <div id="ios-journal-play" class="ios-journal-subscreen">
+      <div class="shrink-0 px-5 flex items-center justify-between"
+        style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:16px;">
+        <button data-ios-journal-play-back
+          class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
+          style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
+          <span class="material-symbols-rounded" style="font-size:20px; color:var(--ios-text-secondary);">chevron_left</span>
+        </button>
+        <h1 class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text); position:absolute; left:50%; transform:translateX(-50%);">Play</h1>
+        <div style="width:40px;"></div>
+      </div>
+      <div class="flex-1 overflow-y-auto px-4"
+        style="padding-bottom: max(28px, env(safe-area-inset-bottom, 28px));"
+        data-ios-jplay-host></div>
+    </div>
+
+    <!-- ─── Insights sub-screen — activity calendar + stats -->
+    <div id="ios-journal-insights" class="ios-journal-subscreen">
+      <div class="shrink-0 px-5 flex items-center justify-between"
+        style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:16px;">
+        <button data-ios-journal-insights-back
+          class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
+          style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
+          <span class="material-symbols-rounded" style="font-size:20px; color:var(--ios-text-secondary);">chevron_left</span>
+        </button>
+        <h1 class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text); position:absolute; left:50%; transform:translateX(-50%);">Insights</h1>
+        <div style="width:40px;"></div>
+      </div>
+      <div class="flex-1 overflow-y-auto px-4"
+        style="padding-bottom: max(28px, env(safe-area-inset-bottom, 28px));"
+        data-ios-jinsights-host></div>
+    </div>
+
+    <!-- ─── Passport sub-screen — stamps + sync code -->
+    <div id="ios-journal-passport" class="ios-journal-subscreen">
+      <div class="shrink-0 px-5 flex items-center justify-between"
+        style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:16px;">
+        <button data-ios-journal-passport-back
+          class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
+          style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
+          <span class="material-symbols-rounded" style="font-size:20px; color:var(--ios-text-secondary);">chevron_left</span>
+        </button>
+        <h1 class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text); position:absolute; left:50%; transform:translateX(-50%);">Passport</h1>
+        <div style="width:40px;"></div>
+      </div>
+      <div class="flex-1 overflow-y-auto px-4"
+        style="padding-bottom: max(28px, env(safe-area-inset-bottom, 28px));"
+        data-ios-jpassport-host></div>
+    </div>
+
+    <!-- ─── Board sub-screen — slides in from right when "Board" row tapped.
+         Same push-transition pattern as ios-bts-screen-files. -->
+    <div id="ios-journal-board" class="ios-journal-subscreen">
+      <div class="shrink-0 px-5 flex items-center justify-between"
+        style="background:var(--ios-app-bg); padding-top:max(env(safe-area-inset-top, 0px), 20px); padding-bottom:16px;">
+        <button data-ios-journal-board-back
+          class="w-10 h-10 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
+          style="background:var(--ios-card-bg); box-shadow:0 0 0 1px var(--ios-card-border); -webkit-tap-highlight-color:transparent;">
+          <span class="material-symbols-rounded"
+            style="font-size:20px; color:var(--ios-text-secondary);">chevron_left</span>
+        </button>
+        <h1 class="font-bold text-[28px] tracking-tight" style="color:var(--ios-text); position:absolute; left:50%; transform:translateX(-50%);">Board</h1>
+        <button data-ios-journal-board-pin
+          class="px-3 h-9 rounded-full flex items-center justify-center active:opacity-50 cursor-pointer shrink-0"
+          style="background:var(--ios-text); color:var(--ios-app-bg); font-size:13px; font-weight:600; -webkit-tap-highlight-color:transparent;">
+          + Pin
+        </button>
+      </div>
+      <div class="ios-journal-board-cork" data-ios-jboard-grid>
+        <div class="ios-journal-board-loading">Loading…</div>
+      </div>
+    </div>
+  </div>
+
   <!-- iOS Contact App -->
   <div id="ios-contact-app" class="ios-app-overlay fixed inset-0 z-[90] flex flex-col"
     style="display:none; background:#1a1410; transform:scale(0.4); opacity:0; border-radius:40px;">
@@ -1545,15 +1819,13 @@
             </div>
           </div>
 
-          <!-- Palette picker: Aero / Fiona / Material -->
+          <!-- Palette picker: Aero / Material -->
           <div style="padding:6px 16px 14px;">
             <p style="color:#fff; font-size:15px; font-weight:600; margin:0 0 10px;">Palette</p>
             <div id="ios-palette-toggle"
               style="display:flex; gap:2px; border-radius:9px; padding:2px; background:rgba(255,255,255,0.1);">
               <button data-palette="default" id="ios-palette-default"
                 style="flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:rgba(255,255,255,0.5); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Aero</button>
-              <button data-palette="pink" id="ios-palette-pink"
-                style="display:none; flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:rgba(255,255,255,0.5); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Fiona</button>
               <button data-palette="material" id="ios-palette-material"
                 style="flex:1; padding:7px 0; font-size:13px; font-weight:500; border:none; cursor:pointer; border-radius:7px; background:transparent; color:rgba(255,255,255,0.5); transition:background 0.15s, color 0.15s; -webkit-tap-highlight-color:transparent;">Material</button>
             </div>
@@ -1696,7 +1968,7 @@
       style="background: linear-gradient(160deg, #06080f 0%, #0a0e20 50%, #0e0618 100%);"></div>
 
     <!-- inner layout: left list + right video, relative so dark overlay is behind -->
-    <div class="relative z-10 flex items-center gap-5 w-full" style="height: min(calc(100vh - 80px), 680px);">
+    <div class="relative z-10 flex items-center gap-5 max-w-full" style="height: min(calc(100vh - 80px), 680px);">
 
       <!-- LEFT GLASS CARD: Edit List -->
       <div class="edits-glass-card w-[260px] shrink-0 h-full rounded-[18px] overflow-hidden flex flex-col">

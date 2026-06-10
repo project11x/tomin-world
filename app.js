@@ -12,12 +12,14 @@ import './src/utils/video.js';
 import './src/desktop/system-bar.js';
 import './src/desktop/desktop-icons.js'; // must come BEFORE windows.js — renders icons that windows.js then wires up
 import './src/desktop/windows.js';
+import './src/desktop/journal-app.js';
 import './src/desktop/quick-look.js';
 import './src/desktop/spaces.js';
 import './src/desktop/edits-viewer.js';
 import './src/desktop/m3-shell.js';
 import './src/desktop/tui-shell.js';
 import './src/ios/index.js';
+import './src/ios/journal-app.js';
 import './src/android/index.js';
 import './src/android/widgets.js';
 import './src/android/tabs.js';
@@ -32,16 +34,19 @@ import './src/android/badges.js';
 import './src/widgets/weather.js';
 import './src/widgets/smart-stack.js';
 import './src/widgets/portfolio-timeline.js';
+import './src/desktop/dock-magnify.js';
 import './src/desktop/ui-bindings.js';
 import './src/desktop/context-menu.js';
+import './src/utils/admin-chooser.js';
 import './src/utils/router.js';
 
-// Prepend R2 base URL to all src values when running in production.
-// Idempotent: skip items that already start with the R2 prefix.
-const R2_BASE_URL =
-  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? ''
-    : 'https://pub-859f13be44eb4577b0cb23c8d8440a59.r2.dev/';
+// Prepend R2 base URL to all src values everywhere except `vite dev` (which
+// serves the project root and therefore has the media folders locally).
+// Wrangler dev only serves dist/ — the media folders aren't bundled there,
+// so we still need the R2 prefix to actually load thumbnails / videos.
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const isViteDev = isLocal && window.location.port === '5173';
+const R2_BASE_URL = isViteDev ? '' : 'https://pub-859f13be44eb4577b0cb23c8d8440a59.r2.dev/';
 
 if (R2_BASE_URL) {
   Object.keys(portfolioData).forEach((key) => {
