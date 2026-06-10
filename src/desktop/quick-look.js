@@ -1,8 +1,71 @@
 // Quick Look modal — preview an image or video pulled from a finder window.
+import { portfolioData } from '../../data.js';
 import { safePlayVideo, killOtherVideos, attachBeachball } from '../utils/video.js';
 import { bringToFront } from './windows.js';
 import { makeShareButton } from '../utils/share.js';
 import { setIcon } from '../utils/icons.js';
+
+// Folder context of the currently shown item — drives ←/→ navigation and
+// neighbour preloading. null when Quick Look was opened without context.
+let qlCtx = null;
+
+// Items the arrows can land on: plain images/videos, no magazines.
+function qlNavigable(folder) {
+  const items = portfolioData[folder] || [];
+  return items
+    .map((item, index) => ({ item, index }))
+    .filter(({ item }) => !item.isMagazine && !portfolioData[folder + '/' + item.name]);
+}
+
+function qlStep(dir) {
+  if (!qlCtx) return;
+  const list = qlNavigable(qlCtx.folder);
+  const pos = list.findIndex(({ index }) => index === qlCtx.index);
+  if (pos < 0) return;
+  const next = list[(pos + dir + list.length) % list.length];
+  if (!next || next.index === qlCtx.index) return;
+  window.openQuickLook(next.item, null, { folder: qlCtx.folder, index: next.index });
+}
+
+// Warm the browser cache for the items next to the current one so an arrow
+// press never waits on the network.
+function qlPreloadNeighbours() {
+  if (!qlCtx) return;
+  const list = qlNavigable(qlCtx.folder);
+  const pos = list.findIndex(({ index }) => index === qlCtx.index);
+  if (pos < 0) return;
+  [list[(pos + 1) % list.length], list[(pos - 1 + list.length) % list.length]]
+    .forEach((n) => {
+      if (n && !n.item.isVideo && n.item.src) { new Image().src = n.item.src; }
+    });
+}
+
+// FLIP morph from the clicked Finder thumbnail to the modal's final box.
+// Composes with the modal's centering transform (Tailwind -translate-1/2)
+// by prepending the computed base matrix.
+function qlMorphFrom(modal, sourceEl) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const r = sourceEl.getBoundingClientRect();
+  const m = modal.getBoundingClientRect();
+  if (!r.width || !m.width) return;
+  const cs = getComputedStyle(modal).transform;
+  const base = cs && cs !== 'none' ? cs + ' ' : '';
+  const dx = (r.left + r.width / 2) - (m.left + m.width / 2);
+  const dy = (r.top + r.height / 2) - (m.top + m.height / 2);
+  const scale = Math.max(0.06, r.width / m.width);
+  modal.style.transformOrigin = 'center center';
+  modal.style.transition = 'none';
+  modal.style.transform = `${base}translate(${dx}px, ${dy}px) scale(${scale})`;
+  void modal.offsetWidth;
+  modal.style.transition =
+    'transform 300ms cubic-bezier(0.32, 0.72, 0, 1), opacity 160ms ease';
+  modal.style.transform = base.trim() || '';
+  setTimeout(() => {
+    modal.style.transition = '';
+    modal.style.transform = '';
+    modal.style.transformOrigin = '';
+  }, 340);
+}
 
 (function injectQuickLookShare() {
   const header = document.querySelector('#quick-look-modal .draggable-handle');
@@ -12,10 +75,12 @@ import { setIcon } from '../utils/icons.js';
   header.appendChild(btn);
 })();
 
-window.openQuickLook = function (item) {
+window.openQuickLook = function (item, sourceEl = null, ctx = null) {
   const quickLookTitle = document.getElementById('quick-look-title');
   const quickLookContent = document.getElementById('quick-look-content');
   const quickLookModal = document.getElementById('quick-look-modal');
+  const wasHidden = quickLookModal.classList.contains('hidden');
+  qlCtx = ctx;
   quickLookTitle.innerText = item.name;
 
   const qlControls = document.getElementById('quick-look-controls');
@@ -112,11 +177,33 @@ window.openQuickLook = function (item) {
   // front. We also skip View Transitions here — the cross-fade conflicts
   // with our manual z-index and feels heavier than a plain opacity tween.
   bringToFront(quickLookModal);
-  quickLookModal.classList.remove('hidden');
-  requestAnimationFrame(() => {
-    quickLookModal.classList.remove('opacity-0');
-    quickLookModal.classList.add('opacity-100');
-  });
+
+  const reveal = () => {
+    quickLookModal.classList.remove('hidden');
+    // Morph only on a fresh open with a known source thumbnail — arrow
+    // navigation swaps content in place instead.
+    if (wasHidden && sourceEl) {
+      requestAnimationFrame(() => qlMorphFrom(quickLookModal, sourceEl));
+    }
+    requestAnimationFrame(() => {
+      quickLookModal.classList.remove('opacity-0');
+      quickLookModal.classList.add('opacity-100');
+    });
+    qlPreloadNeighbours();
+  };
+
+  // For images, wait (briefly) for the decode so the morph targets the
+  // modal's real size — measuring while the <img> is still 0×0 would morph
+  // onto the collapsed min-width box and then visibly re-layout.
+  const imgEl = quickLookContent.querySelector('img');
+  if (wasHidden && imgEl && !imgEl.complete && imgEl.decode) {
+    Promise.race([
+      imgEl.decode().catch(() => {}),
+      new Promise((r) => setTimeout(r, 350)),
+    ]).then(reveal);
+  } else {
+    reveal();
+  }
 };
 
 window.closeQuickLook = function () {
@@ -127,6 +214,7 @@ window.closeQuickLook = function () {
   // window once the snapshot dissolved.
   quickLookModal.classList.remove('opacity-100');
   quickLookModal.classList.add('opacity-0');
+  qlCtx = null;
   setTimeout(() => {
     quickLookModal.classList.add('hidden');
     quickLookContent.innerHTML = '';
@@ -145,6 +233,12 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault();
     const v = quickLookModal.querySelector('video');
     if (v) { if (v.paused) v.play(); else v.pause(); }
+  } else if (e.key === 'ArrowRight') {
+    e.preventDefault();
+    qlStep(1);
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    qlStep(-1);
   }
 });
 

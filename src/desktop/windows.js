@@ -5,6 +5,7 @@ import { portfolioData } from '../../data.js';
 import { makeShareButton } from '../utils/share.js';
 import { folderToSlug } from '../utils/slugs.js';
 import { recentFolders, recentMagazines, isFolderRecent } from '../utils/recency.js';
+import { posterForVideo, accentForFolder } from '../utils/edit-posters.js';
 
 let highestZIndex = 50;
 export function bringToFront(element) {
@@ -42,7 +43,41 @@ function withViewTransition(fn) {
   return { result: fn(), transition: null };
 }
 
-export function createWindow(folderName) {
+// FLIP open: the window grows out of the element that spawned it (desktop
+// icon on dblclick) so it visibly "comes from somewhere" instead of popping
+// into existence. Without a source it falls back to a subtle rise-and-fade.
+function animateWindowOpen(win, sourceEl) {
+  if (window.innerWidth <= 768) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const winRect = win.getBoundingClientRect();
+  if (!winRect.width) return;
+  let dx = 0, dy = 24, scale = 0.92;
+  if (sourceEl && sourceEl.getBoundingClientRect) {
+    const r = sourceEl.getBoundingClientRect();
+    if (r.width) {
+      dx = (r.left + r.width / 2) - (winRect.left + winRect.width / 2);
+      dy = (r.top + r.height / 2) - (winRect.top + winRect.height / 2);
+      scale = Math.max(0.08, r.width / winRect.width);
+    }
+  }
+  win.style.transformOrigin = 'center center';
+  win.style.transition = 'none';
+  win.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+  win.style.opacity = '0';
+  void win.offsetWidth;
+  win.style.transition =
+    'transform 320ms cubic-bezier(0.32, 0.72, 0, 1), opacity 180ms ease';
+  win.style.transform = 'none';
+  win.style.opacity = '1';
+  setTimeout(() => {
+    win.style.transition = '';
+    win.style.transform = 'none';
+    win.style.opacity = '';
+    win.style.transformOrigin = '';
+  }, 360);
+}
+
+export function createWindow(folderName, sourceEl = null) {
   if (!folderName || !portfolioData[folderName]) {
     // Fallback to first folder if key not found
     folderName = Object.keys(portfolioData).find(k => !k.includes('/')) || folderName;
@@ -58,6 +93,7 @@ export function createWindow(folderName) {
     reusable.classList.remove('closing');
     reusable.style.display = 'flex';
     reusable.style.zIndex = ++highestZIndex;
+    animateWindowOpen(reusable, sourceEl);
     emitWindowChange();
     return reusable;
   }
@@ -180,6 +216,7 @@ export function createWindow(folderName) {
   // a shadow pop at the end of the animation. Appending directly lets the
   // window appear with its real chrome already in place.
   document.getElementById('desktop-main').appendChild(win);
+  animateWindowOpen(win, sourceEl);
   queueMicrotask(() => {
     win.querySelectorAll('video').forEach((v) => {
       if (v.readyState < 1) { try { v.load(); } catch {} }
@@ -440,6 +477,18 @@ window.addEventListener('portfolio-updated', () => {
   });
 });
 
+// Same refresh once the poster/colour manifests arrive, so a window opened
+// before the fetch resolved swaps its <video> tiles for static frames.
+window.addEventListener('edit-posters-ready', () => {
+  document.querySelectorAll('.finder-window').forEach(win => {
+    const mainArea = win.querySelector('.finder-main-area');
+    if (!mainArea || !mainArea.childElementCount) return;
+    mainArea.innerHTML = '';
+    if (win.dataset.folder === '__recent__') renderRecentView(win);
+    else if (win.dataset.folder) renderFolderContent(win, win.dataset.folder);
+  });
+});
+
 function renderFolderContent(win, folderName) {
   if (!win) return;
 
@@ -534,12 +583,16 @@ function renderFolderContent(win, folderName) {
     //  • generously-sized square thumbnails (96px) with subtle rounded shadow
     //  • filename below, allowed to wrap up to two lines with the classic
     //    Finder pill highlight on hover instead of getting truncated mid-word
+    // Dominant-colour placeholder: tiles show the folder's palette colour
+    // while their jpg decodes instead of a flat grey (premium loading feel).
+    const folderAccent = accentForFolder(folderName);
     let html = `
       <div class="finder-icon-grid"
            style="display:grid; grid-template-columns:repeat(auto-fill, minmax(108px, 1fr)); gap:18px 6px; padding:18px 14px; align-content:start;">
     `;
     sortedData.forEach((item, i) => {
       let thumb;
+      let tileBg = folderAccent || 'rgba(148,163,184,0.12)';
       if (item.isMagazine) {
         const magKey = folderName + '/' + item.name;
         const pages = portfolioData[magKey] || [];
@@ -548,7 +601,17 @@ function renderFolderContent(win, folderName) {
           ? `<img src="${cover.src}" class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />`
           : `<div class="w-full h-full flex items-center justify-center bg-slate-200 dark:bg-slate-700"><span class="material-symbols-rounded text-slate-400 text-3xl" style="font-variation-settings:'FILL' 1;">auto_stories</span></div>`;
       } else if (item.isVideo) {
-        thumb = `<video src="${item.src}" class="w-full h-full object-cover" muted preload="metadata" onloadedmetadata="this.currentTime=0.001" style="pointer-events:none;"></video>`;
+        // Static poster frame from the game-asset pipeline where available —
+        // no per-tile <video> element means folder opens stop firing one
+        // media range-request per video.
+        const poster = posterForVideo(item, folderName);
+        if (poster) {
+          if (poster.color) tileBg = poster.color;
+          thumb = `<img src="${poster.src}" class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />
+                   <span class="material-symbols-rounded finder-thumb-play" style="font-variation-settings:'FILL' 1;">play_arrow</span>`;
+        } else {
+          thumb = `<video src="${item.src}" class="w-full h-full object-cover" muted preload="metadata" onloadedmetadata="this.currentTime=0.001" style="pointer-events:none;"></video>`;
+        }
       } else {
         thumb = `<img src="${item.src}" class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />`;
       }
@@ -557,8 +620,8 @@ function renderFolderContent(win, folderName) {
              onclick="handleItemClick('${folderName.replace(/'/g, "\\'")}', ${i}, event)"
              style="display:flex; flex-direction:column; align-items:center; gap:4px; padding:4px 2px; border-radius:8px;">
           <div class="finder-icon-thumb"
-               style="width:96px; height:96px; border-radius:10px; overflow:hidden;
-                      background:rgba(148,163,184,0.12); display:flex; align-items:center; justify-content:center;
+               style="width:96px; height:96px; border-radius:10px; overflow:hidden; position:relative;
+                      background:${tileBg}; display:flex; align-items:center; justify-content:center;
                       box-shadow:0 1px 3px rgba(15,23,42,0.08), 0 0 0 1px rgba(15,23,42,0.04);
                       transition:box-shadow 160ms ease, transform 160ms ease;">
             ${thumb}
@@ -629,7 +692,7 @@ setTimeout(() => {
   makeDraggable(ql, '.draggable-handle');
 }, 500);
 
-window.handleItemClick = function (folder, index) {
+window.handleItemClick = function (folder, index, event) {
   const item = portfolioData[folder][index];
   window.umami?.track('item-open', { folder, item: item?.name || String(index) });
 
@@ -641,8 +704,12 @@ window.handleItemClick = function (folder, index) {
     return;
   }
 
-  // Everything else (Images and Videos) goes to Quick Look as default
-  window.openQuickLook(item);
+  // Everything else (Images and Videos) goes to Quick Look as default.
+  // The clicked thumbnail is the morph source; folder context enables
+  // ←/→ navigation inside the preview.
+  const tile = event?.target?.closest?.('.finder-icon-item, tr');
+  const thumb = tile?.querySelector?.('.finder-icon-thumb') || tile;
+  window.openQuickLook(item, thumb, { folder, index });
   window.dispatchEvent(new CustomEvent('item-opened', { detail: { folder, index } }));
 };
 
@@ -724,7 +791,7 @@ desktopIcons.forEach(icon => {
     }
   });
   icon.addEventListener('dblclick', () => {
-    createWindow(icon.dataset.name);
+    createWindow(icon.dataset.name, icon);
   });
 });
 

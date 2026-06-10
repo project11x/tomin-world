@@ -163,7 +163,10 @@ function popURLToRoot() {
   // (overlay) and morphs position + size + border-radius between them.
   function performIosAppTransition(appEl, iconEl, isOpen) {
     const screen = document.getElementById('ios-screen');
-    const supportsVT = typeof document.startViewTransition === 'function';
+    // __edgeSwipeClosing: an interactive edge-swipe already slid the overlay
+    // off-screen — skip the morph and take the instant-hide path.
+    const supportsVT = typeof document.startViewTransition === 'function'
+      && !window.__edgeSwipeClosing;
 
     // Only one element may carry a given view-transition-name at a time.
     const clearMorphMarkers = () => {
@@ -649,23 +652,9 @@ function popURLToRoot() {
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   }
 
-  // Fiona palette toggle (mobile equivalent of the desktop View → Theme menu)
-  const fionaBtn = document.getElementById('ios-fiona-toggle');
-  const fionaKnob = document.getElementById('ios-fiona-knob');
-  window.updateIosFionaToggle = function () {
-    if (!fionaBtn || !fionaKnob) return;
-    const on = document.documentElement.classList.contains('theme-pink');
-    fionaBtn.setAttribute('aria-checked', on ? 'true' : 'false');
-    fionaBtn.style.background = on ? '#ff3d8b' : 'rgba(120,120,128,0.32)';
-    fionaKnob.style.transform = on ? 'translateX(20px)' : 'translateX(0)';
-  };
-  if (fionaBtn) {
-    fionaBtn.addEventListener('click', () => {
-      const on = document.documentElement.classList.contains('theme-pink');
-      window.setTheme(on ? 'default' : 'pink');
-    });
-    window.updateIosFionaToggle();
-  }
+  // (Fiona palette toggle removed — the pink theme has been retired.)
+  // No-op stub so any external caller doesn't blow up.
+  window.updateIosFionaToggle = function () {};
 
   window.setIosTheme = function (mode) {
     localStorage.setItem('ios-theme', mode);
@@ -1004,8 +993,32 @@ function popURLToRoot() {
     }, 350);
   };
 
+  // Smart folder routing: a folder may be primarily an edit (with BTS
+  // photos as supporting material) or BTS-only. Defer to the existing
+  // iosCollectEdits filter to decide. When a video edit is present, open
+  // the Edits app and select it; otherwise fall back to BTS for the
+  // folder browse. This matches how iosOpenItem already routes single
+  // items (videos → Edits app, photos → BTS) and means shared links
+  // like /projects/lunatic land on the actual edit instead of its BTS.
   window.iosOpenFolder = function (folder) {
     if (!portfolioData[folder]) return;
+
+    const items = portfolioData[folder] || [];
+    const videoItem = items.find((it) => it.isVideo && !it.isMagazine);
+
+    if (videoItem) {
+      const edits = iosCollectEdits();
+      const editIdx = edits.findIndex(
+        (e) => e.folder === folder && e.name === videoItem.name
+      );
+      if (editIdx >= 0) {
+        window.iosOpenEdits && window.iosOpenEdits();
+        setTimeout(() => iosSelectEdit(editIdx, true), 400);
+        return;
+      }
+    }
+    // No edit-style video (or it was filtered out by iosCollectEdits)
+    // → fall through to BTS browse.
     window.iosOpenBts && window.iosOpenBts();
     setTimeout(() => window.iosBtsTapFolder && window.iosBtsTapFolder(folder), 350);
   };
