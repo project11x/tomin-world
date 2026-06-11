@@ -181,6 +181,48 @@
         el.style.willChange = '';
       }
 
+      // Some pairs show DIFFERENT text in the two states ("Latest commit" →
+      // "Latest commits"). A plain FLIP lands the element in the right spot
+      // still wearing the wrong words, which then hard-swap on the overlay
+      // hide. For those pairs a ghost copy of the compact element travels
+      // the same path and the two crossfade mid-flight — the text reads as
+      // transforming, never as jumping.
+      function pairTextDiffers(p) {
+        const a = (p.from.textContent || '').replace(/\s+/g, ' ').trim();
+        const b = (p.to.textContent || '').replace(/\s+/g, ' ').trim();
+        return a !== '' && b !== '' && a !== b;
+      }
+      function makeGhost(fromEl, dstRect, srcRect, opacity) {
+        const g = fromEl.cloneNode(true);
+        // Inherited styles don't survive the move to <body> — copy the ones
+        // that shape text rendering from the live compact element.
+        const cs = getComputedStyle(fromEl);
+        g.style.font = cs.font;
+        g.style.color = cs.color;
+        g.style.letterSpacing = cs.letterSpacing;
+        g.style.textTransform = cs.textTransform;
+        g.style.textAlign = cs.textAlign;
+        g.style.whiteSpace = cs.whiteSpace;
+        g.style.position = 'fixed';
+        g.style.margin = '0';
+        g.style.boxSizing = 'border-box';
+        g.style.left = dstRect.left + 'px';
+        g.style.top = dstRect.top + 'px';
+        g.style.width = dstRect.width + 'px';
+        g.style.height = dstRect.height + 'px';
+        g.style.zIndex = '99999';
+        g.style.pointerEvents = 'none';
+        g.style.transformOrigin = '0 0';
+        g.style.transition = 'none';
+        const sx = dstRect.width ? srcRect.width / dstRect.width : 1;
+        const sy = dstRect.height ? srcRect.height / dstRect.height : 1;
+        g.style.transform = `translate(${srcRect.left - dstRect.left}px, ${srcRect.top - dstRect.top}px) scale(${sx}, ${sy})`;
+        g.style.opacity = String(opacity);
+        g.style.willChange = 'transform, opacity';
+        document.body.appendChild(g);
+        return g;
+      }
+
       const cardTransProps = `top ${__MORPH_DUR}ms ${__MORPH_SPRING}, ` +
         `left ${__MORPH_DUR}ms ${__MORPH_SPRING}, ` +
         `width ${__MORPH_DUR}ms ${__MORPH_SPRING}, ` +
@@ -224,11 +266,19 @@
         //    compact counterpart.
         const cardDx = target.left - r0.left;
         const cardDy = target.top - r0.top;
+        const ghosts = [];
         pairs.forEach(p => {
           const src = p.from.getBoundingClientRect();
           flipTransform(p.to, src, p.dst, cardDx, cardDy, p.uniform);
           // Above any non-shared neighbours.
           if (!p.to.style.zIndex) p.to.style.zIndex = '4';
+          if (pairTextDiffers(p)) {
+            // Compact text rides along (visible) and dissolves into the
+            // expanded text, which starts hidden.
+            p.to.style.opacity = '0';
+            p.crossfade = true;
+            ghosts.push(makeGhost(p.from, p.dst, src, 1));
+          }
         });
 
         // Commit the start states, then write the animated targets in the
@@ -243,8 +293,16 @@
         fadeBackdrop(true);
 
         pairs.forEach(p => {
-          p.to.style.transition = `transform ${__MORPH_DUR}ms ${__MORPH_SPRING}`;
+          p.to.style.transition = p.crossfade
+            ? `transform ${__MORPH_DUR}ms ${__MORPH_SPRING}, opacity ${__MORPH_DUR}ms ease`
+            : `transform ${__MORPH_DUR}ms ${__MORPH_SPRING}`;
           p.to.style.transform = '';
+          if (p.crossfade) p.to.style.opacity = '1';
+        });
+        ghosts.forEach(g => {
+          g.style.transition = `transform ${__MORPH_DUR}ms ${__MORPH_SPRING}, opacity ${__MORPH_DUR}ms ease`;
+          g.style.transform = 'none';
+          g.style.opacity = '0';
         });
 
         // Fade in non-shared content slightly later and staggered — the
@@ -267,8 +325,10 @@
           if (!isOpen) return;
           pairs.forEach(p => {
             clearFlip(p.to);
+            if (p.crossfade) p.to.style.opacity = '';
             if (p.to.style.zIndex === '4') p.to.style.zIndex = '';
           });
+          ghosts.forEach(g => g.remove());
           // Blur arrives only now that nothing is animating — a single
           // recomposite instead of one per frame.
           setBackdropBlur(true);
@@ -302,13 +362,14 @@
         }));
 
         // Mirror of open: non-shared content folds away staggered, last-in
-        // first-out, while the shared elements travel home. Short steps —
-        // the close should feel snappier than the open.
+        // first-out, while the shared elements travel home. The fades span
+        // almost the whole shrink — if they finished early the card would
+        // travel visibly empty for its last stretch, which reads cheap.
         const fadeEls = resolveFadeEls();
         const n = fadeEls.length;
         fadeEls.forEach((el, i) => {
-          const d = Math.min((n - 1 - i) * 25, 150);
-          el.style.transition = `opacity 200ms ease ${d}ms, transform 260ms ease ${d}ms`;
+          const d = Math.min((n - 1 - i) * 20, 100);
+          el.style.transition = `opacity ${__MORPH_DUR - 140}ms ease ${d}ms, transform ${__MORPH_DUR - 100}ms ease ${d}ms`;
           el.style.opacity = '0';
           el.style.transform = 'translateY(6px)';
         });
@@ -326,17 +387,34 @@
         const cardDx = expandedRectNow.left - r.left;
         const cardDy = expandedRectNow.top - r.top;
 
+        const ghosts = [];
         pairs.forEach(p => {
           const dx = (p.dst.left - p.src.left) + cardDx;
           const dy = (p.dst.top - p.src.top) + cardDy;
           let sx = p.src.width ? p.dst.width / p.src.width : 1;
           let sy = p.src.height ? p.dst.height / p.src.height : 1;
           if (p.uniform) { sx = sy = (sx + sy) / 2; }
-          p.to.style.transition = `transform ${__MORPH_DUR}ms ${__MORPH_SPRING}`;
+          const crossfade = pairTextDiffers(p);
+          p.to.style.transition = crossfade
+            ? `transform ${__MORPH_DUR}ms ${__MORPH_SPRING}, opacity ${__MORPH_DUR}ms ease`
+            : `transform ${__MORPH_DUR}ms ${__MORPH_SPRING}`;
           p.to.style.transformOrigin = '0 0';
           p.to.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
           p.to.style.willChange = 'transform';
           if (!p.to.style.zIndex) p.to.style.zIndex = '4';
+          if (crossfade) {
+            // The compact text fades in along the same path while the
+            // expanded text dissolves — when the overlay hides, the words
+            // already match the widget underneath. No more hard text swap.
+            p.crossfade = true;
+            p.to.style.opacity = '0';
+            const g = makeGhost(p.from, p.dst, p.src, 0);
+            void g.offsetWidth;
+            g.style.transition = `transform ${__MORPH_DUR}ms ${__MORPH_SPRING}, opacity ${__MORPH_DUR}ms ease`;
+            g.style.transform = 'none';
+            g.style.opacity = '1';
+            ghosts.push(g);
+          }
         });
 
         setTimeout(() => {
@@ -345,8 +423,10 @@
           unlockContent();
           pairs.forEach(p => {
             clearFlip(p.to);
+            if (p.crossfade) p.to.style.opacity = '';
             if (p.to.style.zIndex === '4') p.to.style.zIndex = '';
           });
+          ghosts.forEach(g => g.remove());
           fadeEls.forEach(el => {
             el.style.transition = '';
             el.style.opacity = '';
@@ -775,8 +855,8 @@
       // pair — they fade/slide in after the morph anchors.
       // Order in DOM: 1=grab, 2=header (badge+eyebrow are shared), 3=title,
       // 4=timeline, 5=tips list.
-      // Only the heading fades — its sibling #ios-portfolio-sub is a shared
-      // morph pair and must not be hidden by a fading parent.
+      // The heading + sub are shared morph pairs (the compact title travels
+      // into the big heading), so only the grab bar and tips list fade.
       const titleBlock = expCard.querySelector('#ios-portfolio-content > div:nth-of-type(3) h2');
       const tipsList = expCard.querySelector('#ios-portfolio-content > div:nth-of-type(5)');
 
@@ -791,6 +871,7 @@
           const pairs = [
             { from: '#ila-badge', to: '#ios-portfolio-badge' },
             { from: '#ila-eyebrow', to: '#ipe-eyebrow', uniform: true },
+            { from: '#ila-title', to: titleBlock, uniform: true },
             { from: '#ila-sub', to: '#ios-portfolio-sub', uniform: true },
           ];
           for (let i = 1; i <= 4; i++) {
@@ -815,7 +896,6 @@
         },
         fadeEls: [
           '#ios-portfolio-grab',
-          titleBlock,
           tipsList,
         ],
         onBeforeOpen: () => {
