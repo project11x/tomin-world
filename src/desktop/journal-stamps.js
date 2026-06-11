@@ -132,8 +132,10 @@ export function evaluate() {
   const newIds = markEarnedLocal(earned);
   if (newIds.length) {
     window.dispatchEvent(new CustomEvent(STAMPS_CHANGED_EVENT, { detail: { newIds } }));
-    // The earning moment itself — toast with the stamp slamming in.
-    celebrateStamps(STAMPS.filter((s) => newIds.includes(s.id)));
+    // The earning moment itself — toast with the stamp slamming in. Travel
+    // stamps stay silent (they'd fire on every folder open and wear the
+    // moment out); only the hard-won skill + secret stamps celebrate.
+    celebrateStamps(STAMPS.filter((s) => newIds.includes(s.id) && s.kind !== 'travel'));
   }
 }
 
