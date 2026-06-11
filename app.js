@@ -35,6 +35,7 @@ import './src/widgets/weather.js';
 import './src/widgets/smart-stack.js';
 import './src/widgets/portfolio-timeline.js';
 import './src/desktop/dock-magnify.js';
+import './src/desktop/intro.js'; // after desktop-icons.js — icons must exist to cascade in
 import './src/desktop/ui-bindings.js';
 import './src/desktop/context-menu.js';
 import './src/utils/admin-chooser.js';
