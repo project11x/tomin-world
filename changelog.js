@@ -50,20 +50,34 @@
       // Backdrop dim — the springboard behind the card darkens + blurs while
       // the widget is expanded (and tap-to-close finally works, as the markup
       // comments always promised).
+      // Perf note: the blur is applied only AFTER the open morph settles and
+      // removed BEFORE the close morph starts. Animating opacity on an
+      // element with an active backdrop-filter forces the GPU to re-blur the
+      // whole springboard every frame — that single property was the main
+      // source of jank on real iPhones. A plain dim is one cheap composite.
       const backdropEl = cfg.backdrop
         ? __morphResolve(cfg.backdrop)
         : expanded.querySelector(':scope > div[id$="-backdrop"]');
       if (backdropEl && !backdropEl.dataset.morphBound) {
         backdropEl.dataset.morphBound = '1';
-        backdropEl.style.background = 'rgba(0, 0, 0, 0.38)';
-        backdropEl.style.backdropFilter = 'blur(14px)';
-        backdropEl.style.webkitBackdropFilter = 'blur(14px)';
+        backdropEl.style.background = 'rgba(0, 0, 0, 0.44)';
         backdropEl.style.opacity = '0';
         backdropEl.addEventListener('click', () => close());
       }
-      function fadeBackdrop(toVisible) {
+      function setBackdropBlur(on) {
         if (!backdropEl) return;
-        backdropEl.style.transition = `opacity ${__MORPH_DUR}ms ease`;
+        // Turning ON happens after the morph settles — ease it in (nothing
+        // else is animating, so the per-frame cost is affordable for 250ms).
+        // Turning OFF must be instant: it runs right before the close morph.
+        backdropEl.style.transition = on
+          ? 'backdrop-filter 250ms ease, -webkit-backdrop-filter 250ms ease'
+          : 'none';
+        backdropEl.style.backdropFilter = on ? 'blur(14px)' : '';
+        backdropEl.style.webkitBackdropFilter = on ? 'blur(14px)' : '';
+      }
+      function fadeBackdrop(toVisible, dur) {
+        if (!backdropEl) return;
+        backdropEl.style.transition = `opacity ${dur || __MORPH_DUR}ms ease`;
         backdropEl.style.opacity = toVisible ? '1' : '0';
       }
 
@@ -255,6 +269,9 @@
             clearFlip(p.to);
             if (p.to.style.zIndex === '4') p.to.style.zIndex = '';
           });
+          // Blur arrives only now that nothing is animating — a single
+          // recomposite instead of one per frame.
+          setBackdropBlur(true);
           if (onAfterOpen) onAfterOpen();
         }, __MORPH_DUR + 40);
         setTimeout(() => {
@@ -271,24 +288,29 @@
         isOpen = false;
         if (onBeforeClose) onBeforeClose();
 
+        // Blur off BEFORE anything starts moving — otherwise every animation
+        // frame re-blurs the springboard (the iPhone jank source).
+        setBackdropBlur(false);
+
         // Capture current expanded rects + compact destination rects.
         const pairs = resolvePairs().map(p => ({
           from: p.from,
           to: p.to,
+          uniform: p.uniform,
           src: p.to.getBoundingClientRect(),     // current expanded position
           dst: p.from.getBoundingClientRect(),   // compact position to land on
         }));
 
-        // Non-shared content fades out quickly + early so the card visually
-        // settles into its "looks-like-compact" state well before the shrink
-        // completes. By the time the shrink finishes, only the shared
-        // FLIP'd elements (already at their compact positions) remain — so
-        // hiding the overlay is a seamless swap with the compact widget.
+        // Mirror of open: non-shared content folds away staggered, last-in
+        // first-out, while the shared elements travel home. Short steps —
+        // the close should feel snappier than the open.
         const fadeEls = resolveFadeEls();
-        fadeEls.forEach(el => {
-          el.style.transition = `opacity 160ms ease, transform 220ms ease`;
+        const n = fadeEls.length;
+        fadeEls.forEach((el, i) => {
+          const d = Math.min((n - 1 - i) * 25, 150);
+          el.style.transition = `opacity 200ms ease ${d}ms, transform 260ms ease ${d}ms`;
           el.style.opacity = '0';
-          el.style.transform = 'translateY(4px)';
+          el.style.transform = 'translateY(6px)';
         });
 
         // Card movement delta — `p.src` was measured while card sat at
@@ -330,29 +352,9 @@
             el.style.opacity = '';
             el.style.transform = '';
           });
-          // Compact widget's TEXT elements play a brief blur→sharp pulse so
-          // they "wake up" into focus instead of hard-swapping in. We blur
-          // text only — applying it to the whole widget would also blur the
-          // backgrounds and SVG decorations, which feels like a flashbang.
-          const settleSelectors = cfg.settleSelectors || [];
-          const settleEls = settleSelectors
-            .map(sel => widget.querySelectorAll(sel))
-            .flatMap(nl => Array.from(nl));
-          settleEls.forEach(el => {
-            el.classList.remove('widget-settle-in');
-          });
-          // Force a reflow so re-adding the class restarts the animation
-          // even if the previous run hadn't been cleaned up yet.
-          void widget.offsetWidth;
-          settleEls.forEach(el => {
-            el.classList.add('widget-settle-in');
-            const onEnd = (e) => {
-              if (e.animationName !== 'widgetSettleIn') return;
-              el.classList.remove('widget-settle-in');
-              el.removeEventListener('animationend', onEnd);
-            };
-            el.addEventListener('animationend', onEnd);
-          });
+          // No extra "settle" effect on the compact widget: the shared
+          // elements morph back into their exact compact positions, so the
+          // overlay → widget swap is already seamless.
           if (onAfterClose) onAfterClose();
         }, __MORPH_DUR + 60);
       }
@@ -628,16 +630,6 @@
           headerLiveDot,
           ...(listEl ? Array.from(listEl.children).slice(1) : []),
         ],
-        // Text-only settle on close — dot, comet rail and gradients keep
-        // their look so it doesn't read as a "flashbang" of the whole card.
-        settleSelectors: [
-          '#sys-live-label',
-          '#sys-eyebrow',
-          '#sys-headline',
-          '#sys-message',
-          '#sys-hash',
-          '#sys-time',
-        ],
         onBeforeOpen: () => {
           renderList();
           requestAnimationFrame(updateScrollFade);
@@ -826,14 +818,6 @@
           titleBlock,
           tipsList,
         ],
-        // Text-only settle — leaves the badge, slot dots and segment fills
-        // untouched so the timeline doesn't strobe.
-        settleSelectors: [
-          '#ila-badge',
-          '#ila-eyebrow',
-          '#ila-title',
-          '#ila-sub',
-        ],
         onBeforeOpen: () => {
           // Sync badge content + colors from the compact widget.
           if (badgeEl && srcBadge) {
@@ -988,18 +972,6 @@
           dateLabel,
           detailScroll,
           arcSvg,
-        ],
-        // Text-only settle — leaves the SVG arc, sun/glow/moon and live-dot
-        // alone so they don't strobe on close.
-        settleSelectors: [
-          '#iww-eyebrow-city',
-          '#iww-eyebrow-label',
-          '#iww-time',
-          '#iww-desc',
-          '#iww-icon',
-          '#iww-temp',
-          '#iww-wind',
-          '#iww-status-tag',
         ],
         onBeforeOpen: () => {
           syncFromCompact();
