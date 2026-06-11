@@ -47,12 +47,32 @@
       let isOpen = false;
       const stash = {};
 
+      // Backdrop dim — the springboard behind the card darkens + blurs while
+      // the widget is expanded (and tap-to-close finally works, as the markup
+      // comments always promised).
+      const backdropEl = cfg.backdrop
+        ? __morphResolve(cfg.backdrop)
+        : expanded.querySelector(':scope > div[id$="-backdrop"]');
+      if (backdropEl && !backdropEl.dataset.morphBound) {
+        backdropEl.dataset.morphBound = '1';
+        backdropEl.style.background = 'rgba(0, 0, 0, 0.38)';
+        backdropEl.style.backdropFilter = 'blur(14px)';
+        backdropEl.style.webkitBackdropFilter = 'blur(14px)';
+        backdropEl.style.opacity = '0';
+        backdropEl.addEventListener('click', () => close());
+      }
+      function fadeBackdrop(toVisible) {
+        if (!backdropEl) return;
+        backdropEl.style.transition = `opacity ${__MORPH_DUR}ms ease`;
+        backdropEl.style.opacity = toVisible ? '1' : '0';
+      }
+
       function resolvePairs() {
         const raw = (typeof cfg.getSharedPairs === 'function')
           ? cfg.getSharedPairs()
           : (cfg.sharedPairs || []);
         return raw
-          .map(p => ({ from: __morphResolve(p.from), to: __morphResolve(p.to) }))
+          .map(p => ({ from: __morphResolve(p.from), to: __morphResolve(p.to), uniform: !!p.uniform }))
           .filter(p => p.from && p.to);
       }
 
@@ -127,11 +147,14 @@
       // `cardDx`/`cardDy` is the offset between where the card was when we
       // measured `toRect` and where it is now (or will be at the end of the
       // animation, in close()).
-      function flipTransform(toEl, fromRect, toRect, cardDx, cardDy) {
+      function flipTransform(toEl, fromRect, toRect, cardDx, cardDy, uniform) {
         const dx = (fromRect.left - toRect.left) + (cardDx || 0);
         const dy = (fromRect.top - toRect.top) + (cardDy || 0);
-        const sx = toRect.width ? fromRect.width / toRect.width : 1;
-        const sy = toRect.height ? fromRect.height / toRect.height : 1;
+        let sx = toRect.width ? fromRect.width / toRect.width : 1;
+        let sy = toRect.height ? fromRect.height / toRect.height : 1;
+        // Text and circular elements squish visibly under non-uniform scale —
+        // pairs can opt into a single averaged factor instead.
+        if (uniform) { sx = sy = (sx + sy) / 2; }
         toEl.style.transition = 'none';
         toEl.style.transformOrigin = '0 0';
         toEl.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
@@ -189,49 +212,58 @@
         const cardDy = target.top - r0.top;
         pairs.forEach(p => {
           const src = p.from.getBoundingClientRect();
-          flipTransform(p.to, src, p.dst, cardDx, cardDy);
+          flipTransform(p.to, src, p.dst, cardDx, cardDy, p.uniform);
           // Above any non-shared neighbours.
           if (!p.to.style.zIndex) p.to.style.zIndex = '4';
         });
 
+        // Commit the start states, then write the animated targets in the
+        // same task (forced reflow in between). Synchronous on purpose: a
+        // requestAnimationFrame here never fires while the tab is being
+        // restored from background, leaving the morph stuck at its start.
         void expCard.offsetWidth;
 
         // 6. Animate.
-        requestAnimationFrame(() => {
-          if (!isOpen) return;
-          const t = getTarget();
-          setCardRect(t, t.radius, cardTransProps);
+        const t = getTarget();
+        setCardRect(t, t.radius, cardTransProps);
+        fadeBackdrop(true);
 
-          pairs.forEach(p => {
-            p.to.style.transition = `transform ${__MORPH_DUR}ms ${__MORPH_SPRING}`;
-            p.to.style.transform = '';
-          });
-
-          // Fade in non-shared content slightly later — gives the morph a
-          // chance to anchor the new layout before details appear.
-          setTimeout(() => {
-            if (!isOpen) return;
-            fadeEls.forEach(el => {
-              el.style.transition = `opacity 360ms ease, transform 420ms ${__MORPH_SPRING}`;
-              el.style.opacity = '1';
-              el.style.transform = '';
-            });
-          }, Math.round(__MORPH_DUR * 0.18));
-
-          // Cleanup once the morph completes.
-          setTimeout(() => {
-            if (!isOpen) return;
-            pairs.forEach(p => {
-              clearFlip(p.to);
-              if (p.to.style.zIndex === '4') p.to.style.zIndex = '';
-            });
-            fadeEls.forEach(el => {
-              el.style.transition = '';
-              el.style.transform = '';
-            });
-            if (onAfterOpen) onAfterOpen();
-          }, __MORPH_DUR + 40);
+        pairs.forEach(p => {
+          p.to.style.transition = `transform ${__MORPH_DUR}ms ${__MORPH_SPRING}`;
+          p.to.style.transform = '';
         });
+
+        // Fade in non-shared content slightly later and staggered — the
+        // morph anchors the layout, then the details unfold one by one
+        // instead of appearing as a single block.
+        setTimeout(() => {
+          if (!isOpen) return;
+          fadeEls.forEach((el, i) => {
+            const d = Math.min(i * 45, 320);
+            el.style.transition = `opacity 360ms ease ${d}ms, transform 420ms ${__MORPH_SPRING} ${d}ms`;
+            el.style.opacity = '1';
+            el.style.transform = '';
+          });
+        }, Math.round(__MORPH_DUR * 0.18));
+
+        // Cleanup once the morph completes. Staggered fades run longer
+        // than the card morph — clear their inline transitions only after
+        // the last one has finished, or they'd snap mid-flight.
+        setTimeout(() => {
+          if (!isOpen) return;
+          pairs.forEach(p => {
+            clearFlip(p.to);
+            if (p.to.style.zIndex === '4') p.to.style.zIndex = '';
+          });
+          if (onAfterOpen) onAfterOpen();
+        }, __MORPH_DUR + 40);
+        setTimeout(() => {
+          if (!isOpen) return;
+          fadeEls.forEach(el => {
+            el.style.transition = '';
+            el.style.transform = '';
+          });
+        }, Math.round(__MORPH_DUR * 0.18) + 320 + 420 + 60);
       }
 
       function close() {
@@ -265,24 +297,24 @@
         // needs to compensate for that movement to actually land on `p.dst`.
         const expandedRectNow = expCard.getBoundingClientRect();
 
-        requestAnimationFrame(() => {
-          if (isOpen) return;
-          const r = widget.getBoundingClientRect();
-          setCardRect(r, compactRadius, cardTransProps);
-          const cardDx = expandedRectNow.left - r.left;
-          const cardDy = expandedRectNow.top - r.top;
+        // Synchronous for the same background-tab reason as open().
+        const r = widget.getBoundingClientRect();
+        setCardRect(r, compactRadius, cardTransProps);
+        fadeBackdrop(false);
+        const cardDx = expandedRectNow.left - r.left;
+        const cardDy = expandedRectNow.top - r.top;
 
-          pairs.forEach(p => {
-            const dx = (p.dst.left - p.src.left) + cardDx;
-            const dy = (p.dst.top - p.src.top) + cardDy;
-            const sx = p.src.width ? p.dst.width / p.src.width : 1;
-            const sy = p.src.height ? p.dst.height / p.src.height : 1;
-            p.to.style.transition = `transform ${__MORPH_DUR}ms ${__MORPH_SPRING}`;
-            p.to.style.transformOrigin = '0 0';
-            p.to.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
-            p.to.style.willChange = 'transform';
-            if (!p.to.style.zIndex) p.to.style.zIndex = '4';
-          });
+        pairs.forEach(p => {
+          const dx = (p.dst.left - p.src.left) + cardDx;
+          const dy = (p.dst.top - p.src.top) + cardDy;
+          let sx = p.src.width ? p.dst.width / p.src.width : 1;
+          let sy = p.src.height ? p.dst.height / p.src.height : 1;
+          if (p.uniform) { sx = sy = (sx + sy) / 2; }
+          p.to.style.transition = `transform ${__MORPH_DUR}ms ${__MORPH_SPRING}`;
+          p.to.style.transformOrigin = '0 0';
+          p.to.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+          p.to.style.willChange = 'transform';
+          if (!p.to.style.zIndex) p.to.style.zIndex = '4';
         });
 
         setTimeout(() => {
@@ -523,7 +555,7 @@
           listEl.innerHTML = '<div style="color:rgba(255,255,255,0.5); font-size:13px; padding:20px 6px;">No commits yet.</div>';
           return;
         }
-        listEl.innerHTML = commits.map(c => {
+        listEl.innerHTML = commits.map((c, i) => {
           const subj = (c.msg || '').split('\n')[0];
           const sha = (c.sha || '').slice(0, 7);
           const ago = fmtAgo(new Date(c.date));
@@ -531,14 +563,20 @@
           const esc = subj.replace(/[&<>"']/g, ch => ({
             '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
           }[ch]));
+          // The first entry mirrors what the compact widget shows — its
+          // parts carry markers so the morph can pair them and the commit
+          // the user was just reading visibly becomes this list item.
+          const mark = i === 0 ? ' data-icl-msg0' : '';
+          const markSha = i === 0 ? ' data-icl-sha0' : '';
+          const markAgo = i === 0 ? ' data-icl-ago0' : '';
           return (
             '<div style="padding:4px 2px;">' +
-            '<div style="background:rgba(255,255,255,0.03); border:1px solid rgba(48,209,88,0.18); border-radius:9px; padding:10px 12px; color:rgba(212,245,225,0.92); font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12.5px; line-height:1.4; font-weight:500;">' +
+            '<div' + mark + ' style="background:rgba(255,255,255,0.03); border:1px solid rgba(48,209,88,0.18); border-radius:9px; padding:10px 12px; color:rgba(212,245,225,0.92); font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12.5px; line-height:1.4; font-weight:500;">' +
             esc +
             '</div>' +
             '<div style="display:flex; justify-content:space-between; align-items:center; padding:7px 4px 0;">' +
-            '<code style="color:#5ac8fa; font-size:11.5px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-weight:700; letter-spacing:0.02em;">' + sha + '</code>' +
-            '<span style="color:rgba(255,255,255,0.44); font-size:11.5px; font-weight:500;">' + ago + '</span>' +
+            '<code' + markSha + ' style="color:#5ac8fa; font-size:11.5px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-weight:700; letter-spacing:0.02em;">' + sha + '</code>' +
+            '<span' + markAgo + ' style="color:rgba(255,255,255,0.44); font-size:11.5px; font-weight:500;">' + ago + '</span>' +
             '</div>' +
             '</div>'
           );
@@ -568,23 +606,27 @@
       const headerLiveDot = expCard
         ? expCard.querySelector('#ios-changelog-content > div:nth-of-type(2) > div > div')
         : null;
-      // The "Latest commits" title block (third direct child of contentEl).
-      const titleBlock = expCard
-        ? expCard.querySelector('#ios-changelog-content > div:nth-of-type(3)')
-        : null;
 
       const morph = createWidgetMorph({
         widget, expanded, expCard, contentEl,
         getTarget: getExpandedTarget,
-        sharedPairs: [
+        // Dynamic: renderList() recreates the first list item per open, and
+        // the compact widget's commit message / hash / timestamp morph into
+        // it — the commit the user was reading becomes the first entry.
+        getSharedPairs: () => [
           { from: '#sys-live-label', to: '#icl-live-label' },
           { from: '#sys-eyebrow', to: '#icl-eyebrow' },
+          { from: '#sys-headline', to: '#icl-title', uniform: true },
+          { from: '#sys-message', to: '[data-icl-msg0]' },
+          { from: '#sys-hash', to: '[data-icl-sha0]', uniform: true },
+          { from: '#sys-time', to: '[data-icl-ago0]', uniform: true },
         ],
-        fadeEls: [
+        // Items 2+ of the list fade in staggered; the first item is a morph
+        // pair, so its parent list must stay visible from the start.
+        getFadeEls: () => [
           '#ios-changelog-grab',
           headerLiveDot,
-          titleBlock,
-          '#sys-commits-list',
+          ...(listEl ? Array.from(listEl.children).slice(1) : []),
         ],
         // Text-only settle on close — dot, comet rail and gradients keep
         // their look so it doesn't read as a "flashbang" of the whole card.
@@ -676,6 +718,7 @@
             display:flex; align-items:center; justify-content:center; z-index:2;`;
 
           const dot = document.createElement('div');
+          dot.dataset.ipeDot = String(i + 1);
           dot.style.borderRadius = '50%';
           dot.style.transition = 'all 0.35s ease';
           if (isCur) {
@@ -693,19 +736,27 @@
           }
           slot.appendChild(dot);
 
+          // Wrapper keeps the translateX(-50%) centering; the inner span is
+          // the FLIP target (FLIP owns `transform`, so the centering must
+          // live on an element the morph never touches).
+          const labelWrap = document.createElement('span');
+          labelWrap.style.cssText =
+            'position:absolute; top:32px; left:50%; transform:translateX(-50%); white-space:nowrap;';
           const label = document.createElement('span');
+          label.dataset.ipeLabel = String(i + 1);
           label.textContent = s.LABELS[section];
           label.style.cssText =
-            'position:absolute; top:32px; left:50%; transform:translateX(-50%); ' +
-            'white-space:nowrap; font-size:10.5px; font-weight:700; letter-spacing:0.09em; ' +
+            'display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:0.09em; ' +
             'text-transform:uppercase; color:rgba(255,255,255,' +
             (isCur ? '0.95' : isVis ? '0.7' : '0.38') + ');';
-          slot.appendChild(label);
+          labelWrap.appendChild(label);
+          slot.appendChild(labelWrap);
           row.appendChild(slot);
 
           // Segment between this slot and the next
           if (i < s.displayOrder.length - 1) {
             const seg = document.createElement('div');
+            seg.dataset.ipeSeg = String(i + 1);
             seg.style.cssText = `flex:1; position:relative; height:${SEG_H}px; border-radius:${SEG_H / 2}px;
               background:${SEG_EMPTY_BG}; overflow:hidden;`;
             if (s.filled[i]) {
@@ -732,21 +783,47 @@
       // pair — they fade/slide in after the morph anchors.
       // Order in DOM: 1=grab, 2=header (badge+eyebrow are shared), 3=title,
       // 4=timeline, 5=tips list.
-      const titleBlock = expCard.querySelector('#ios-portfolio-content > div:nth-of-type(3)');
-      const timelineWrap = expCard.querySelector('#ios-portfolio-timeline');
+      // Only the heading fades — its sibling #ios-portfolio-sub is a shared
+      // morph pair and must not be hidden by a fading parent.
+      const titleBlock = expCard.querySelector('#ios-portfolio-content > div:nth-of-type(3) h2');
       const tipsList = expCard.querySelector('#ios-portfolio-content > div:nth-of-type(5)');
 
       const morph = createWidgetMorph({
         widget, expanded, expCard, contentEl,
         getTarget: getExpandedTarget,
-        sharedPairs: [
-          { from: '#ila-badge', to: '#ios-portfolio-badge' },
-          { from: '#ila-eyebrow', to: '#ipe-eyebrow' },
-        ],
+        // Dynamic: the expanded timeline is re-rendered in onBeforeOpen, so
+        // dot/segment/label pairs must resolve per open. Every visible piece
+        // of the compact widget morphs into its expanded counterpart — the
+        // route visibly grows instead of fading out and back in.
+        getSharedPairs: () => {
+          const pairs = [
+            { from: '#ila-badge', to: '#ios-portfolio-badge' },
+            { from: '#ila-eyebrow', to: '#ipe-eyebrow', uniform: true },
+            { from: '#ila-sub', to: '#ios-portfolio-sub', uniform: true },
+          ];
+          for (let i = 1; i <= 4; i++) {
+            pairs.push({
+              from: `.ila-slot[data-slot="${i}"] > div`,
+              to: `[data-ipe-dot="${i}"]`,
+              uniform: true,
+            });
+            pairs.push({
+              from: `.ila-slot[data-slot="${i}"] span`,
+              to: `[data-ipe-label="${i}"]`,
+              uniform: true,
+            });
+          }
+          for (let i = 1; i <= 3; i++) {
+            pairs.push({
+              from: `.ila-seg[data-seg="${i}"]`,
+              to: `[data-ipe-seg="${i}"]`,
+            });
+          }
+          return pairs;
+        },
         fadeEls: [
           '#ios-portfolio-grab',
           titleBlock,
-          timelineWrap,
           tipsList,
         ],
         // Text-only settle — leaves the badge, slot dots and segment fills
