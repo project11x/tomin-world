@@ -228,7 +228,8 @@
         `width ${__MORPH_DUR}ms ${__MORPH_SPRING}, ` +
         `height ${__MORPH_DUR}ms ${__MORPH_SPRING}, ` +
         `border-radius ${__MORPH_DUR}ms ${__MORPH_SPRING}, ` +
-        `transform ${__MORPH_DUR}ms ${__MORPH_SPRING}`;
+        `transform ${__MORPH_DUR}ms ${__MORPH_SPRING}, ` +
+        `box-shadow ${__MORPH_DUR}ms ease`;
 
       function open() {
         if (isOpen) return;
@@ -242,6 +243,9 @@
         // 2. Place the card at its final size to MEASURE shared destinations.
         setCardRect(target, target.radius, 'none');
         void expCard.offsetWidth;
+        // The expanded card's big drop shadow, captured for the fade — it
+        // grows in with the card and dissolves on close instead of popping.
+        const fullShadow = getComputedStyle(expCard).boxShadow;
         const pairs = resolvePairs().map(p => ({
           from: p.from, to: p.to, dst: p.to.getBoundingClientRect()
         }));
@@ -249,6 +253,7 @@
         //    because the browser hasn't painted yet (still inside the same task).
         const r0 = widget.getBoundingClientRect();
         setCardRect(r0, compactRadius, 'none');
+        expCard.style.boxShadow = 'none';
 
         // 4. Fade-in elements start hidden + slightly offset.
         const fadeEls = resolveFadeEls();
@@ -290,6 +295,7 @@
         // 6. Animate.
         const t = getTarget();
         setCardRect(t, t.radius, cardTransProps);
+        expCard.style.boxShadow = fullShadow;
         fadeBackdrop(true);
 
         pairs.forEach(p => {
@@ -329,6 +335,7 @@
             if (p.to.style.zIndex === '4') p.to.style.zIndex = '';
           });
           ghosts.forEach(g => g.remove());
+          expCard.style.boxShadow = '';
           // Blur arrives only now that nothing is animating — a single
           // recomposite instead of one per frame.
           setBackdropBlur(true);
@@ -351,6 +358,15 @@
         // Blur off BEFORE anything starts moving — otherwise every animation
         // frame re-blurs the springboard (the iPhone jank source).
         setBackdropBlur(false);
+
+        // A drag-to-dismiss fades contentEl towards 0 while the finger pulls
+        // down. Without restoring it, the whole card travels home EMPTY and
+        // everything pops in on the final swap. Bring it back quickly so the
+        // shared elements are visible for their journey.
+        if (contentEl) {
+          contentEl.style.transition = 'opacity 150ms ease';
+          contentEl.style.opacity = '1';
+        }
 
         // Capture current expanded rects + compact destination rects.
         const pairs = resolvePairs().map(p => ({
@@ -383,6 +399,8 @@
         // Synchronous for the same background-tab reason as open().
         const r = widget.getBoundingClientRect();
         setCardRect(r, compactRadius, cardTransProps);
+        // Shadow dissolves with the shrink instead of vanishing on the swap.
+        expCard.style.boxShadow = 'none';
         fadeBackdrop(false);
         const cardDx = expandedRectNow.left - r.left;
         const cardDy = expandedRectNow.top - r.top;
@@ -427,14 +445,33 @@
             if (p.to.style.zIndex === '4') p.to.style.zIndex = '';
           });
           ghosts.forEach(g => g.remove());
+          expCard.style.boxShadow = '';
           fadeEls.forEach(el => {
             el.style.transition = '';
             el.style.opacity = '';
             el.style.transform = '';
           });
-          // No extra "settle" effect on the compact widget: the shared
-          // elements morph back into their exact compact positions, so the
-          // overlay → widget swap is already seamless.
+          // Shared elements morph back into their exact compact positions,
+          // so the swap is seamless for them. Compact-ONLY decorations
+          // (rails, arcs, live dots) were hidden under the opaque card the
+          // whole time — ease them in briefly instead of letting them pop.
+          const extras = (cfg.compactExtras || [])
+            .map(sel => __morphResolve(sel))
+            .filter(Boolean);
+          extras.forEach(el => {
+            el.style.transition = 'none';
+            el.style.opacity = '0';
+          });
+          if (extras.length) {
+            void widget.offsetWidth;
+            extras.forEach(el => {
+              el.style.transition = 'opacity 220ms ease';
+              el.style.opacity = '';
+            });
+            setTimeout(() => {
+              extras.forEach(el => { el.style.transition = ''; });
+            }, 280);
+          }
           if (onAfterClose) onAfterClose();
         }, __MORPH_DUR + 60);
       }
@@ -710,6 +747,9 @@
           headerLiveDot,
           ...(listEl ? Array.from(listEl.children).slice(1) : []),
         ],
+        // Compact-only decorations that sit under the opaque card during the
+        // morph — eased in on close instead of popping.
+        compactExtras: ['#sys-live-dot', '#sys-rail'],
         onBeforeOpen: () => {
           renderList();
           requestAnimationFrame(updateScrollFade);
@@ -1052,6 +1092,16 @@
           dateLabel,
           detailScroll,
           arcSvg,
+        ],
+        // Compact-only decorations that sit under the opaque card during the
+        // morph — eased in on close instead of popping.
+        compactExtras: [
+          '#iww-arc-svg',
+          '#iww-sun-glow-html',
+          '#iww-sun-dot-html',
+          '#iww-moon-html',
+          '#iww-live-dot',
+          '#iww-status-tag',
         ],
         onBeforeOpen: () => {
           syncFromCompact();
