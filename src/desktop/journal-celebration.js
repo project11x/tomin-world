@@ -45,7 +45,7 @@ function injectStyle() {
                   0 0 0 0.5px rgba(0, 0, 0, 0.08);
       cursor: pointer;
       opacity: 0;
-      transition: opacity 220ms ease, transform 320ms cubic-bezier(0.32, 0.72, 0, 1);
+      transition: opacity 220ms ease, transform 320ms var(--ease-spring);
       max-width: min(86vw, 380px);
       -webkit-tap-highlight-color: transparent;
     }
@@ -112,7 +112,7 @@ function injectStyle() {
       100% { opacity: 0; transform: scale(1.45); }
     }
     .stamp-toast-art > svg, .stamp-toast-art > .stamp-art-inner {
-      animation: stamp-slam 480ms cubic-bezier(0.34, 1.4, 0.5, 1) both;
+      animation: stamp-slam 480ms var(--ease-bounce) both;
     }
     .stamp-toast-art > .stamp-ink {
       animation: stamp-ink 700ms ease-out 180ms both;

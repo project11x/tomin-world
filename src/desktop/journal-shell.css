@@ -56,7 +56,7 @@
   border-radius: 14px;
   padding: 14px 16px;
   cursor: pointer;
-  transition: transform 160ms cubic-bezier(0.2, 0.7, 0.2, 1),
+  transition: transform 160ms var(--ease-out),
               box-shadow 160ms ease,
               background 400ms ease;
   position: relative;
@@ -364,7 +364,7 @@ html.dark .journal-ring-circle {
 .journal-ring-circle.is-closed {
   background: rgba(0, 0, 0, 0.08);
   border-color: rgba(0, 0, 0, 0.2);
-  animation: journal-ring-close 550ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: journal-ring-close 550ms var(--ease-bounce);
 }
 
 html.dark .journal-ring-circle.is-closed {
@@ -377,7 +377,7 @@ html.dark .journal-ring-circle.is-closed {
   border-color: rgb(34, 197, 94);
   color: #fff;
   box-shadow: 0 6px 22px rgba(34, 197, 94, 0.4);
-  animation: journal-ring-win 700ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: journal-ring-win 700ms var(--ease-bounce);
 }
 
 @keyframes journal-ring-close {
@@ -543,7 +543,7 @@ html.dark .journal-empty-title {
   border-radius: 14px;
   padding: 18px 16px 16px;
   cursor: pointer;
-  transition: transform 160ms cubic-bezier(0.2, 0.7, 0.2, 1),
+  transition: transform 160ms var(--ease-out),
               background-color 160ms ease,
               box-shadow 160ms ease;
   display: flex;
@@ -668,7 +668,7 @@ html.dark .hol-stats {
   border-radius: 14px;
   padding: 12px;
   cursor: pointer;
-  transition: transform 140ms cubic-bezier(0.2, 0.7, 0.2, 1),
+  transition: transform 140ms var(--ease-out),
               border-color 180ms ease,
               background-color 180ms ease;
   display: flex;
@@ -834,7 +834,7 @@ html.dark .hol-next {
   border-radius: 12px;
   padding: 6px;
   cursor: pointer;
-  transition: transform 140ms cubic-bezier(0.2, 0.7, 0.2, 1),
+  transition: transform 140ms var(--ease-out),
               border-color 180ms ease,
               background-color 180ms ease;
   display: flex;
@@ -1039,7 +1039,7 @@ html.dark .oe-submit {
   aspect-ratio: 1;
   background: rgba(0, 0, 0, 0.06);
   cursor: pointer;
-  transition: transform 140ms cubic-bezier(0.2, 0.7, 0.2, 1),
+  transition: transform 140ms var(--ease-out),
               border-color 180ms ease;
 }
 
@@ -1461,7 +1461,7 @@ html.dark .passport-bar { background: rgba(255, 255, 255, 0.08); }
   height: 100%;
   background: rgb(15, 23, 42);
   border-radius: inherit;
-  transition: width 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition: width 320ms var(--ease-out);
 }
 html.dark .passport-bar-fill { background: #f4f2ee; }
 
@@ -1667,7 +1667,7 @@ html.dark .passport-preview:hover {
   border-radius: 12px;
   padding: 10px;
   cursor: pointer;
-  transition: transform 160ms cubic-bezier(0.2, 0.7, 0.2, 1),
+  transition: transform 160ms var(--ease-out),
               border-color 180ms ease,
               background-color 180ms ease;
   display: flex;
@@ -1748,7 +1748,7 @@ html.dark .vote-side-bar {
 .vote-side-bar-fill {
   height: 100%;
   background: rgb(15, 23, 42);
-  transition: width 360ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition: width 360ms var(--ease-out);
 }
 
 html.dark .vote-side-bar-fill {
@@ -2415,7 +2415,7 @@ html.dark .ios-journal-ring-circle,
 .ios-journal-ring-circle.is-closed {
   background: rgba(0, 0, 0, 0.08);
   border-color: rgba(0, 0, 0, 0.2);
-  animation: journal-ring-close 550ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: journal-ring-close 550ms var(--ease-bounce);
 }
 html.dark .ios-journal-ring-circle.is-closed,
 .ios-dark .ios-journal-ring-circle.is-closed {
@@ -2427,7 +2427,7 @@ html.dark .ios-journal-ring-circle.is-closed,
   border-color: rgb(34, 197, 94);
   color: #fff;
   box-shadow: 0 4px 16px rgba(34, 197, 94, 0.38);
-  animation: journal-ring-win 700ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: journal-ring-win 700ms var(--ease-bounce);
 }
 
 .ios-journal-ring-label {
@@ -2597,7 +2597,7 @@ html.dark .journal-board-cork {
   background: #fefefe;
   padding: 8px 8px 28px;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1),
+  transition: transform 220ms var(--ease-out),
               box-shadow 220ms ease;
   will-change: transform;
 }
@@ -2849,7 +2849,7 @@ html.dark .journal-pin-submit {
   display: flex;
   flex-direction: column;
   transform: translateX(100%);
-  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 0.35s var(--ease-glide);
   z-index: 2;
   /* Closed sub-screens shouldn't eat touch events from the scroll area
      behind them — translateX off-screen alone leaves a phantom hit-area
@@ -2906,7 +2906,7 @@ html.dark .ios-journal-board-cork,
   background: #fefefe;
   padding: 7px 7px 24px;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition: transform 220ms var(--ease-out);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -2991,7 +2991,7 @@ html.dark .ios-journal-pin,
   display: flex;
   flex-direction: column;
   transform: translateY(100%);
-  transition: transform 0.32s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: transform 0.32s var(--ease-glide);
 }
 
 .ios-pin-sheet.is-open {

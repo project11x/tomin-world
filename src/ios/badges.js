@@ -16,7 +16,7 @@ function makeBadge(count) {
     border-radius:999px; display:flex; align-items:center; justify-content:center;
     box-shadow:0 1px 4px rgba(0,0,0,0.25), 0 0 0 2px var(--ios-dock-bg, rgba(255,255,255,0.5));
     pointer-events:none; z-index:2;
-    animation: ios-badge-pop 280ms cubic-bezier(0.34,1.56,0.64,1);
+    animation: ios-badge-pop 280ms var(--ease-bounce);
   `;
   return b;
 }

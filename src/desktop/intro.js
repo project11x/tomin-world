@@ -13,9 +13,10 @@
 // edits / magazine space.
 // ─────────────────────────────────────────────────────────────────────
 
+import { EASE_SPRING as SPRING } from '../utils/motion.js';
+
 (function () {
   const SESSION_KEY = 'desktop-intro-done';
-  const SPRING = 'cubic-bezier(0.32, 0.72, 0, 1)';
 
   const menuBar = document.getElementById('top-menu-bar');
   const dock = document.getElementById('macos-dock');

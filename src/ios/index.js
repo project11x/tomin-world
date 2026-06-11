@@ -1,3 +1,4 @@
+import { EASE_GLIDE } from '../utils/motion.js';
 // ====== iOS Homescreen Logic ======
 import { portfolioData } from '../../data.js';
 import { safePlayVideo, killOtherVideos, attachBeachball } from '../utils/video.js';
@@ -375,8 +376,8 @@ function popURLToRoot() {
     setTimeout(iosMagPlayVisibleVideo, 100);
 
     // Push transition: grid slides left, reader slides in from right
-    iosMagScreenGrid.style.transition = 'transform 0.35s cubic-bezier(0.25,1,0.5,1), opacity 0.35s ease';
-    iosMagScreenReader.style.transition = 'transform 0.35s cubic-bezier(0.25,1,0.5,1)';
+    iosMagScreenGrid.style.transition = 'transform 0.35s ' + EASE_GLIDE + ', opacity 0.35s ease';
+    iosMagScreenReader.style.transition = 'transform 0.35s ' + EASE_GLIDE + '';
     iosMagScreenReader.style.display = 'flex';
     iosMagScreenReader.style.transform = 'translateX(100%)';
 
@@ -942,8 +943,8 @@ function popURLToRoot() {
     // Push transition
     iosBtsScreenFiles.style.display = 'flex';
     iosBtsScreenFiles.style.transform = 'translateX(100%)';
-    iosBtsScreenFolders.style.transition = 'transform 0.35s cubic-bezier(0.25,1,0.5,1), opacity 0.35s ease';
-    iosBtsScreenFiles.style.transition = 'transform 0.35s cubic-bezier(0.25,1,0.5,1)';
+    iosBtsScreenFolders.style.transition = 'transform 0.35s ' + EASE_GLIDE + ', opacity 0.35s ease';
+    iosBtsScreenFiles.style.transition = 'transform 0.35s ' + EASE_GLIDE + '';
     requestAnimationFrame(() => requestAnimationFrame(() => {
       iosBtsScreenFolders.style.transform = 'translateX(-30%)';
       iosBtsScreenFolders.style.opacity = '0.4';

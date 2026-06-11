@@ -1,3 +1,4 @@
+import { EASE_OUT } from '../utils/motion.js';
 // macOS-style dock magnification.
 //
 // Replaces the per-icon Tailwind hover (binary scale-125) with the real
@@ -25,7 +26,7 @@
     it.style.transformOrigin = 'bottom center';
     // Short transition smooths the per-mousemove jumps into a glide and
     // doubles as the settle animation on mouseleave.
-    it.style.transition = 'transform 130ms cubic-bezier(0.2, 0.7, 0.3, 1)';
+    it.style.transition = 'transform 130ms ' + EASE_OUT + '';
     it.addEventListener('pointerdown', () => { pressedItem = it; schedule(); });
   });
   window.addEventListener('pointerup', () => {

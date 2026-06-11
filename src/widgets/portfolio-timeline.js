@@ -1,3 +1,4 @@
+import { EASE_BOUNCE, EASE_OUT } from '../utils/motion.js';
 // ── iOS Live Activity: Portfolio Exploration ──────────────────────────────
 // Slot-based, visit-order-aware Smart Stack widget.
 //
@@ -194,7 +195,7 @@
             { transform: 'scale(1.55)' },
             { transform: 'scale(1)' },
           ],
-          { duration: 420, easing: 'cubic-bezier(0.34, 1.3, 0.5, 1)' }
+          { duration: 420, easing: EASE_BOUNCE }
         );
       }, i * 150);
     });
@@ -249,7 +250,7 @@
         // Short timeout lets the browser commit the 0% paint before animating.
         ; (function (el, w) {
           setTimeout(() => {
-            el.style.transition = 'width 0.9s cubic-bezier(0.2,0.7,0.2,1)';
+            el.style.transition = 'width 0.9s ' + EASE_OUT + '';
             el.style.width = w;
           }, 30);
         })(fillEl, target);
@@ -295,7 +296,7 @@
         }
         ; (function (node, d) {
           setTimeout(() => {
-            node.style.transition = 'width ' + SEG_DUR + 'ms cubic-bezier(0.2,0.7,0.2,1)';
+            node.style.transition = 'width ' + SEG_DUR + 'ms ' + EASE_OUT + '';
             node.style.width = '100%';
           }, d);
         })(el, delay);

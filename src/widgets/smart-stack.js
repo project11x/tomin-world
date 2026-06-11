@@ -1,3 +1,4 @@
+import { EASE_SPRING, EASE_GLIDE } from '../utils/motion.js';
 // ── iOS Smart Stack (gesture carousel, infinite loop) ─────────────────────
 (function () {
   const frame = document.getElementById('sstack-frame');
@@ -7,7 +8,7 @@
   if (!frame || cards.length < 2) return;
 
   const N = cards.length;
-  const EASE = 'cubic-bezier(0.32, 0.72, 0, 1)';
+  const EASE = EASE_SPRING;
   const DUR = 420;            // ms for snap
   const THRESHOLD = 38;             // px to switch card
   let H = frame.offsetHeight || 148;
@@ -24,7 +25,7 @@
   // after "all explored" — the user isn't actively swiping, so we let the
   // card glide up with more drama.
   const SLOW_DUR = 1100;
-  const SLOW_EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+  const SLOW_EASE = EASE_GLIDE;
 
   // Render all cards at their positions. At rest (dragY=0) only slot 0 is in
   // view; the slot -1 and slot +1 cards sit off-screen above/below the frame

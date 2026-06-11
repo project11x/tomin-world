@@ -1,3 +1,4 @@
+import { EASE_SPRING } from '../utils/motion.js';
 // Quick Look modal — preview an image or video pulled from a finder window.
 import { portfolioData } from '../../data.js';
 import { safePlayVideo, killOtherVideos, attachBeachball } from '../utils/video.js';
@@ -62,7 +63,7 @@ function qlMorphFrom(modal, sourceEl) {
   modal.style.opacity = '0.5';
   void modal.offsetWidth;
   modal.style.transition =
-    'transform 320ms cubic-bezier(0.32, 0.72, 0, 1), opacity 120ms ease';
+    'transform 320ms ' + EASE_SPRING + ', opacity 120ms ease';
   modal.style.transform = base.trim() || '';
   modal.style.opacity = '1';
   setTimeout(() => {

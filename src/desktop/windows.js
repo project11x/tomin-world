@@ -1,3 +1,4 @@
+import { EASE_SPRING } from '../utils/motion.js';
 // Window manager: macOS-style finder windows, drag, fullscreen, About modal,
 // item-click router (delegates to magazine reader / quick look in other modules).
 
@@ -68,7 +69,7 @@ function animateWindowOpen(win, sourceEl) {
   win.style.opacity = '0.45';
   void win.offsetWidth;
   win.style.transition =
-    'transform 380ms cubic-bezier(0.32, 0.72, 0, 1), opacity 120ms ease';
+    'transform 380ms ' + EASE_SPRING + ', opacity 120ms ease';
   win.style.transform = 'none';
   win.style.opacity = '1';
   setTimeout(() => {

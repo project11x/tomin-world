@@ -1,3 +1,4 @@
+import { EASE_SPRING, EASE_OUT, EASE_GLIDE } from '../utils/motion.js';
 // ── iOS Edge-Swipe Back Gesture (interactive) ─────────────────────────────
 // Drag from the left or right edge → the current screen follows the finger
 // 1:1, the parent screen parallaxes in behind it (where there is one), and
@@ -140,8 +141,6 @@
   const FLICK_MIN_PX = 30;    // …but only past this much travel
   const LEGACY_DX = 55;       // threshold for non-draggable surfaces
   const TAP_SLOP = 8;         // max movement for tap forwarding
-  const EASE_SPRING = 'cubic-bezier(0.32, 0.72, 0, 1)';
-  const EASE_OUT = 'cubic-bezier(0.2, 0.7, 0.3, 1)';
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -384,7 +383,7 @@
       // it back its transition (plus radius/shadow so the corners melt away
       // during the slide instead of popping off) and it continues from the
       // dragged position.
-      const restored = d.prevScreenTransition || 'transform 0.35s cubic-bezier(0.25,1,0.5,1)';
+      const restored = d.prevScreenTransition || 'transform 0.35s ' + EASE_GLIDE + '';
       s.style.transition = `${restored}, border-radius 300ms ease, box-shadow 300ms ease`;
       s.style.borderRadius = d.prevScreenRadius || '0px';
       s.style.boxShadow = '0 10px 50px rgba(0,0,0,0)';

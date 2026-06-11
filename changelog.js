@@ -1,3 +1,4 @@
+import { EASE_SPRING } from './src/utils/motion.js';
     // ═════════════════════════════════════════════════════════════════════
     // Shared widget morph helper — FLIP-style expand/collapse
     // ─────────────────────────────────────────────────────────────────────
@@ -20,7 +21,7 @@
     //  5. Close reverses: shared elements morph back to compact rects while
     //     the card shrinks; non-shared content fades out first.
     // ═════════════════════════════════════════════════════════════════════
-    const __MORPH_SPRING = 'cubic-bezier(0.32, 0.72, 0, 1)';
+    const __MORPH_SPRING = EASE_SPRING;
     const __MORPH_DUR = 480; // ms — Apple Springboard widget expand cadence
 
     function __morphResolve(elOrSel, root) {
