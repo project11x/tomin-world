@@ -163,6 +163,73 @@
     });
   }
 
+  // ── 4/4 finale ────────────────────────────────────────────────────
+  // The completion moment used to be a silent text swap. Once per
+  // visitor, the widget now celebrates: the four slot dots pulse in
+  // visit order, a shine sweeps across the card, and the title cheers.
+  const FINALE_KEY = 'ila:finale-done';
+  function finaleDone() {
+    try { return localStorage.getItem(FINALE_KEY) === '1'; } catch { return false; }
+  }
+  function markFinaleDone() {
+    try { localStorage.setItem(FINALE_KEY, '1'); } catch {}
+  }
+
+  function playFinale() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const title = document.getElementById('ila-title');
+    if (title) {
+      title.textContent = 'All sections explored 🎉';
+      playBlurSwap(title);
+    }
+
+    // Slot dots pulse one after another, tracing the route a last time.
+    document.querySelectorAll('.ila-slot').forEach((slot, i) => {
+      const dot = slot.querySelector('div');
+      if (!dot) return;
+      setTimeout(() => {
+        dot.animate(
+          [
+            { transform: 'scale(1)' },
+            { transform: 'scale(1.55)' },
+            { transform: 'scale(1)' },
+          ],
+          { duration: 420, easing: 'cubic-bezier(0.34, 1.3, 0.5, 1)' }
+        );
+      }, i * 150);
+    });
+
+    // One-time shine sweep across the widget card.
+    const card = title ? title.closest('.sstack-card') || title.parentElement?.parentElement : null;
+    if (card) {
+      const shine = document.createElement('div');
+      shine.style.cssText =
+        'position:absolute; inset:0; pointer-events:none; z-index:5; overflow:hidden; border-radius:inherit;';
+      const beam = document.createElement('div');
+      beam.style.cssText =
+        'position:absolute; top:-20%; bottom:-20%; width:55%; left:-60%;' +
+        'background:linear-gradient(105deg, transparent 0%, rgba(255,255,255,0.28) 50%, transparent 100%);' +
+        'transform:skewX(-12deg);';
+      shine.appendChild(beam);
+      card.appendChild(shine);
+      beam.animate(
+        [{ left: '-60%' }, { left: '120%' }],
+        { duration: 950, delay: 250, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' }
+      );
+      setTimeout(() => shine.remove(), 1500);
+    }
+    try { navigator.vibrate?.([25, 60, 25]); } catch {}
+  }
+
+  // Fires the finale exactly once, after the segment fill animation has
+  // finished drawing (delay passed in by the caller).
+  function maybeScheduleFinale(afterMs) {
+    if (visited.length !== SECTIONS.length || finaleDone()) return false;
+    markFinaleDone();
+    setTimeout(playFinale, afterMs);
+    return true;
+  }
+
   // Render segments. `animateIdxs` = array of 0-based segment indices to
   // animate (0→100%). All other segments are set to their target instantly.
   function renderSegs(animateIdxs) {
@@ -245,7 +312,8 @@
       // Route replay takes ~30 + 3*(650+40) = ~2100 ms at most. Give the
       // user ~2.5 s to admire the completed line, then auto-advance.
       if (visited.length === SECTIONS.length) {
-        scheduleAutoAdvance(2100 + 2500);
+        const finale = maybeScheduleFinale(2150);
+        scheduleAutoAdvance(2100 + 2500 + (finale ? 1300 : 0));
       }
     }
   };
@@ -279,7 +347,10 @@
       // If this visit just filled the last segment, plan to auto-advance
       // after the segment animation (~930 ms) + ~2.5 s of admire time.
       if (visited.length === SECTIONS.length) {
-        scheduleAutoAdvance(930 + 2500);
+        // Finale (dot pulses + shine) plays right after the line completes;
+        // give it room before the stack auto-advances away.
+        const finale = maybeScheduleFinale(950);
+        scheduleAutoAdvance(930 + 2500 + (finale ? 1300 : 0));
       }
     } else {
       // Widget hidden: render instantly, queue a full replay for when it appears.

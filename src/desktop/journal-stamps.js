@@ -19,6 +19,7 @@
 
 import { portfolioData } from '../../data.js';
 import { slugify } from '../utils/slugs.js';
+import { celebrateStamps } from './journal-celebration.js';
 
 const STATS_KEY = 'journal:stats';
 const EARNED_KEY = 'journal:earned';
@@ -103,16 +104,17 @@ function getEarnedRaw() {
   try { return JSON.parse(localStorage.getItem(EARNED_KEY) || '[]'); }
   catch { return []; }
 }
+// Returns the ids that were actually NEW this call (empty array = no change).
 function markEarnedLocal(ids) {
   const cur = new Set(getEarnedRaw());
-  let changed = false;
+  const added = [];
   for (const id of ids) {
-    if (!cur.has(id)) { cur.add(id); changed = true; }
+    if (!cur.has(id)) { cur.add(id); added.push(id); }
   }
-  if (changed) {
+  if (added.length) {
     try { localStorage.setItem(EARNED_KEY, JSON.stringify([...cur])); } catch {}
   }
-  return changed;
+  return added;
 }
 
 export function getEarnedSet() {
@@ -122,13 +124,16 @@ export function getEarnedSet() {
 // Idempotent — only fires the changed event when something new lands.
 export function evaluate() {
   const stats = getStats();
-  const newlyEarned = [];
+  const earned = [];
   for (const s of STAMPS) {
-    try { if (s.check(stats)) newlyEarned.push(s.id); }
+    try { if (s.check(stats)) earned.push(s.id); }
     catch {}
   }
-  if (markEarnedLocal(newlyEarned)) {
-    window.dispatchEvent(new CustomEvent(STAMPS_CHANGED_EVENT));
+  const newIds = markEarnedLocal(earned);
+  if (newIds.length) {
+    window.dispatchEvent(new CustomEvent(STAMPS_CHANGED_EVENT, { detail: { newIds } }));
+    // The earning moment itself — toast with the stamp slamming in.
+    celebrateStamps(STAMPS.filter((s) => newIds.includes(s.id)));
   }
 }
 
