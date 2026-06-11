@@ -14,7 +14,6 @@ import { setDarkMode, setTheme } from './system-bar.js';
   on($('theme-item-light'), () => setDarkMode(false));
   on($('theme-item-dark'), () => setDarkMode(true));
   on($('theme-item-default'), () => setTheme('default'));
-  on($('theme-item-pink'), () => setTheme('pink'));
   on($('theme-item-material'), () => setTheme('material'));
   on($('theme-item-tui'), () => setTheme('tui'));
 
@@ -25,6 +24,7 @@ import { setDarkMode, setTheme } from './system-bar.js';
       if (target === 'edits') window.openEditsViewer();
       else if (target === 'finder') window.handleFinderClick();
       else if (target === 'contact') window.openAboutMeModal();
+      else if (target === 'journal') window.openJournalApp?.();
     });
   });
 
@@ -44,6 +44,7 @@ import { setDarkMode, setTheme } from './system-bar.js';
     edits: 'iosCloseEdits',
     bts: 'iosCloseBts',
     contact: 'iosCloseContact',
+    journal: 'iosCloseJournal',
     'bts-back': 'iosBtsBackToFolders',
     'bts-viewer': 'iosBtsCloseViewer',
   };

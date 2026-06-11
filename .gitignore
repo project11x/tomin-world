@@ -15,7 +15,12 @@ milano/
 schimmel in schladming/
 stoical/
 tipsy triad/
+debut/
+valueME/
 TOMIN INDEX.TXT/
+
+# Claude Code temporary agent worktrees
+.claude/worktrees/
 
 # Misc
 screen.png
@@ -37,4 +42,11 @@ playwright-report/
 
 # Folder typo (renamed)
 5am in munich/
+
+# Journal game-asset working cache. Lives outside public/ so vite
+# doesn't ship it into dist/. The real distribution path for these
+# JPEGs / MP4s is R2 (uploaded by extract-frames + extract-clips). This
+# cache only exists to speed up incremental re-extracts. Manifests
+# (public/frames-pool.json + public/edit-colors.json) ARE committed.
+.cache/
 

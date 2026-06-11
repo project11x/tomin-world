@@ -28,9 +28,15 @@
 //     uploaded by accident don't surface in the Finder.
 //   • Errors fall through silently — the frontend keeps using baked data.
 
+// Mirror sync.cjs's EXCLUDED_FOLDERS plus `game` — the R2 bucket now
+// hosts game-asset binaries (frames + clips) under the game/ prefix.
+// Listing R2 lifts them as a phantom folder; without this exclusion
+// `game` shows up as a "project" in the Finder sidebar.
 const EXCLUDED_FOLDERS = new Set([
   'node_modules', 'dist', 'public', 'src', 'tests', 'test-results',
   'functions', 'icons', 'playwright-report', '.git', '.github', '.vite',
+  'migrations', '.cache', '.wrangler', '.husky', '.claude',
+  'game',
 ]);
 
 const VIDEO_EXTS = new Set(['.mp4', '.mov', '.webm', '.mkv']);

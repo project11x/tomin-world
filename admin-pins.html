@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Admin · Pins · Shouli</title>
+  <link rel="icon" type="image/png" href="icons/flavicon.png" />
+  <style>
+    :root { color-scheme: dark; }
+    html, body { background: #0b0b0d; color: #fff; margin: 0; min-height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; }
+    body { padding: 28px 20px 60px; }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    h1 { font-size: 24px; font-weight: 700; margin: 0 0 4px; }
+    .sub { font-size: 12px; color: rgba(255,255,255,0.55); margin-bottom: 24px; }
+    .back { font-size: 12px; color: rgba(255,255,255,0.5); text-decoration: none; }
+    .back:hover { color: #fff; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
+    .pin {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .pin-thumb {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.05);
+    }
+    .pin-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .pin-meta { font-size: 11px; color: rgba(255,255,255,0.6); display: flex; flex-direction: column; gap: 2px; }
+    .pin-meta-line { display: flex; gap: 6px; align-items: center; }
+    .pin-folder { font-weight: 700; color: rgba(255,255,255,0.85); }
+    .pin-sticker { font-size: 18px; }
+    .pin-actions { display: flex; gap: 6px; }
+    .btn {
+      flex: 1;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-hide { background: rgba(239,68,68,0.18); border-color: rgba(239,68,68,0.4); }
+    .btn-hide:hover { background: rgba(239,68,68,0.28); }
+    .btn:disabled { opacity: 0.4; cursor: default; }
+    .empty { text-align: center; padding: 80px 20px; opacity: 0.5; }
+    .status { font-size: 11px; opacity: 0.6; margin: 6px 0 18px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a href="/" class="back">← back to site</a>
+    <h1 style="margin-top:14px;">Pinboard · Admin</h1>
+    <p class="sub">Hide individual pins. Protected by Cloudflare Access — if you can see this, you're in.</p>
+    <div class="status" id="status">Loading pins…</div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <script type="module">
+    const R2 = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? (window.location.port === '5173' ? '' : 'https://pub-859f13be44eb4577b0cb23c8d8440a59.r2.dev/')
+      : 'https://pub-859f13be44eb4577b0cb23c8d8440a59.r2.dev/';
+
+    const grid = document.getElementById('grid');
+    const status = document.getElementById('status');
+
+    async function load() {
+      const res = await fetch('/api/pinboard?limit=200');
+      if (!res.ok) { status.textContent = `Failed to load (${res.status})`; return; }
+      const data = await res.json();
+      const pins = data.pins || [];
+      status.textContent = `${pins.length} visible pins`;
+      grid.innerHTML = '';
+      if (!pins.length) {
+        grid.innerHTML = '<div class="empty">No pins yet.</div>';
+        return;
+      }
+      for (const pin of pins) grid.appendChild(renderPin(pin));
+    }
+
+    function renderPin(pin) {
+      const div = document.createElement('div');
+      div.className = 'pin';
+      const src = /^https?:\/\//.test(pin.src) ? pin.src : R2 + pin.src;
+      div.innerHTML = `
+        <div class="pin-thumb"><img src="${src}" alt="" loading="lazy" /></div>
+        <div class="pin-meta">
+          <div class="pin-meta-line">
+            <span class="pin-folder">${escapeHtml(pin.folder)}</span>
+            ${pin.sticker ? `<span class="pin-sticker">${pin.sticker}</span>` : ''}
+          </div>
+          <div>${pin.city ? `from ${escapeHtml(pin.city)} · ` : ''}#${pin.id}</div>
+          <div>${new Date(pin.createdAt).toLocaleString()}</div>
+        </div>
+        <div class="pin-actions">
+          <button class="btn btn-hide" data-hide>Hide</button>
+        </div>
+      `;
+      div.querySelector('[data-hide]').addEventListener('click', async (e) => {
+        e.currentTarget.disabled = true;
+        e.currentTarget.textContent = 'Hiding…';
+        const res = await fetch('/api/pin', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: pin.id, hidden: true }),
+        });
+        if (res.ok) div.remove();
+        else { e.currentTarget.disabled = false; e.currentTarget.textContent = 'Hide failed'; }
+      });
+      return div;
+    }
+
+    function escapeHtml(s) {
+      return String(s || '').replace(/[&<>"']/g, (c) => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[c] || c));
+    }
+
+    load();
+  </script>
+</body>
+</html>

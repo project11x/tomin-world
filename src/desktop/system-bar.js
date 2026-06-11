@@ -41,23 +41,25 @@ const magThemeToggle = document.getElementById('mag-theme-toggle');
 function updateThemeCheckmarks() {
   const html = document.documentElement;
   const isDark = html.classList.contains('dark');
-  const isPink = html.classList.contains('theme-pink');
   const isMaterial = html.classList.contains('theme-material');
   const isTui = html.classList.contains('theme-tui');
+  void isMaterial; void isTui;
   // What the user *chose* — TUI may be active in storage even while a fallback
-  // theme is painted because we're on mobile.
+  // theme is painted because we're on mobile. Legacy "pink" stored values
+  // are read as default (the Fiona palette is retired).
   let storedPalette = 'default';
-  try { storedPalette = localStorage.getItem('palette') || 'default'; } catch (e) { /* ignore */ }
+  try {
+    const raw = localStorage.getItem('palette');
+    storedPalette = raw === 'pink' ? 'default' : (raw || 'default');
+  } catch (e) { /* ignore */ }
 
   const marks = {
     'theme-item-light': !isDark,
     'theme-item-dark': isDark,
     'theme-item-default': storedPalette === 'default',
-    'theme-item-pink': storedPalette === 'pink',
     'theme-item-material': storedPalette === 'material',
     'theme-item-tui': storedPalette === 'tui',
   };
-  void isTui;
   Object.entries(marks).forEach(([id, active]) => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -108,8 +110,10 @@ function setDarkMode(isDark) {
 
 function setTheme(mode) {
   const html = document.documentElement;
+  // "pink" is a retired palette — coerce it to default on every entry
+  // point so legacy menu items / stored values never re-skin the page.
+  if (mode === 'pink') mode = 'default';
   const previous = html.classList.contains('theme-material') ? 'material'
-    : html.classList.contains('theme-pink') ? 'pink'
     : html.classList.contains('theme-tui') ? 'tui' : 'default';
   // Remember the non-TUI palette so mobile can fall back to it.
   try {
@@ -117,13 +121,12 @@ function setTheme(mode) {
       localStorage.setItem('palette-prev', previous);
     }
   } catch (e) { /* ignore */ }
-  html.classList.remove('theme-pink', 'theme-material', 'theme-tui');
+  html.classList.remove('theme-material', 'theme-tui');
   const isMobile = window.matchMedia('(max-width: 767px)').matches;
   let effective = mode;
   if (mode === 'tui' && isMobile) {
     try { effective = localStorage.getItem('palette-prev') || 'default'; } catch (e) { effective = 'default'; }
   }
-  if (effective === 'pink') html.classList.add('theme-pink');
   if (effective === 'material') html.classList.add('theme-material');
   if (effective === 'tui') html.classList.add('theme-tui');
   try { localStorage.setItem('palette', mode); } catch (e) { /* ignore */ }
@@ -155,15 +158,17 @@ function setTheme(mode) {
 
 // Restore palette from previous session — survives desktop ↔ mobile switches.
 // TUI is desktop-only, so fall back to the user's previous palette on mobile.
+// Legacy "pink" (Fiona) is silently demoted to default.
 try {
   const stored = localStorage.getItem('palette');
   const isMobile = window.matchMedia('(max-width: 767px)').matches;
   let effective = stored;
+  if (effective === 'pink') effective = 'default';
   if (stored === 'tui' && isMobile) {
-    effective = localStorage.getItem('palette-prev') || 'default';
+    const prev = localStorage.getItem('palette-prev') || 'default';
+    effective = prev === 'pink' ? 'default' : prev;
   }
-  if (effective === 'pink') document.documentElement.classList.add('theme-pink');
-  else if (effective === 'material') document.documentElement.classList.add('theme-material');
+  if (effective === 'material') document.documentElement.classList.add('theme-material');
   else if (effective === 'tui') document.documentElement.classList.add('theme-tui');
 } catch (e) { /* ignore */ }
 
@@ -180,10 +185,10 @@ window.addEventListener('resize', () => {
     html.classList.remove('theme-tui');
     let prev = 'default';
     try { prev = localStorage.getItem('palette-prev') || 'default'; } catch (e) { /* ignore */ }
-    if (prev === 'pink') html.classList.add('theme-pink');
-    else if (prev === 'material') html.classList.add('theme-material');
+    if (prev === 'pink') prev = 'default';
+    if (prev === 'material') html.classList.add('theme-material');
   } else if (!isMobile && !hasTui) {
-    html.classList.remove('theme-pink', 'theme-material');
+    html.classList.remove('theme-material');
     html.classList.add('theme-tui');
   }
 });

@@ -401,10 +401,11 @@
       const dataEl = document.getElementById('sys-commits-data');
       if (!headline || !message || !hashEl || !timeEl) return;
 
-      const REPO = 'project11x/tomin-world';
-      // Fetch more than the compact widget needs so the expanded list has
-      // enough to fill the screen without re-fetching on open.
-      const API = 'https://api.github.com/repos/' + REPO + '/commits?per_page=30';
+      // Hit our own Worker proxy (src/api/commits.js) instead of GitHub
+      // directly. The Worker holds a 60 s edge cache, so the upstream
+      // GitHub rate limit (60 req/h per IP unauthenticated) is no longer
+      // per-visitor — one cache fill serves everyone.
+      const API = '/api/commits';
       // Shared normalised commit shape: { sha, msg, date }.
       let commits = [];
 
@@ -477,15 +478,12 @@
       // or rate-limit — the baked data stays on screen in that case.
       async function fetchLive() {
         try {
-          const r = await fetch(API, { headers: { Accept: 'application/vnd.github+json' } });
+          const r = await fetch(API, { headers: { Accept: 'application/json' } });
           if (!r.ok) return;
           const data = await r.json();
           if (!Array.isArray(data) || !data.length) return;
-          commits = data.map(c => ({
-            sha: c.sha,
-            msg: (c.commit && c.commit.message) || '',
-            date: (c.commit && c.commit.author && c.commit.author.date) || c.commit?.committer?.date
-          }));
+          // The Worker already normalises to { sha, msg, date }.
+          commits = data;
           render();
         } catch (e) { /* offline / blocked — silent */ }
       }

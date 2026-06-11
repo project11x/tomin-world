@@ -20,6 +20,9 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         admin: resolve(__dirname, 'admin.html'),
+        adminPins: resolve(__dirname, 'admin-pins.html'),
+        adminFrames: resolve(__dirname, 'admin-frames.html'),
+        dailyFrame: resolve(__dirname, 'daily-frame.html'),
       },
     },
   },

@@ -64,6 +64,14 @@ const EXCLUDED_FOLDERS = new Set([
     '.git',
     '.github',
     '.vite',
+    // Infra/internal: D1 SQL migrations, R2 upload cache, wrangler state.
+    // Without these the prerender pipeline picks them up as "projects"
+    // and exposes /projects/migrations/ etc. on the live site.
+    'migrations',
+    '.cache',
+    '.wrangler',
+    '.husky',
+    '.claude',
 ]);
 
 function generateData() {

@@ -2,9 +2,10 @@
 # can still be served from the in-memory cache during a single session.
 /*
   Cache-Control: no-cache
-  # Refuse to be loaded inside someone else's <iframe> — prevents
-  # clickjacking attacks where the site is wrapped in a transparent overlay.
-  X-Frame-Options: DENY
+  # SAMEORIGIN (not DENY): foreign sites still can't wrap us in their own
+  # clickjacking iframe, but the Journal modal can legitimately embed
+  # /daily-frame as a same-origin iframe.
+  X-Frame-Options: SAMEORIGIN
   # Browser must honour the Content-Type we send; no MIME-sniffing tricks.
   X-Content-Type-Options: nosniff
   # When linking out, send the origin but not the full URL/path.
@@ -27,6 +28,7 @@
 # Service worker must always be fresh.
 /OneSignalSDKWorker.js
   Cache-Control: no-cache
+
 
 # PWA manifests — short cache, rarely change.
 /manifest.json

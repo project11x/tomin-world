@@ -1,0 +1,3098 @@
+/* ─────────────────────────────────────────────────────────────────────
+   Journal app — desktop shell
+   ─────────────────────────────────────────────────────────────────────
+
+   Visual reference: Apple Journal (iPad/Mac), adapted to the existing
+   glass-panel aesthetic. Backgrounds reuse the site's tokens; accent
+   colors are intentionally neutral (grey rectangles) until the real
+   palette is locked in.
+*/
+
+/* ── Sidebar layout ─────────────────────────────────────────────── */
+/* The sidebar splits in two: a pinned title bar (traffic lights, drag
+   handle) and a scrollable inner column. The outer sidebar never scrolls
+   itself — that way the traffic lights stay glued to the top regardless
+   of how far the user scrolls through the hero cards / section list. */
+.journal-sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 240px;
+  min-width: 240px;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.journal-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 14px 8px;
+  flex-shrink: 0;
+}
+
+.journal-sidebar-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Hide scrollbar — sidebar should feel native macOS, not browser-y. */
+.journal-sidebar-scroll::-webkit-scrollbar { width: 0; height: 0; }
+.journal-sidebar-scroll { scrollbar-width: none; }
+
+/* ── Hero cards — color intensifies with the visitor's progress ──
+   --hero-progress (0..1) drives a colour-mix between a neutral grey base
+   and the accent. Insights hero ramps with stamps earned; Today hero
+   ramps with rings closed today and swaps to green on a perfect day. */
+.journal-hero {
+  --hero-progress: 0;
+  --hero-accent: #8B1538;        /* burgundy default */
+  --hero-base-1: rgba(184, 184, 184, 0.55);
+  --hero-base-2: rgba(127, 127, 127, 0.6);
+  border-radius: 14px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: transform 160ms cubic-bezier(0.2, 0.7, 0.2, 1),
+              box-shadow 160ms ease,
+              background 400ms ease;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+  background: linear-gradient(
+    155deg,
+    color-mix(in srgb, var(--hero-base-1), var(--hero-accent) calc(var(--hero-progress) * 78%)) 0%,
+    color-mix(in srgb, var(--hero-base-2), var(--hero-accent) calc(var(--hero-progress) * 92%)) 100%
+  );
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  min-height: 86px;
+}
+
+html.dark .journal-hero {
+  --hero-base-1: rgba(120, 120, 120, 0.4);
+  --hero-base-2: rgba(70, 70, 70, 0.5);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+/* Today hero on a perfect day = full green. */
+.journal-hero[data-jhero="today"].is-perfect {
+  --hero-accent: rgb(34, 197, 94);
+  --hero-progress: 1;
+}
+
+.journal-hero:hover {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.journal-hero-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.journal-hero-big {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-top: 8px;
+}
+
+.journal-hero-sub {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 2px;
+}
+
+/* ── Sidebar section labels ─────────────────────────────────────── */
+.journal-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.4);
+  padding: 0 10px;
+  margin-top: 10px;
+  margin-bottom: 2px;
+  user-select: none;
+}
+
+html.dark .journal-section-label {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* ── Sidebar items (rings + sections) ───────────────────────────── */
+.journal-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgb(51, 65, 85);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 120ms ease, color 120ms ease;
+  user-select: none;
+}
+
+html.dark .journal-item {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.journal-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+html.dark .journal-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.journal-item.is-active {
+  background: rgba(0, 0, 0, 0.06);
+  font-weight: 600;
+  color: rgb(15, 23, 42);
+}
+
+html.dark .journal-item.is-active {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.journal-item-icon {
+  width: 18px;
+  font-size: 14px;
+  text-align: center;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.journal-item-label {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.journal-item-count {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.35);
+}
+
+html.dark .journal-item-count {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Ring marker (open vs. closed) — used in Today rings list items. */
+.journal-ring-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 0, 0, 0.18);
+  flex-shrink: 0;
+}
+
+html.dark .journal-ring-dot {
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Three-state ring system:
+   - default (no class)        = open (outlined, empty)
+   - .is-closed                = grey filled, played but didn't win
+                                 (Daily Frame attempted-but-lost lives here)
+   - .is-closed.is-won         = green filled, full skill close
+                                 (rings other than Solve close green by default) */
+.journal-ring-dot.is-closed {
+  background: rgba(0, 0, 0, 0.32);
+  border-color: rgba(0, 0, 0, 0.32);
+}
+html.dark .journal-ring-dot.is-closed {
+  background: rgba(255, 255, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.journal-ring-dot.is-closed.is-won {
+  background: rgb(34, 197, 94);
+  border-color: rgb(34, 197, 94);
+}
+
+/* ── Main area ──────────────────────────────────────────────────── */
+.journal-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  /* Column-flex parent of the scroll container — needs min-height:0 so
+     its child .journal-main-content can actually shrink + scroll. */
+  min-height: 0;
+}
+
+.journal-main-titlebar {
+  height: 56px;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  flex-shrink: 0;
+}
+
+html.dark .journal-main-titlebar {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+.journal-main-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: rgb(15, 23, 42);
+}
+
+html.dark .journal-main-title {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.journal-main-content {
+  flex: 1 1 0%;
+  overflow-y: auto;
+  padding: 24px 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  /* Flex-child gotcha — allow shrink under container so overflow scrolls.
+     `height: 0` forces the element to size purely from flex grow,
+     bypassing Safari's content-height heuristic. */
+  min-height: 0;
+  height: 0;
+}
+
+/* Direct children must keep their natural size — otherwise they squish
+   to fit the container and overflow:auto never engages. (Same root cause
+   as iOS — flex children default to flex-shrink:1.) */
+.journal-main-content > * {
+  flex-shrink: 0;
+}
+
+/* ── Content cards (Today section, etc.) ───────────────────────── */
+.journal-card {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 18px 20px;
+  transition: background-color 160ms ease, transform 120ms ease, box-shadow 160ms ease;
+}
+
+html.dark .journal-card {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.journal-card.is-clickable {
+  cursor: pointer;
+}
+
+.journal-card.is-clickable:hover {
+  background: rgba(255, 255, 255, 0.85);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+html.dark .journal-card.is-clickable:hover {
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+}
+
+/* Grey placeholder background variant for cards whose final color
+   is still TBD. Keeps the layout truthful without committing to
+   visuals yet. */
+.journal-card.is-placeholder {
+  background: linear-gradient(155deg, rgba(184, 184, 184, 0.4) 0%, rgba(127, 127, 127, 0.5) 100%);
+  color: #fff;
+  border-color: transparent;
+}
+
+html.dark .journal-card.is-placeholder {
+  background: linear-gradient(155deg, rgba(100, 100, 100, 0.4) 0%, rgba(60, 60, 60, 0.5) 100%);
+}
+
+/* ── Rings hero (three circles in Today main view) ─────────────── */
+.journal-rings-row {
+  display: flex;
+  gap: 14px;
+  justify-content: space-around;
+}
+
+.journal-ring {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.journal-ring-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 6px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  transition: border-color 200ms ease, background 200ms ease;
+}
+
+html.dark .journal-ring-circle {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Three-state styling for the BIG Today-card rings.
+   Matches the dot semantics:
+     open                = grey outline
+     is-closed           = grey filled (attempted but not won, e.g. Solve played wrong)
+     is-closed.is-won    = green filled (full close)
+   Each closed state animates in with a spring-pop so the visitor gets a
+   visible affirmation when they return to the view after completing one. */
+.journal-ring-circle.is-closed {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.2);
+  animation: journal-ring-close 550ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+html.dark .journal-ring-circle.is-closed {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.journal-ring-circle.is-closed.is-won {
+  background: rgb(34, 197, 94);
+  border-color: rgb(34, 197, 94);
+  color: #fff;
+  box-shadow: 0 6px 22px rgba(34, 197, 94, 0.4);
+  animation: journal-ring-win 700ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes journal-ring-close {
+  0%   { transform: scale(0.86); background: transparent;
+         border-color: rgba(0, 0, 0, 0.1); }
+  60%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+@keyframes journal-ring-win {
+  0%   { transform: scale(0.7); background: transparent;
+         border-color: rgba(0, 0, 0, 0.1); box-shadow: 0 0 0 rgba(34, 197, 94, 0); }
+  35%  { transform: scale(1.22);
+         box-shadow: 0 0 0 14px rgba(34, 197, 94, 0.22); }
+  70%  { transform: scale(0.95); }
+  100% { transform: scale(1);
+         box-shadow: 0 6px 22px rgba(34, 197, 94, 0.4); }
+}
+
+.journal-ring-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+html.dark .journal-ring-label {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.journal-ring-sublabel {
+  font-size: 10.5px;
+  line-height: 1.3;
+  color: rgba(0, 0, 0, 0.5);
+  text-align: center;
+  /* Hint text can be 4–5 words — let it wrap, max 2 lines, and reserve
+     space so the three rings stay vertically aligned. */
+  max-width: 130px;
+  min-height: 26px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+html.dark .journal-ring-sublabel {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ── Card content helpers ──────────────────────────────────────── */
+.journal-card-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-bottom: 6px;
+}
+
+.journal-card-title {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.journal-card-sub {
+  font-size: 13px;
+  opacity: 0.6;
+  margin-top: 4px;
+}
+
+.journal-card-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.journal-card-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.06);
+  flex-shrink: 0;
+}
+
+.journal-card-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Empty state ───────────────────────────────────────────────── */
+.journal-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 80px 24px;
+  gap: 12px;
+  color: rgba(0, 0, 0, 0.4);
+}
+
+html.dark .journal-empty {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.journal-empty-icon {
+  font-size: 48px;
+  opacity: 0.4;
+}
+
+.journal-empty-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+html.dark .journal-empty-title {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.journal-empty-sub {
+  font-size: 13px;
+  max-width: 320px;
+  line-height: 1.4;
+}
+
+/* ── Embedded Daily Frame iframe ───────────────────────────────── */
+.journal-game-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0 0 12px 12px;
+  background: transparent;
+}
+
+/* Shared game-modal body — every game module gets this as its host. */
+.journal-game-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Play tab grid ─────────────────────────────────────────────── */
+
+.journal-play-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 14px;
+}
+
+.journal-play-card {
+  position: relative;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  padding: 18px 16px 16px;
+  cursor: pointer;
+  transition: transform 160ms cubic-bezier(0.2, 0.7, 0.2, 1),
+              background-color 160ms ease,
+              box-shadow 160ms ease;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 132px;
+  font-family: inherit;
+}
+
+html.dark .journal-play-card {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.journal-play-card:hover:not(.is-soon) {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+html.dark .journal-play-card:hover:not(.is-soon) {
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+}
+
+.journal-play-card.is-soon {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.journal-play-card-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.journal-play-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.journal-play-card-sub {
+  font-size: 12px;
+  opacity: 0.6;
+  line-height: 1.4;
+}
+
+.journal-play-card-soon {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+html.dark .journal-play-card-soon {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* ── Higher or Lower ──────────────────────────────────────────── */
+
+.hol-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  height: 100%;
+}
+
+.hol-stats {
+  display: flex;
+  justify-content: space-around;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
+  padding: 10px 16px;
+}
+
+html.dark .hol-stats {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.hol-stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  opacity: 0.5;
+  text-align: center;
+}
+
+.hol-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.hol-question {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-align: center;
+  padding: 4px 0;
+}
+
+.hol-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+}
+
+.hol-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.6);
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 12px;
+  cursor: pointer;
+  transition: transform 140ms cubic-bezier(0.2, 0.7, 0.2, 1),
+              border-color 180ms ease,
+              background-color 180ms ease;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: inherit;
+}
+
+html.dark .hol-card {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.hol-card:hover:not(:disabled) {
+  transform: scale(1.02);
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+html.dark .hol-card:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.hol-card:disabled {
+  cursor: default;
+}
+
+.hol-card.is-correct {
+  border-color: rgb(34, 197, 94);
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.hol-card.is-wrong {
+  border-color: rgb(239, 68, 68);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.hol-thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hol-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hol-thumb-fallback {
+  font-size: 36px;
+  opacity: 0.45;
+}
+
+.hol-name {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  text-align: center;
+  padding: 0 4px;
+}
+
+.hol-value {
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+  min-height: 16px;
+}
+
+.hol-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 44px;
+}
+
+.hol-msg {
+  font-size: 14px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.hol-msg-good { color: rgb(34, 197, 94); }
+.hol-msg-bad  { color: rgb(239, 68, 68); }
+
+.hol-next {
+  padding: 10px 22px;
+  border-radius: 12px;
+  background: rgb(15, 23, 42);
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 160ms ease, transform 100ms ease;
+}
+
+html.dark .hol-next {
+  background: #f4f2ee;
+  color: rgb(15, 23, 42);
+}
+
+.hol-next:hover  { opacity: 0.88; }
+.hol-next:active { transform: scale(0.98); }
+
+/* ── Order the Edit ───────────────────────────────────────────── */
+
+.oe-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100%;
+}
+
+.oe-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.oe-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.oe-best {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.oe-prompt {
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  padding: 4px 0;
+  letter-spacing: -0.01em;
+}
+
+.oe-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+}
+
+.oe-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.6);
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 6px;
+  cursor: pointer;
+  transition: transform 140ms cubic-bezier(0.2, 0.7, 0.2, 1),
+              border-color 180ms ease,
+              background-color 180ms ease;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: inherit;
+}
+
+html.dark .oe-card {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.oe-card:hover:not(:disabled) {
+  transform: scale(1.03);
+}
+
+.oe-card.is-selected {
+  border-color: rgb(15, 23, 42);
+  background: rgba(15, 23, 42, 0.06);
+}
+
+html.dark .oe-card.is-selected {
+  border-color: #f4f2ee;
+  background: rgba(244, 242, 238, 0.08);
+}
+
+.oe-card.is-correct {
+  border-color: rgb(34, 197, 94);
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.oe-card.is-wrong {
+  border-color: rgba(239, 68, 68, 0.55);
+  background: rgba(239, 68, 68, 0.06);
+}
+
+.oe-thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.oe-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.oe-pos {
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  opacity: 0.55;
+  font-variant-numeric: tabular-nums;
+}
+
+.oe-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.oe-skip,
+.oe-submit {
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 160ms ease, transform 100ms ease;
+}
+
+.oe-skip {
+  background: rgba(0, 0, 0, 0.06);
+  color: inherit;
+}
+
+html.dark .oe-skip {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.oe-submit {
+  background: rgb(15, 23, 42);
+  color: #fff;
+}
+
+html.dark .oe-submit {
+  background: #f4f2ee;
+  color: rgb(15, 23, 42);
+}
+
+.oe-submit:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.oe-submit:hover:not(:disabled),
+.oe-skip:hover { opacity: 0.85; }
+.oe-submit:active:not(:disabled),
+.oe-skip:active { transform: scale(0.97); }
+
+/* ── Connect ──────────────────────────────────────────────────── */
+
+.cn-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.cn-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.cn-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.cn-best {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.cn-prompt {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: -0.005em;
+  min-height: 18px;
+}
+
+.cn-solved {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cn-solved-row {
+  background: rgba(34, 197, 94, 0.12);
+  border-radius: 10px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cn-solved-row--miss {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.cn-solved-name {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cn-solved-strip {
+  display: flex;
+  gap: 4px;
+}
+
+.cn-solved-strip img {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.cn-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+  align-content: start;
+}
+
+.cn-tile {
+  position: relative;
+  padding: 0;
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  aspect-ratio: 1;
+  background: rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: transform 140ms cubic-bezier(0.2, 0.7, 0.2, 1),
+              border-color 180ms ease;
+}
+
+html.dark .cn-tile {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.cn-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cn-tile:hover:not(:disabled) {
+  transform: scale(1.04);
+}
+
+.cn-tile.is-selected {
+  border-color: rgb(15, 23, 42);
+  transform: scale(1.04);
+}
+
+html.dark .cn-tile.is-selected {
+  border-color: #f4f2ee;
+}
+
+@keyframes cn-shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-4px); }
+  40%      { transform: translateX(4px); }
+  60%      { transform: translateX(-3px); }
+  80%      { transform: translateX(3px); }
+}
+
+.cn-tile.is-shake {
+  animation: cn-shake 0.36s ease;
+}
+
+.cn-lives {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cn-lives-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+.cn-lives-dots {
+  display: flex;
+  gap: 5px;
+}
+
+.cn-life-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgb(15, 23, 42);
+  opacity: 0.85;
+}
+
+html.dark .cn-life-dot {
+  background: #f4f2ee;
+}
+
+.cn-life-dot.is-used {
+  background: rgba(239, 68, 68, 0.6);
+  opacity: 1;
+}
+
+.cn-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.cn-restart,
+.cn-submit {
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 160ms ease, transform 100ms ease;
+}
+
+.cn-restart {
+  background: rgba(0, 0, 0, 0.06);
+  color: inherit;
+}
+
+html.dark .cn-restart {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.cn-submit {
+  background: rgb(15, 23, 42);
+  color: #fff;
+}
+
+html.dark .cn-submit {
+  background: #f4f2ee;
+  color: rgb(15, 23, 42);
+}
+
+.cn-submit:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.cn-submit:hover:not(:disabled),
+.cn-restart:hover { opacity: 0.85; }
+.cn-submit:active:not(:disabled),
+.cn-restart:active { transform: scale(0.97); }
+
+/* ── Shared autocomplete + dots + history for guess-style games ── */
+
+.sc-shell, .dc-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100%;
+}
+
+.sc-meta, .dc-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.sc-eyebrow, .dc-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.sc-best, .dc-best { font-size: 12px; opacity: 0.6; }
+
+.sc-loading, .dc-loading {
+  padding: 40px 20px;
+  text-align: center;
+  opacity: 0.5;
+  font-size: 14px;
+}
+
+.sc-dots, .dc-dots {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.sc-dot, .dc-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+html.dark .sc-dot, html.dark .dc-dot {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.sc-dot.correct, .dc-dot.correct { background: #22c55e; }
+.sc-dot.wrong,   .dc-dot.wrong   { background: #ef4444; }
+
+.sc-input-area, .dc-input-area {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sc-input-wrap, .dc-input-wrap { position: relative; width: 100%; }
+
+.sc-input, .dc-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.85);
+  color: inherit;
+  font-family: inherit;
+  outline: none;
+}
+
+html.dark .sc-input, html.dark .dc-input {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.sc-suggestions, .dc-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  overflow: hidden;
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 10;
+  display: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+html.dark .sc-suggestions, html.dark .dc-suggestions {
+  background: rgba(20, 22, 28, 0.97);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.sc-suggestions.show, .dc-suggestions.show { display: block; }
+
+.sc-sugg-item, .dc-sugg-item {
+  padding: 10px 16px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.sc-sugg-item:hover, .dc-sugg-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+html.dark .sc-sugg-item:hover, html.dark .dc-sugg-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sc-sugg-item + .sc-sugg-item,
+.dc-sugg-item + .dc-sugg-item {
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+html.dark .sc-sugg-item + .sc-sugg-item,
+html.dark .dc-sugg-item + .dc-sugg-item {
+  border-top-color: rgba(255, 255, 255, 0.04);
+}
+
+.sc-submit, .dc-submit {
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: rgb(15, 23, 42);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 160ms ease, transform 100ms ease;
+}
+
+html.dark .sc-submit, html.dark .dc-submit {
+  background: #f4f2ee;
+  color: rgb(15, 23, 42);
+}
+
+.sc-submit:disabled, .dc-submit:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.sc-submit:hover:not(:disabled),
+.dc-submit:hover:not(:disabled) { opacity: 0.88; }
+
+.sc-history, .dc-history {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sc-history-item, .dc-history-item {
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sc-history-item.correct, .dc-history-item.correct {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.25);
+}
+
+.sc-result, .dc-result {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-height: 44px;
+}
+
+.sc-msg, .dc-msg {
+  font-size: 14px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.sc-msg-good, .dc-msg-good { color: rgb(34, 197, 94); }
+.sc-msg-bad,  .dc-msg-bad  { color: rgb(239, 68, 68); }
+
+.sc-next, .dc-next {
+  padding: 10px 20px;
+  border-radius: 12px;
+  background: rgb(15, 23, 42);
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+html.dark .sc-next, html.dark .dc-next {
+  background: #f4f2ee;
+  color: rgb(15, 23, 42);
+}
+
+/* ── Silent Clip — video player ───────────────────────────────── */
+
+.sc-video-wrap {
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sc-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+/* ── Dominant Color — palette swatches ────────────────────────── */
+
+.dc-palette {
+  width: 100%;
+  height: 160px;
+  border-radius: 14px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+html.dark .dc-palette {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.dc-swatch {
+  width: 100%;
+  height: 100%;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Passport — stamp collection view
+   ═══════════════════════════════════════════════════════════════ */
+
+.passport {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.passport-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.passport-summary-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.passport-summary-count {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+.passport-summary-count strong {
+  font-size: 16px;
+  font-weight: 700;
+  opacity: 1;
+}
+
+/* Slim progress bar — used in both the full passport + the Today preview. */
+.passport-bar {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+html.dark .passport-bar { background: rgba(255, 255, 255, 0.08); }
+
+.passport-bar-fill {
+  height: 100%;
+  background: rgb(15, 23, 42);
+  border-radius: inherit;
+  transition: width 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+html.dark .passport-bar-fill { background: #f4f2ee; }
+
+.passport-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.passport-group-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0 2px;
+}
+
+.passport-group-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.passport-group-count {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.5;
+}
+
+.passport-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+  gap: 16px 12px;
+}
+
+.passport-stamp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.passport-stamp-art {
+  width: 84px;
+  height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.passport-stamp.is-locked .passport-stamp-art {
+  filter: grayscale(1);
+}
+
+.passport-stamp-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.passport-stamp.is-locked .passport-stamp-label {
+  opacity: 0.5;
+}
+
+.passport-stamp-sub {
+  font-size: 9.5px;
+  opacity: 0.5;
+  line-height: 1.3;
+}
+
+.passport-stamp-mystery {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 700;
+  font-family: ui-monospace, monospace;
+  color: rgba(0, 0, 0, 0.35);
+}
+
+html.dark .passport-stamp-mystery {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Today preview chip ────────────────────────────────────────── */
+
+.passport-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background-color 160ms ease, transform 120ms ease;
+}
+
+html.dark .passport-preview {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.passport-preview:hover {
+  background: rgba(255, 255, 255, 0.85);
+  transform: translateY(-1px);
+}
+
+html.dark .passport-preview:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.passport-preview-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.passport-preview-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+}
+
+.passport-preview-count {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.6;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Weekly Vote — Today / iOS card
+   ═══════════════════════════════════════════════════════════════ */
+
+.journal-card--vote {
+  padding: 16px 18px 14px;
+}
+
+.vote-card-skel {
+  padding: 22px 4px;
+  text-align: center;
+  font-size: 13px;
+  opacity: 0.6;
+}
+
+.vote-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vote-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.vote-card-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.vote-card-countdown {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  opacity: 0.6;
+  font-variant-numeric: tabular-nums;
+}
+
+.vote-card-versus {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.vote-versus {
+  align-self: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  opacity: 0.4;
+  padding: 0 4px;
+}
+
+.vote-side {
+  position: relative;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1.5px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 10px;
+  cursor: pointer;
+  transition: transform 160ms cubic-bezier(0.2, 0.7, 0.2, 1),
+              border-color 180ms ease,
+              background-color 180ms ease;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: inherit;
+  text-align: center;
+}
+
+html.dark .vote-side {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.vote-side:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(0, 0, 0, 0.25);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+html.dark .vote-side:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.vote-side:disabled {
+  cursor: default;
+}
+
+.vote-side.is-mine {
+  border-color: rgb(34, 197, 94);
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.vote-side-thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 9px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vote-side-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.vote-side-fallback {
+  font-size: 28px;
+  opacity: 0.4;
+}
+
+.vote-side-name {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  word-break: break-word;
+  line-height: 1.2;
+}
+
+.vote-side-bar {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+html.dark .vote-side-bar {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.vote-side-bar-fill {
+  height: 100%;
+  background: rgb(15, 23, 42);
+  transition: width 360ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+html.dark .vote-side-bar-fill {
+  background: #f4f2ee;
+}
+
+.vote-side.is-mine .vote-side-bar-fill {
+  background: rgb(34, 197, 94);
+}
+
+.vote-side-stat {
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+
+.vote-card-meta {
+  font-size: 11.5px;
+  font-weight: 500;
+  text-align: center;
+  opacity: 0.6;
+  padding: 2px 0 0;
+}
+
+/* ── iOS variant — slightly tighter, uses iOS card tokens ─────── */
+
+.vote-card--ios {
+  background: var(--ios-card-bg);
+  box-shadow: 0 0 0 1px var(--ios-card-border);
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+.vote-card--ios .vote-side {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: transparent;
+  box-shadow: 0 0 0 1px var(--ios-card-border);
+}
+
+html.dark .vote-card--ios .vote-side,
+.ios-dark .vote-card--ios .vote-side {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.vote-card--ios .vote-side:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+.vote-card--ios .vote-side.is-mine {
+  background: rgba(34, 197, 94, 0.12);
+  box-shadow: 0 0 0 1.5px rgb(34, 197, 94);
+}
+
+/* ── Passport Sync block (cross-device code) ───────────────────── */
+
+.passport-sync {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px dashed rgba(0, 0, 0, 0.12);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+html.dark .passport-sync {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.passport-sync--has-code {
+  border-style: solid;
+}
+
+.passport-sync-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.passport-sync-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.passport-sync-code {
+  font-family: ui-monospace, 'JetBrains Mono', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+}
+
+.passport-sync-action {
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: rgb(15, 23, 42);
+  color: #fff;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 160ms ease, transform 100ms ease;
+}
+
+html.dark .passport-sync-action {
+  background: #f4f2ee;
+  color: rgb(15, 23, 42);
+}
+
+.passport-sync-action--secondary {
+  background: transparent;
+  color: inherit;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+html.dark .passport-sync-action--secondary {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.passport-sync-action:hover:not(:disabled) { opacity: 0.85; }
+.passport-sync-action:active:not(:disabled) { transform: scale(0.97); }
+.passport-sync-action:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.passport-sync-hint {
+  font-size: 11px;
+  opacity: 0.55;
+  line-height: 1.4;
+}
+
+.passport-sync-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.passport-sync-input {
+  flex: 1;
+  padding: 8px 12px;
+  font-family: ui-monospace, 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.6);
+  color: inherit;
+  outline: none;
+}
+
+html.dark .passport-sync-input {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.passport-sync-status {
+  font-size: 11.5px;
+  font-weight: 500;
+  min-height: 14px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Insights — activity calendar + stats
+   ═══════════════════════════════════════════════════════════════ */
+
+.insights {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.insights-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.insights-card {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+html.dark .insights-card {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.insights-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.insights-card-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.insights-stat {
+  text-align: center;
+  align-items: center;
+  padding: 18px 16px;
+}
+
+.insights-stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.insights-stat-value {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.insights-stat-sub {
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+/* ── Calendar grid ─────────────────────────────────────────────── */
+
+.insights-cal-legend {
+  display: flex;
+  gap: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  opacity: 0.65;
+}
+
+.insights-cal-legend > span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.insights-cal-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.insights-cal-dot.is-grey  { background: rgba(128, 128, 128, 0.45); }
+.insights-cal-dot.is-green { background: rgb(34, 197, 94); }
+
+.insights-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.insights-cal-weekday {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.4;
+  text-align: center;
+  padding: 2px 0 4px;
+}
+
+.insights-cal-cell {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.04);
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 3px 4px;
+  overflow: hidden;
+  cursor: default;
+}
+
+html.dark .insights-cal-cell {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.insights-cal-cell.is-empty {
+  background: transparent;
+  cursor: default;
+  pointer-events: none;
+}
+
+.insights-cal-cell.is-some {
+  background: rgba(128, 128, 128, 0.32);
+}
+
+.insights-cal-cell.is-perfect {
+  background: rgb(34, 197, 94);
+}
+
+.insights-cal-day {
+  font-size: 9px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+  position: relative;
+  z-index: 1;
+}
+
+.insights-cal-cell.is-perfect .insights-cal-day {
+  color: #fff;
+  opacity: 0.9;
+}
+
+.insights-cal-progress {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: var(--p, 0%);
+  background: rgba(15, 23, 42, 0.15);
+  z-index: 0;
+}
+
+html.dark .insights-cal-progress {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.insights-cal-cell.is-perfect .insights-cal-progress {
+  display: none;
+}
+
+/* ── Stats table ───────────────────────────────────────────────── */
+
+.insights-table {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.insights-table-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 9px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  font-size: 13px;
+}
+
+html.dark .insights-table-row {
+  border-top-color: rgba(255, 255, 255, 0.05);
+}
+
+.insights-table-row:first-child {
+  border-top: none;
+}
+
+.insights-table-label { opacity: 0.7; }
+
+.insights-table-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   iOS Journal — mobile shell
+   ═══════════════════════════════════════════════════════════════
+   Scrolling page in Apple Journal mobile style. Reuses --ios-*
+   variables so light/dark mode + theme switches just work.
+*/
+
+.ios-journal-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  /* Flex-child gotcha: without min-height:0 the child refuses to shrink
+     below its content size, so overflow-y:auto never gets to scroll.
+     `height: 0 + flex:1` forces Safari to size from the flex allocation
+     instead of from content. */
+  flex: 1 1 0%;
+  min-height: 0;
+  height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* THE actual scroll fix.
+   `.ios-journal-scroll` is a flex column container. Flex children default
+   to `flex-shrink: 1`, which means when total content > container, the
+   children SQUISH instead of overflowing. The container then thinks
+   "everything fits, nothing to scroll." Force every direct child to
+   keep its natural size so overflow actually happens. */
+.ios-journal-scroll > * {
+  flex-shrink: 0;
+}
+
+/* iOS Hero card — same progress-driven colour as desktop. */
+.ios-journal-hero {
+  --hero-progress: 0;
+  --hero-accent: #8B1538;
+  --hero-base-1: rgba(184, 184, 184, 0.55);
+  --hero-base-2: rgba(127, 127, 127, 0.65);
+  border-radius: 18px;
+  padding: 18px 20px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 400ms ease;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--hero-base-1), var(--hero-accent) calc(var(--hero-progress) * 78%)) 0%,
+    color-mix(in srgb, var(--hero-base-2), var(--hero-accent) calc(var(--hero-progress) * 92%)) 100%
+  );
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+}
+
+html.dark .ios-journal-hero, .ios-dark .ios-journal-hero {
+  --hero-base-1: rgba(100, 100, 100, 0.42);
+  --hero-base-2: rgba(60, 60, 60, 0.55);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.ios-journal-hero[data-ios-jhero="today"].is-perfect {
+  --hero-accent: rgb(34, 197, 94);
+  --hero-progress: 1;
+}
+
+.ios-journal-hero-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ios-journal-hero-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.ios-journal-hero-big {
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin-top: 6px;
+}
+
+.ios-journal-hero-sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.72);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.ios-journal-hero-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+/* Content cards — reuse iOS card tokens. */
+.ios-journal-card {
+  background: var(--ios-card-bg);
+  box-shadow: 0 0 0 1px var(--ios-card-border);
+  border-radius: 16px;
+  padding: 16px;
+  transition: transform 120ms ease, opacity 120ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ios-journal-card.is-clickable {
+  cursor: pointer;
+}
+
+.ios-journal-card.is-clickable:active {
+  transform: scale(0.985);
+  opacity: 0.85;
+}
+
+.ios-journal-card.is-placeholder {
+  background: linear-gradient(135deg, rgba(180, 180, 180, 0.4) 0%, rgba(120, 120, 120, 0.55) 100%);
+  color: #fff;
+  box-shadow: none;
+}
+
+html.dark .ios-journal-card.is-placeholder,
+.ios-dark .ios-journal-card.is-placeholder {
+  background: linear-gradient(135deg, rgba(100, 100, 100, 0.4) 0%, rgba(60, 60, 60, 0.55) 100%);
+}
+
+.ios-journal-card-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ios-journal-card-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.ios-journal-card-thumb > div, .ios-journal-card-thumb > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ios-journal-card-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ios-text-secondary);
+}
+
+.ios-journal-card-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ios-text);
+  margin-top: 3px;
+  letter-spacing: -0.01em;
+}
+
+.ios-journal-card-sub {
+  font-size: 13px;
+  color: var(--ios-text-secondary);
+  margin-top: 2px;
+}
+
+/* Section labels (between groups). */
+.ios-journal-section-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  color: var(--ios-text);
+  margin: 8px 4px 6px;
+  text-transform: none;
+}
+
+/* Sub-list of rows (Today rings + Sections). */
+.ios-journal-sublist {
+  background: var(--ios-card-bg);
+  box-shadow: 0 0 0 1px var(--ios-card-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.ios-journal-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  color: var(--ios-text);
+  font-size: 15px;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+
+.ios-journal-row + .ios-journal-row {
+  border-top: 1px solid var(--ios-list-border);
+}
+
+.ios-journal-row:active {
+  background: var(--ios-list-hover);
+}
+
+.ios-journal-row-icon {
+  font-size: 18px;
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.ios-journal-row-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.ios-journal-row-sub {
+  font-size: 13px;
+  color: var(--ios-text-secondary);
+  flex-shrink: 0;
+}
+
+/* iOS Today rings — compact 3-ring card (mirrors desktop, NOT a list).
+   Sits inside .ios-journal-card so it inherits the card padding +
+   background; we just override `padding-top` so the rings breathe a
+   bit more than a normal text card would. */
+.ios-journal-rings-card {
+  padding: 14px 12px;
+  cursor: default;
+}
+.ios-journal-rings-card.is-clickable { cursor: default; }
+.ios-journal-rings-card:active { background: var(--ios-card-bg); }
+
+.ios-journal-rings-card .ios-journal-card-eyebrow {
+  margin-bottom: 10px;
+  padding-left: 4px;
+}
+
+.ios-journal-rings-row {
+  display: flex;
+  gap: 8px;
+  justify-content: space-around;
+}
+
+.ios-journal-ring {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.ios-journal-ring-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 5px solid rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  transition: border-color 200ms ease, background 200ms ease;
+}
+
+html.dark .ios-journal-ring-circle,
+.ios-dark .ios-journal-ring-circle {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Three-state — same semantics as desktop. */
+.ios-journal-ring-circle.is-closed {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.2);
+  animation: journal-ring-close 550ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+html.dark .ios-journal-ring-circle.is-closed,
+.ios-dark .ios-journal-ring-circle.is-closed {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+.ios-journal-ring-circle.is-closed.is-won {
+  background: rgb(34, 197, 94);
+  border-color: rgb(34, 197, 94);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.38);
+  animation: journal-ring-win 700ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ios-journal-ring-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ios-text);
+  opacity: 0.7;
+}
+
+.ios-journal-ring-sublabel {
+  font-size: 10.5px;
+  line-height: 1.3;
+  color: var(--ios-text-secondary);
+  text-align: center;
+  max-width: 110px;
+  min-height: 26px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Ring rows in the iOS Today list use a two-line stack: label on top,
+   the "how do I close this" hint below. Replaces the cryptic "0 / 1". */
+.ios-journal-row-stack {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.ios-journal-row--ring .ios-journal-row-label {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.ios-journal-row-hint {
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--ios-text-secondary);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.ios-journal-row-chev {
+  font-size: 18px !important;
+  color: var(--ios-text-secondary);
+  flex-shrink: 0;
+}
+
+.ios-journal-ring-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(128, 128, 128, 0.35);
+  flex-shrink: 0;
+}
+
+/* iOS three-state: same semantics as desktop. */
+.ios-journal-ring-dot.is-closed {
+  background: rgba(128, 128, 128, 0.45);
+  border-color: rgba(128, 128, 128, 0.45);
+}
+html.dark .ios-journal-ring-dot.is-closed,
+.ios-dark .ios-journal-ring-dot.is-closed {
+  background: rgba(255, 255, 255, 0.35);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+.ios-journal-ring-dot.is-closed.is-won {
+  background: rgb(34, 197, 94);
+  border-color: rgb(34, 197, 94);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Pinboard — cork board with polaroids
+   ═══════════════════════════════════════════════════════════════ */
+
+.journal-board {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 100%;
+}
+
+.journal-board-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.journal-board-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.journal-board-pin-btn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgb(15, 23, 42);
+  color: #fff;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  cursor: pointer;
+  transition: opacity 160ms ease, transform 100ms ease;
+}
+
+html.dark .journal-board-pin-btn {
+  background: #f4f2ee;
+  color: rgb(15, 23, 42);
+}
+
+.journal-board-pin-btn:hover { opacity: 0.88; }
+.journal-board-pin-btn:active { transform: scale(0.97); }
+
+/* Cork-board surface — warm beige, soft mottled texture from layered
+   radial gradients. Subtle inset shadow gives the "board sitting on a
+   wall" look without needing an actual texture image. */
+.journal-board-cork {
+  position: relative;
+  flex: 1;
+  border-radius: 16px;
+  padding: 24px 20px;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(122, 78, 36, 0.18) 0%, transparent 55%),
+    radial-gradient(circle at 78% 76%, rgba(95, 60, 28, 0.16) 0%, transparent 48%),
+    radial-gradient(circle at 52% 50%, rgba(154, 102, 50, 0.08) 0%, transparent 60%),
+    linear-gradient(160deg, #d2a675 0%, #b88550 100%);
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.18),
+    inset 0 -4px 12px rgba(0, 0, 0, 0.12);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 18px 14px;
+  align-content: start;
+  min-height: 320px;
+}
+
+html.dark .journal-board-cork {
+  background:
+    radial-gradient(circle at 22% 18%, rgba(80, 50, 22, 0.45) 0%, transparent 55%),
+    radial-gradient(circle at 78% 76%, rgba(60, 36, 16, 0.4) 0%, transparent 48%),
+    linear-gradient(160deg, #6b4a2a 0%, #4a3220 100%);
+}
+
+.journal-board-loading,
+.journal-board-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 36px 16px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* A single pinned polaroid. */
+.journal-pin {
+  position: relative;
+  background: #fefefe;
+  padding: 8px 8px 28px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1),
+              box-shadow 220ms ease;
+  will-change: transform;
+}
+
+html.dark .journal-pin {
+  background: #f4eedf;
+}
+
+.journal-pin:hover {
+  transform: scale(1.06) rotate(0deg) !important;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35), 0 4px 8px rgba(0, 0, 0, 0.18);
+  z-index: 2;
+}
+
+.journal-pin-polaroid {
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.journal-pin-polaroid img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.journal-pin-city {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-align: center;
+  color: rgba(0, 0, 0, 0.55);
+  text-transform: uppercase;
+  font-family: 'Caveat', cursive, sans-serif;
+}
+
+.journal-pin-sticker {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  font-size: 22px;
+  background: rgba(255, 255, 255, 0.95);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.journal-pin-mine {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  font-size: 14px;
+  background: #facc15;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  color: #5a4a00;
+  font-weight: 700;
+}
+
+/* ── Pin creator modal ─────────────────────────────────────────── */
+
+.journal-pin-creator-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 22px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.journal-pin-step-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.55;
+  margin-bottom: 8px;
+}
+
+.journal-pin-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  /* row gap > column gap so vertically stacked photos breathe — horizontal
+     spacing already feels right at 6px. */
+  gap: 14px 6px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 8px 6px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 10px;
+}
+
+html.dark .journal-pin-photo-grid {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.journal-pin-photo {
+  position: relative;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 1;
+  background: rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: border-color 120ms ease, transform 100ms ease;
+}
+
+.journal-pin-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.journal-pin-photo:hover { transform: scale(1.04); }
+.journal-pin-photo.is-selected {
+  border-color: rgb(15, 23, 42);
+}
+
+html.dark .journal-pin-photo.is-selected {
+  border-color: #f4f2ee;
+}
+
+.journal-pin-sticker-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.journal-pin-sticker-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 2px solid transparent;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 120ms ease, transform 100ms ease, border-color 120ms ease;
+}
+
+html.dark .journal-pin-sticker-btn {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.journal-pin-sticker-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+  transform: scale(1.06);
+}
+
+html.dark .journal-pin-sticker-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.journal-pin-sticker-btn.is-selected {
+  border-color: rgb(15, 23, 42);
+}
+
+html.dark .journal-pin-sticker-btn.is-selected {
+  border-color: #f4f2ee;
+}
+
+.journal-pin-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+html.dark .journal-pin-actions {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.journal-pin-preview {
+  flex-shrink: 0;
+  width: 96px;
+  height: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  text-align: center;
+}
+
+.journal-pin-preview .journal-pin {
+  width: 80px;
+  padding: 5px 5px 18px;
+}
+
+.journal-pin-submit {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgb(15, 23, 42);
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 160ms ease, transform 100ms ease;
+}
+
+html.dark .journal-pin-submit {
+  background: #f4f2ee;
+  color: rgb(15, 23, 42);
+}
+
+.journal-pin-submit:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.journal-pin-submit:hover:not(:disabled) { opacity: 0.88; }
+
+.journal-pin-status {
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  min-height: 16px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   iOS Journal sub-screen (Board, future Play/Passport/Insights)
+   Push transition from the right, same pattern as ios-bts-screen-files.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ios-journal-subscreen {
+  position: absolute;
+  inset: 0;
+  background: var(--ios-app-bg);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: 2;
+  /* Closed sub-screens shouldn't eat touch events from the scroll area
+     behind them — translateX off-screen alone leaves a phantom hit-area
+     on some iOS Safari versions. */
+  pointer-events: none;
+}
+
+.ios-journal-subscreen.is-open {
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* Cork board surface — same colors as desktop, denser grid for mobile. */
+.ios-journal-board-cork {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 16px max(28px, env(safe-area-inset-bottom, 28px));
+  background:
+    radial-gradient(circle at 22% 18%, rgba(122, 78, 36, 0.18) 0%, transparent 55%),
+    radial-gradient(circle at 78% 76%, rgba(95, 60, 28, 0.16) 0%, transparent 48%),
+    radial-gradient(circle at 52% 50%, rgba(154, 102, 50, 0.08) 0%, transparent 60%),
+    linear-gradient(160deg, #d2a675 0%, #b88550 100%);
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.18),
+    inset 0 -4px 12px rgba(0, 0, 0, 0.12);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 12px;
+  align-content: start;
+}
+
+html.dark .ios-journal-board-cork,
+.ios-dark .ios-journal-board-cork {
+  background:
+    radial-gradient(circle at 22% 18%, rgba(80, 50, 22, 0.45) 0%, transparent 55%),
+    radial-gradient(circle at 78% 76%, rgba(60, 36, 16, 0.4) 0%, transparent 48%),
+    linear-gradient(160deg, #6b4a2a 0%, #4a3220 100%);
+}
+
+.ios-journal-board-loading,
+.ios-journal-board-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px 16px;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* iOS pinned polaroid — reuses .journal-pin look but the iOS variant lives
+   in a 2-col grid, slightly smaller padding. */
+.ios-journal-pin {
+  position: relative;
+  background: #fefefe;
+  padding: 7px 7px 24px;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25), 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+html.dark .ios-journal-pin,
+.ios-dark .ios-journal-pin {
+  background: #f4eedf;
+}
+
+.ios-journal-pin:active {
+  transform: scale(0.97) rotate(0deg) !important;
+}
+
+.ios-journal-pin-polaroid {
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.ios-journal-pin-polaroid img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ios-journal-pin-city {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  right: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-align: center;
+  color: rgba(0, 0, 0, 0.55);
+  text-transform: uppercase;
+  font-family: 'Caveat', cursive, sans-serif;
+}
+
+.ios-journal-pin-sticker {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 18px;
+  background: rgba(255, 255, 255, 0.95);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.ios-journal-pin-mine {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  font-size: 11px;
+  background: #facc15;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+  color: #5a4a00;
+  font-weight: 700;
+}
+
+/* ── iOS Pin Sheet — slides up from the bottom ─────────────────── */
+
+.ios-pin-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  background: var(--ios-app-bg);
+  z-index: 220;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.32s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.ios-pin-sheet.is-open {
+  transform: translateY(0);
+}
+
+.ios-pin-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: max(env(safe-area-inset-top, 0px), 14px) 16px 12px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--ios-list-border);
+}
+
+.ios-pin-sheet-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--ios-card-bg);
+  box-shadow: 0 0 0 1px var(--ios-card-border);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ios-text-secondary);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ios-pin-sheet-close:active {
+  opacity: 0.55;
+}
+
+.ios-pin-sheet-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ios-text);
+}
+
+.ios-pin-sheet-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.ios-pin-sheet-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 130px;
+  padding: 18px;
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 14px;
+  font-size: 12px;
+  text-align: center;
+}
+
+html.dark .ios-pin-sheet-preview,
+.ios-dark .ios-pin-sheet-preview {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ios-pin-sheet-status {
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  min-height: 18px;
+}
+
+.ios-pin-sheet-footer {
+  padding: 10px 16px max(env(safe-area-inset-bottom, 0px), 14px);
+  flex-shrink: 0;
+  border-top: 1px solid var(--ios-list-border);
+  background: var(--ios-app-bg);
+}
+
+.ios-pin-sheet-submit {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--ios-text);
+  color: var(--ios-app-bg);
+  border: none;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 160ms ease, transform 100ms ease;
+}
+
+.ios-pin-sheet-submit:disabled {
+  opacity: 0.35;
+}
+
+.ios-pin-sheet-submit:not(:disabled):active {
+  opacity: 0.85;
+  transform: scale(0.99);
+}

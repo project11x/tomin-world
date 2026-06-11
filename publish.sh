@@ -13,9 +13,11 @@
 #   4. Run sync to regenerate data.js, verify the project appeared.
 #   5. Upload the project folder to R2 (bucket: tomin-media) via wrangler.
 #   6. Verify R2 contains the expected files.
-#   7. Commit data.js (only) with a project-specific message and push.
-#   8. Build + deploy to Cloudflare Pages directly via wrangler.
-#   9. Print the live URL.
+#   7. Refresh Journal game assets (frames, clips, dominant colours).
+#      Output lands in public/ → bundled into dist/ at build time.
+#   8. Commit data.js (only) with a project-specific message and push.
+#   9. Build + deploy to Cloudflare via wrangler.
+#  10. Print the live URL.
 #
 # Requires:
 #   ffmpeg, npx (wrangler is invoked via npx — first run pulls it).
@@ -54,7 +56,7 @@ cd "$REPO_DIR"
 #   - every magazine subfolder under "TOMIN INDEX.TXT/" (each is its
 #     own publishable unit per sync.cjs's special handling)
 # ─────────────────────────────────────────────────────────────────────
-EXCLUDED="node_modules dist public src tests test-results functions icons playwright-report .git .github .vite"
+EXCLUDED="node_modules dist public src tests test-results functions icons playwright-report .git .github .vite migrations .cache .wrangler .husky .claude"
 list_publishable() {
   local entry name
   for entry in "$REPO_DIR"/*/; do
@@ -150,7 +152,7 @@ fi
 
 # Reject names that sync.cjs ignores
 case "$PROJECT" in
-  node_modules|dist|public|src|tests|test-results|functions|icons|playwright-report|.git|.github|.vite)
+  node_modules|dist|public|src|tests|test-results|functions|icons|playwright-report|.git|.github|.vite|migrations|.cache|.wrangler|.husky|.claude)
     echo -e "${RED}✗ '$PROJECT' is in sync.cjs's EXCLUDED_FOLDERS — it will never appear on the site.${NC}"
     exit 1
     ;;
@@ -345,17 +347,41 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────────────
-# 7. Commit + push (only data.js)
+# 7. Journal game assets — frames + clips + dominant colour palettes.
+#    All three scripts are incremental: unchanged videos are skipped so
+#    re-running per publish only does work where the source changed.
+#    Output goes to public/frames/, public/clips/, public/frames-pool.json,
+#    public/edit-colors.json — Vite bundles these into dist/ next step.
 # ─────────────────────────────────────────────────────────────────────
 echo ""
-echo -e "${YELLOW}[7/8] Publishing to Git…${NC}"
+echo -e "${YELLOW}[7/10] Refreshing Journal game assets…${NC}"
 if $DRY_RUN; then
   echo -e "${DIM}  (skipped in dry-run)${NC}"
 else
-  if git diff --quiet data.js; then
-    echo -e "${DIM}  data.js unchanged — nothing to commit.${NC}"
+  echo -e "${DIM}  • extract-frames${NC}"
+  npm run extract-frames --silent >/dev/null
+  echo -e "${DIM}  • extract-clips${NC}"
+  npm run extract-clips  --silent >/dev/null
+  echo -e "${DIM}  • extract-colors${NC}"
+  npm run extract-colors --silent >/dev/null
+  echo -e "${GREEN}✓ Game assets refreshed${NC}"
+fi
+
+# ─────────────────────────────────────────────────────────────────────
+# 8. Commit + push (data.js + frames-pool.json + edit-colors.json — the
+#    manifests only; the actual frame / clip binaries stay out of git
+#    via .gitignore and are deployed via wrangler from public/).
+# ─────────────────────────────────────────────────────────────────────
+echo ""
+echo -e "${YELLOW}[8/10] Publishing to Git…${NC}"
+if $DRY_RUN; then
+  echo -e "${DIM}  (skipped in dry-run)${NC}"
+else
+  MANIFESTS=(data.js public/frames-pool.json public/edit-colors.json)
+  if git diff --quiet -- "${MANIFESTS[@]}"; then
+    echo -e "${DIM}  Manifests unchanged — nothing to commit.${NC}"
   else
-    git add data.js
+    git add "${MANIFESTS[@]}"
     git commit -m "Publish: ${PROJECT}"
     git push
     echo -e "${GREEN}✓ Pushed to GitHub${NC}"
@@ -363,11 +389,11 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────────────
-# 8. Deploy to Cloudflare Pages directly (bypasses the flaky CF Pages
-#    git auto-build, which has been producing 500-on-/ deployments).
+# 9. Deploy to Cloudflare (Workers Static Assets — frames/clips/manifests
+#    land in dist/ via vite build and ship in the same atomic deploy).
 # ─────────────────────────────────────────────────────────────────────
 echo ""
-echo -e "${YELLOW}[8/8] Deploying to Cloudflare Pages…${NC}"
+echo -e "${YELLOW}[9/10] Deploying to Cloudflare…${NC}"
 if $DRY_RUN; then
   echo -e "${DIM}  (skipped in dry-run)${NC}"
 else

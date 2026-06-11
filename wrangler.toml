@@ -44,6 +44,19 @@ not_found_handling = "single-page-application"
 binding = "PORTFOLIO_BUCKET"
 bucket_name = "tomin-media"
 
+# D1 SQLite for the Journal engagement layer — pinboard, vote, stamps,
+# passport-code state. Local-only for now; `wrangler dev` creates a sqlite
+# file under .wrangler/state/v3/d1/. Promote to remote with
+# `wrangler d1 create tomin-journal` and copy the returned id below before
+# the first deploy.
+[[d1_databases]]
+binding = "DB"
+database_name = "tomin-journal"
+# Created 2026-06-06 via `wrangler d1 create tomin-journal` (region WEUR).
+# Migrations applied with `wrangler d1 migrations apply tomin-journal --remote`.
+database_id = "8af59846-b5a6-4059-bfc3-fc0501c166b6"
+migrations_dir = "migrations"
+
 # Non-secret env vars. Secrets (GH_TOKEN, CF_ACCESS_AUD) live separately —
 # set them once with `npx wrangler secret put <NAME>`.
 [vars]

@@ -185,7 +185,7 @@ const MANPAGES = {
   clear:   'clear the terminal screen',
   cls:     'alias for clear',
   history: 'show command history',
-  theme:   'switch theme (aero | fiona | material | tui)',
+  theme:   'switch theme (aero | material | tui)',
   about:   'about shouli.de',
   contact: 'contact information',
   help:    'list available commands',
@@ -626,8 +626,8 @@ function humanSize(b) {
 // ─── About / contact / theme / exit ───────────────────────────────
 function cmdAbout() {
   print(`<span class="accent">shouli.de</span> <span class="dim">— eddie\'s portfolio shell</span>`);
-  printPlain('A multi-skin portfolio: Aero, Fiona, Material 3, and this TUI.', 'dim');
-  printPlain('Try: ls, cd ldn, play, theme fiona, exit', 'dim');
+  printPlain('A multi-skin portfolio: Aero, Material 3, and this TUI.', 'dim');
+  printPlain('Try: ls, cd ldn, play, theme material, exit', 'dim');
 }
 function cmdContact() {
   const mail = `<a href="mailto:eddie@shouli.de" class="info">eddie@shouli.de</a>`;
@@ -644,8 +644,8 @@ function cmdContact() {
 }
 function cmdTheme(args) {
   const name = (args[0] || '').toLowerCase();
-  const map = { aero: 'default', default: 'default', fiona: 'pink', pink: 'pink', m3: 'material', material: 'material', tui: 'tui' };
-  if (!map[name]) { printPlain('theme: usage: theme <aero|fiona|material|tui>', 'err'); return; }
+  const map = { aero: 'default', default: 'default', m3: 'material', material: 'material', tui: 'tui' };
+  if (!map[name]) { printPlain('theme: usage: theme <aero|material|tui>', 'err'); return; }
   printPlain(`switching theme → ${name}`, 'ok');
   setTimeout(() => { if (typeof window.setTheme === 'function') window.setTheme(map[name]); }, 100);
 }

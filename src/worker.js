@@ -7,10 +7,22 @@
 
 import { onRequest as portfolioOnRequest } from './api/portfolio.js';
 import { onRequest as statusOnRequest } from './api/status.js';
+import { onRequest as commitsOnRequest } from './api/commits.js';
+import { onRequest as dailyFrameOnRequest } from './api/daily-frame.js';
+import { onRequest as pinboardOnRequest } from './api/pinboard.js';
+import { onRequest as pinOnRequest } from './api/pin.js';
+import { onRequest as voteOnRequest } from './api/vote.js';
+import { onRequest as passportOnRequest } from './api/passport.js';
 
 const ROUTES = {
   '/api/portfolio': portfolioOnRequest,
   '/api/status': statusOnRequest,
+  '/api/commits': commitsOnRequest,
+  '/api/daily-frame': dailyFrameOnRequest,
+  '/api/pinboard': pinboardOnRequest,
+  '/api/pin': pinOnRequest,
+  '/api/vote': voteOnRequest,
+  '/api/passport': passportOnRequest,
 };
 
 export default {
