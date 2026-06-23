@@ -32,6 +32,9 @@ node_modules/
 
 # Build output
 dist/
+# Generated Tailwind stylesheet — rebuilt by `build:css` (runs on predev + build).
+# Anchored to root so the SOURCE at src/tailwind.css stays tracked.
+/tailwind.css
 
 # Test output
 test-results/
