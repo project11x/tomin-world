@@ -5,6 +5,7 @@ import { safePlayVideo, killOtherVideos, attachBeachball } from '../utils/video.
 import { bringToFront } from './windows.js';
 import { makeShareButton } from '../utils/share.js';
 import { setIcon } from '../utils/icons.js';
+import { srcsetAttr } from '../utils/media.js';
 
 // Folder context of the currently shown item — drives ←/→ navigation and
 // neighbour preloading. null when Quick Look was opened without context.
@@ -103,7 +104,7 @@ window.openQuickLook = function (item, sourceEl = null, ctx = null) {
     // the photo's aspect ratio (capped at 85vw for very wide shots).
     contentHtml = `<img class="block object-contain"
                         style="height:70vh; width:auto; max-width:85vw; max-height:70vh;"
-                        src="${item.src}" />`;
+                        src="${item.src}"${srcsetAttr(item.src, '85vw')} />`;
     qlControls.style.display = 'none';
   }
   quickLookContent.innerHTML = contentHtml;

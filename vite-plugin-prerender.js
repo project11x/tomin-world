@@ -16,7 +16,7 @@ const slugify = (s) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
-const R2_BASE = 'https://pub-859f13be44eb4577b0cb23c8d8440a59.r2.dev/';
+import { MEDIA_BASE as R2_BASE } from './src/utils/media.js';
 
 function loadAllData() {
   const src = readFileSync(resolve(__dirname, 'data.js'), 'utf8');

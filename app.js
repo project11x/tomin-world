@@ -6,6 +6,7 @@
 // modules, then the central UI bindings that wire markup to handlers.
 
 import { portfolioData } from './data.js';
+import { MEDIA_BASE } from './src/utils/media.js';
 import { bootstrapPortfolioSync } from './src/utils/portfolio-sync.js';
 import './src/utils/icons.js';
 import './src/utils/video.js';
@@ -47,7 +48,7 @@ import './src/utils/router.js';
 // so we still need the R2 prefix to actually load thumbnails / videos.
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 const isViteDev = isLocal && window.location.port === '5173';
-const R2_BASE_URL = isViteDev ? '' : 'https://pub-859f13be44eb4577b0cb23c8d8440a59.r2.dev/';
+const R2_BASE_URL = isViteDev ? '' : MEDIA_BASE;
 
 if (R2_BASE_URL) {
   Object.keys(portfolioData).forEach((key) => {

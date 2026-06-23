@@ -7,6 +7,7 @@ import { makeShareButton } from '../utils/share.js';
 import { folderToSlug } from '../utils/slugs.js';
 import { recentFolders, recentMagazines, isFolderRecent } from '../utils/recency.js';
 import { posterForVideo, accentForFolder } from '../utils/edit-posters.js';
+import { srcsetAttr } from '../utils/media.js';
 
 let highestZIndex = 50;
 export function bringToFront(element) {
@@ -419,7 +420,7 @@ function renderRecentView(win) {
     const items = portfolioData[folderName] || [];
     const cover = items.find((it) => !it.isVideo && !it.isMagazine && it.src);
     const thumb = cover
-      ? `<img src="${cover.src}" class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />`
+      ? `<img src="${cover.src}"${srcsetAttr(cover.src, '120px')} class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />`
       : `<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-400 to-pink-600">
            <span class="material-symbols-rounded text-white text-3xl" style="font-variation-settings:'FILL' 1;">folder</span>
          </div>`;
@@ -601,7 +602,7 @@ function renderFolderContent(win, folderName) {
         const pages = portfolioData[magKey] || [];
         const cover = pages.find(p => !p.isVideo && p.src);
         thumb = cover
-          ? `<img src="${cover.src}" class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />`
+          ? `<img src="${cover.src}"${srcsetAttr(cover.src, '120px')} class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />`
           : `<div class="w-full h-full flex items-center justify-center bg-slate-200 dark:bg-slate-700"><span class="material-symbols-rounded text-slate-400 text-3xl" style="font-variation-settings:'FILL' 1;">auto_stories</span></div>`;
       } else if (item.isVideo) {
         // Static poster frame from the game-asset pipeline where available —
@@ -610,13 +611,13 @@ function renderFolderContent(win, folderName) {
         const poster = posterForVideo(item, folderName);
         if (poster) {
           if (poster.color) tileBg = poster.color;
-          thumb = `<img src="${poster.src}" class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />
+          thumb = `<img src="${poster.src}"${srcsetAttr(poster.src, '120px')} class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />
                    <span class="material-symbols-rounded finder-thumb-play" style="font-variation-settings:'FILL' 1;">play_arrow</span>`;
         } else {
           thumb = `<video src="${item.src}" class="w-full h-full object-cover" muted preload="metadata" onloadedmetadata="this.currentTime=0.001" style="pointer-events:none;"></video>`;
         }
       } else {
-        thumb = `<img src="${item.src}" class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />`;
+        thumb = `<img src="${item.src}"${srcsetAttr(item.src, '120px')} class="w-full h-full object-cover" loading="lazy" style="pointer-events:none;" />`;
       }
       html += `
         <div class="finder-icon-item group cursor-pointer"

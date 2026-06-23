@@ -24,11 +24,10 @@
 // Pinning this lets the "Daily Frame #N" counter stay stable forever.
 const LAUNCH_DATE_BERLIN = '2026-06-06';
 
-// R2 public bucket base URL — same one app.js uses for portfolio assets.
+// R2 public bucket base URL — single source of truth lives in ../utils/media.js.
 // Game-asset paths in frames-pool.json (game/frames/...) get this prefix
-// before being handed to the client. Single source of truth: when this
-// ever moves to media.shouli.de, change it in app.js + here.
-const R2_PUBLIC_BASE = 'https://pub-859f13be44eb4577b0cb23c8d8440a59.r2.dev/';
+// before being handed to the client.
+import { MEDIA_BASE as R2_PUBLIC_BASE } from '../utils/media.js';
 
 function berlinDateString(now = new Date()) {
   // en-CA gives YYYY-MM-DD in the requested timezone.

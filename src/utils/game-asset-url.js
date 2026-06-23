@@ -6,11 +6,9 @@
 // Manifest paths are bucket-relative (e.g. "game/frames/Lunatic/Lunatic_007.jpg");
 // this helper turns them into fully-qualified URLs the browser can fetch.
 //
-// Single source of truth: when R2 ever moves to a custom domain
-// (media.shouli.de), change R2_PUBLIC_BASE here and in app.js +
-// src/api/daily-frame.js.
-
-const R2_PUBLIC_BASE = 'https://pub-859f13be44eb4577b0cb23c8d8440a59.r2.dev/';
+// Single source of truth for the media base lives in ./media.js — flip it
+// there to move everything to media.shouli.de.
+import { MEDIA_BASE } from './media.js';
 
 export function gameAssetUrl(pathOrUrl) {
   if (!pathOrUrl) return '';
@@ -18,5 +16,5 @@ export function gameAssetUrl(pathOrUrl) {
   if (/^https?:\/\//.test(pathOrUrl)) return pathOrUrl;
   // Strip a single leading slash so we don't end up with "//game/...".
   const clean = pathOrUrl.replace(/^\/+/, '');
-  return R2_PUBLIC_BASE + clean;
+  return MEDIA_BASE + clean;
 }
