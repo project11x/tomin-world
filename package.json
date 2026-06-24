@@ -17,7 +17,7 @@
     "watch:css": "tailwindcss -i ./src/tailwind.css -o ./tailwind.css --watch",
     "build": "npm run build:css && npm run sync && vite build && npm run clean:appledouble",
     "clean:appledouble": "find dist public functions -name '._*' -delete 2>/dev/null; rm -f dist/_redirects; true",
-    "deploy": "npm run build && npx wrangler deploy",
+    "deploy": "npm run build && npx wrangler deploy --var BUILD_ID:$(date +%s)",
     "deploy:pages-legacy": "npm run build && npx wrangler pages deploy dist --project-name=tomin-world --branch=main --commit-dirty=true",
     "predev": "npm run build:css",
     "dev": "vite",

@@ -86,11 +86,28 @@ function makeFileEntry(name, obj, srcKey) {
   };
 }
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet({ env, waitUntil }) {
   const bucket = env.PORTFOLIO_BUCKET;
   if (!bucket) {
     return jsonResponse({ error: 'PORTFOLIO_BUCKET binding missing' }, 500);
   }
+
+  // Real edge cache, keyed by the deploy's BUILD_ID (injected via
+  // `wrangler deploy --var BUILD_ID:…`, see package.json). Setting a
+  // Cache-Control header alone does NOT cache a Worker-generated response
+  // at the edge — only a fetch() to an origin gets that for free — so we
+  // store it explicitly in caches.default, exactly like commits.js.
+  //
+  // Why key on BUILD_ID instead of a timer: every content change ships via
+  // `npm run deploy` (publish.sh / GitHub Actions), which bumps BUILD_ID →
+  // new key → the full R2 walk below runs once more and is re-cached for
+  // everyone. Between deploys it runs at most once per colo instead of once
+  // per visitor. Fresh content appears the moment you publish, no waiting.
+  const buildId = env.BUILD_ID || 'dev';
+  const cache = caches.default;
+  const cacheKey = new Request(`https://internal-cache/api/portfolio?v=${buildId}`);
+  const hit = await cache.match(cacheKey);
+  if (hit) return hit;
 
   // Page through every object in the bucket. R2 caps at 1000/list.
   const all = [];
@@ -181,12 +198,14 @@ export async function onRequestGet({ env }) {
     });
   }
 
-  return jsonResponse(portfolioData, 200, {
-    // Hot-cache 5 min on the edge; allow stale serving for an extra hour
-    // while we revalidate in the background. Browsers see fresh-or-stale
-    // data within ~5 min of an upload without ever blocking on the list.
-    'cache-control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=3600',
+  const response = jsonResponse(portfolioData, 200, {
+    // Browser keeps it 60 s. The shared edge copy (cache.put below) lives
+    // until the next deploy bumps BUILD_ID and changes the key; s-maxage
+    // is just the worst-case bound if an entry somehow lingers.
+    'cache-control': 'public, max-age=60, s-maxage=86400',
   });
+  if (waitUntil) waitUntil(cache.put(cacheKey, response.clone()));
+  return response;
 }
 
 function jsonResponse(body, status = 200, extraHeaders = {}) {

@@ -106,10 +106,23 @@ async function loadPool(env, request) {
   return res.json();
 }
 
-export async function onRequest({ request, env }) {
+export async function onRequest({ request, env, waitUntil }) {
   if (request.method !== 'GET') {
     return jsonResponse({ error: 'method not allowed' }, 405);
   }
+
+  // Real edge cache, keyed by BUILD_ID + Berlin date. The puzzle only
+  // changes at Berlin midnight (new date) or when a deploy ships a new
+  // frames-pool.json (new BUILD_ID). Until then every visitor gets the same
+  // cached response without re-reading the pool or recomputing the pick.
+  // A Cache-Control header alone wouldn't cache a Worker-built response at
+  // the edge, so we store it explicitly — same pattern as portfolio.js.
+  const buildId = env.BUILD_ID || 'dev';
+  const today = berlinDateString();
+  const cache = caches.default;
+  const cacheKey = new Request(`https://internal-cache/api/daily-frame?v=${buildId}&d=${today}`);
+  const hit = await cache.match(cacheKey);
+  if (hit) return hit;
 
   let pool;
   try {
@@ -123,8 +136,8 @@ export async function onRequest({ request, env }) {
     return jsonResponse({ error: 'no approved frames yet' }, 503);
   }
 
-  // Today in Berlin → deterministic pick.
-  const today = berlinDateString();
+  // Today in Berlin (already computed above for the cache key) →
+  // deterministic pick.
 
   // Sequential puzzle number since launch (#1 on the launch date).
   const day = daysBetween(LAUNCH_DATE_BERLIN, today) + 1;
@@ -201,11 +214,14 @@ export async function onRequest({ request, env }) {
     edits,
   };
 
-  return jsonResponse(body, 200, {
-    // Cache aggressively at the edge. The puzzle only changes at Berlin
-    // midnight, and stale-while-revalidate covers the changeover.
-    'cache-control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=3600',
+  const response = jsonResponse(body, 200, {
+    // Browser keeps it 5 min; the shared edge copy (cache.put below) lives
+    // until the date rolls or a deploy bumps BUILD_ID — either changes the
+    // key. s-maxage is the worst-case bound if an entry lingers.
+    'cache-control': 'public, max-age=300, s-maxage=86400',
   });
+  if (waitUntil) waitUntil(cache.put(cacheKey, response.clone()));
+  return response;
 }
 
 function jsonResponse(body, status = 200, extraHeaders = {}) {
