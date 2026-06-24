@@ -66,6 +66,6 @@ export default [
     },
   },
   {
-    ignores: ['node_modules/**', 'data.js', 'tailwind.css', 'dist/**', 'test-results/**', 'playwright-report/**', '._*', '**/._*'],
+    ignores: ['node_modules/**', 'data.js', 'public/stream-map.js', 'tailwind.css', 'dist/**', 'test-results/**', 'playwright-report/**', '._*', '**/._*'],
   },
 ];
