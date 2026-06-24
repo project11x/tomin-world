@@ -26,26 +26,26 @@ test('mobile: opening Magazines app reveals it', async ({ page }) => {
   await page.goto('/');
   await page.waitForTimeout(500);
   await clickDockApp(page, 'magazines');
-  expect(await getDisplay(page, '#ios-magazines-app')).not.toBe('none');
+  await expect.poll(() => getDisplay(page, '#ios-magazines-app')).not.toBe('none');
 });
 
 test('mobile: opening Edits app reveals it', async ({ page }) => {
   await page.goto('/');
   await page.waitForTimeout(500);
   await clickDockApp(page, 'edits');
-  expect(await getDisplay(page, '#ios-edits-app')).not.toBe('none');
+  await expect.poll(() => getDisplay(page, '#ios-edits-app')).not.toBe('none');
 });
 
 test('mobile: opening Contact app reveals it', async ({ page }) => {
   await page.goto('/');
   await page.waitForTimeout(500);
   await clickDockApp(page, 'contact');
-  expect(await getDisplay(page, '#ios-contact-app')).not.toBe('none');
+  await expect.poll(() => getDisplay(page, '#ios-contact-app')).not.toBe('none');
 });
 
 test('mobile: opening BTS app reveals it', async ({ page }) => {
   await page.goto('/');
   await page.waitForTimeout(500);
   await clickDockApp(page, 'bts');
-  expect(await getDisplay(page, '#ios-bts-app')).not.toBe('none');
+  await expect.poll(() => getDisplay(page, '#ios-bts-app')).not.toBe('none');
 });
