@@ -10,8 +10,9 @@
 //    viewers call srcsetAttr(). On the r2.dev dev URL transforms are a no-op,
 //    so this module is safe to ship before the dashboard steps are done.
 
-export const MEDIA_BASE = 'https://pub-859f13be44eb4577b0cb23c8d8440a59.r2.dev/';
-// export const MEDIA_BASE = 'https://media.shouli.de/'; // ← flip after dashboard steps
+// Custom domain live on the tomin-media R2 bucket, Images→Transformations
+// enabled on the shouli.de zone. This single line activates srcset + AVIF.
+export const MEDIA_BASE = 'https://media.shouli.de/';
 
 // Cloudflare /cdn-cgi/image transformations only work behind a zone we control
 // (the custom domain), never on the rate-limited r2.dev dev URL.

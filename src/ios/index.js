@@ -4,6 +4,7 @@ import { portfolioData } from '../../data.js';
 import { safePlayVideo, killOtherVideos, attachBeachball } from '../utils/video.js';
 import { makeShareButton } from '../utils/share.js';
 import { folderToSlug, itemToSlug } from '../utils/slugs.js';
+import { srcsetAttr } from '../utils/media.js';
 import { isItemRecent } from '../utils/recency.js';
 import { setIcon } from '../utils/icons.js';
 
@@ -266,7 +267,7 @@ function popURLToRoot() {
             <div style="position:relative;border-radius:14px;overflow:hidden;aspect-ratio:3/4;background:#1e293b;box-shadow:0 4px 16px rgba(0,0,0,0.25);">
               ${newPill}
               ${mag.cover
-            ? `<img src="${mag.cover}" style="width:100%;height:100%;object-fit:cover;" />`
+            ? `<img src="${mag.cover}"${srcsetAttr(mag.cover, '50vw')} style="width:100%;height:100%;object-fit:cover;" />`
             : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--ios-text-secondary);font-size:12px;">${mag.name}</div>`}
             </div>
             <p style="color:var(--ios-text);font-weight:600;font-size:13px;margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${mag.name}</p>
@@ -338,7 +339,7 @@ function popURLToRoot() {
         ? '<div style="flex:0 0 100%;display:flex;align-items:center;justify-content:center;color:var(--ios-text-secondary);font-size:14px;">No pages found.</div>'
         : pages.map(p => p.isVideo
           ? `<div style="${pageStyle}"><video src="${p.src}" style="width:100%;height:100%;object-fit:contain;" autoplay loop muted playsinline preload="auto"></video></div>`
-          : `<div style="${pageStyle}"><img src="${p.src}" style="width:100%;height:auto;flex-shrink:0;" /></div>`
+          : `<div style="${pageStyle}"><img src="${p.src}"${srcsetAttr(p.src, '100vw')} style="width:100%;height:auto;flex-shrink:0;" /></div>`
         ).join('');
       iosMagReaderPages.dataset.magKey = magKey;
     }
@@ -936,7 +937,7 @@ function popURLToRoot() {
             <video src="${f.src}" style="width:100%;height:100%;object-fit:cover;" muted playsinline preload="none"></video>
           </div>`
         : `<div onclick="iosBtsOpenViewer(${i})" style="aspect-ratio:1;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;background:#111;">
-            <img src="${f.src}" style="width:100%;height:100%;object-fit:cover;" />
+            <img src="${f.src}"${srcsetAttr(f.src, '33vw')} style="width:100%;height:100%;object-fit:cover;" />
           </div>`
     ).join('');
 
@@ -1049,7 +1050,7 @@ function popURLToRoot() {
       if (f.isVideo) {
         return `<div style="${pageStyle}"><video src="${f.src}" style="width:100%;height:100%;object-fit:contain;" loop playsinline preload="none"></video></div>`;
       } else {
-        return `<div style="${pageStyle}"><img src="${f.src}" style="max-width:100%;max-height:100%;object-fit:contain;" /></div>`;
+        return `<div style="${pageStyle}"><img src="${f.src}"${srcsetAttr(f.src, '100vw')} style="max-width:100%;max-height:100%;object-fit:contain;" /></div>`;
       }
     }).join('');
 

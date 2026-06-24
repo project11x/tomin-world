@@ -5,6 +5,7 @@
 
 import { portfolioData } from '../../data.js';
 import { makeShareButton } from '../utils/share.js';
+import { srcsetAttr } from '../utils/media.js';
 
 (function injectMagazineShareButton() {
   const ready = () => {
@@ -112,7 +113,7 @@ window.openMagazineReader = function (folder, index) {
         `;
       } else {
         htmlSnippet += `
-          <img src="${img.src}" class="mag-page h-full w-auto object-contain shrink-0 block mx-0 pointer-events-none" 
+          <img src="${img.src}"${srcsetAttr(img.src, '100vw')} class="mag-page h-full w-auto object-contain shrink-0 block mx-0 pointer-events-none"
             data-index="${i}" style="max-height: 100vh;">
         `;
       }

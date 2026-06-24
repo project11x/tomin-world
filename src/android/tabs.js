@@ -8,6 +8,8 @@
 
 import { portfolioData } from '../../data.js';
 
+import { srcsetAttr } from '../utils/media.js';
+
 (function () {
   const navItems = document.querySelectorAll('#android-screen [data-android-tab]');
   const panels = document.querySelectorAll('#android-screen [data-android-panel]');
@@ -230,7 +232,7 @@ import { portfolioData } from '../../data.js';
             ${hero.src
               ? (hero.kind === 'edit' || (hero.kind === 'bts' && hero.isVideo))
                 ? `<video src="${hero.src}#t=0.1" muted playsinline preload="metadata"></video>`
-                : `<img src="${hero.src}" loading="lazy" />`
+                : `<img src="${hero.src}"${srcsetAttr(hero.src, '100vw')} loading="lazy" />`
               : ''}
             <span class="md-latest-chip">
               <i class="bi ${latestKindIcon(hero.kind)}"></i>
@@ -250,7 +252,7 @@ import { portfolioData } from '../../data.js';
                 ${it.src
                   ? (it.kind === 'edit' || (it.kind === 'bts' && it.isVideo))
                     ? `<video src="${it.src}#t=0.1" muted playsinline preload="metadata"></video>`
-                    : `<img src="${it.src}" loading="lazy" />`
+                    : `<img src="${it.src}"${srcsetAttr(it.src, '40vw')} loading="lazy" />`
                   : ''}
                 <span class="md-latest-chip md-latest-chip-sm">
                   <i class="bi ${latestKindIcon(it.kind)}"></i>
@@ -485,7 +487,7 @@ import { portfolioData } from '../../data.js';
               <button class="md-bts-folder-row" data-bts-folder="${f.name.replace(/"/g, '&quot;')}">
                 <div class="md-bts-folder-thumb">
                   ${f.cover && f.cover.src && !f.cover.isVideo
-                    ? `<img src="${f.cover.src}" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" />`
+                    ? `<img src="${f.cover.src}"${srcsetAttr(f.cover.src, '20vw')} loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" />`
                     : `<i class="bi bi-camera-reels-fill"></i>`}
                 </div>
                 <div style="flex:1; min-width:0;">
@@ -528,7 +530,7 @@ import { portfolioData } from '../../data.js';
             <div class="md-bts-tile" data-bts-file-index="${i}">
               ${f.isVideo
                 ? `<video src="${f.src}#t=0.1" muted playsinline preload="metadata"></video><span class="md-bts-play"><i class="bi bi-play-fill"></i></span>`
-                : `<img src="${f.src}" loading="lazy" />`}
+                : `<img src="${f.src}"${srcsetAttr(f.src, '33vw')} loading="lazy" />`}
             </div>
           `).join('');
           gridEl.querySelectorAll('[data-bts-file-index]').forEach(tile => {

@@ -4,6 +4,7 @@
 // Open via window.androidOpenBtsViewer(folderName, index).
 
 import { portfolioData } from '../../data.js';
+import { srcsetAttr } from '../utils/media.js';
 
 (function () {
   const overlay = document.getElementById('android-bts-viewer');
@@ -40,7 +41,7 @@ import { portfolioData } from '../../data.js';
       <div class="md-mag-page">
         ${f.isVideo
           ? `<video src="${f.src}" controls playsinline preload="metadata"></video>`
-          : `<img src="${f.src}" loading="lazy" />`}
+          : `<img src="${f.src}"${srcsetAttr(f.src, '100vw')} loading="lazy" />`}
       </div>
     `).join('');
     overlay.classList.add('open');

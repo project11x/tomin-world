@@ -4,6 +4,7 @@
 // indicator that updates on scroll.
 
 import { portfolioData } from '../../data.js';
+import { srcsetAttr } from '../utils/media.js';
 
 (function () {
   const overlay = document.getElementById('android-magazines-reader');
@@ -22,7 +23,7 @@ import { portfolioData } from '../../data.js';
     if (titlePill) titlePill.textContent = (mag.name || '').replace(/\.[^/.]+$/, '');
     pagesEl.innerHTML = pages.map(p => `
       <div class="md-mag-page">
-        <img src="${p.src}" alt="" loading="lazy" />
+        <img src="${p.src}"${srcsetAttr(p.src, '100vw')} alt="" loading="lazy" />
       </div>
     `).join('');
     counterEl.textContent = `1 / ${pages.length}`;
