@@ -65,7 +65,7 @@ function extractClip(videoPath, timestamp, outPath) {
       outPath,
     ], { stdio: ['ignore', 'ignore', 'ignore'] });
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 }

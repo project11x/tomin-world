@@ -11,7 +11,8 @@
 /** @typedef {Window & typeof globalThis & {
  *   OneSignal?: OneSignalSDK,
  *   OneSignalDeferred?: Array<(s: OneSignalSDK) => void>,
- *   togglePushSubscription?: () => Promise<void>
+ *   togglePushSubscription?: () => Promise<void>,
+ *   refreshPushToggleUI?: () => void
  * }} WindowWithOneSignal */
 
 /** @type {WindowWithOneSignal} */

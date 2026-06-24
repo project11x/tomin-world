@@ -16,8 +16,8 @@
 #   7. Refresh Journal game assets (frames, clips, dominant colours).
 #      Output lands in public/ → bundled into dist/ at build time.
 #  7b. Migrate any new videos into Cloudflare Stream (adaptive HLS) and
-#      refresh public/stream-map.json. Skipped if Stream creds aren't set.
-#   8. Commit data.js + stream-map.json with a project message and push.
+#      refresh public/stream-map.js. Skipped if Stream creds aren't set.
+#   8. Commit data.js + stream-map.js with a project message and push.
 #   9. Build + deploy to Cloudflare via wrangler.
 #  10. Print the live URL.
 #
@@ -371,7 +371,7 @@ fi
 
 # ─────────────────────────────────────────────────────────────────────
 # 7b. Migrate any new videos into Cloudflare Stream (adaptive HLS) and
-#     refresh public/stream-map.json. Idempotent — already-migrated videos
+#     refresh public/stream-map.js. Idempotent — already-migrated videos
 #     are skipped. Needs CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_STREAM_TOKEN;
 #     skipped with a warning if absent, so a publish never fails over Stream.
 # ─────────────────────────────────────────────────────────────────────
@@ -389,7 +389,7 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────────────
-# 8. Commit + push (data.js + frames-pool.json + edit-colors.json + stream-map.json — the
+# 8. Commit + push (data.js + frames-pool.json + edit-colors.json + stream-map.js — the
 #    manifests only; the actual frame / clip binaries stay out of git
 #    via .gitignore and are deployed via wrangler from public/).
 # ─────────────────────────────────────────────────────────────────────
@@ -398,7 +398,7 @@ echo -e "${YELLOW}[8/10] Publishing to Git…${NC}"
 if $DRY_RUN; then
   echo -e "${DIM}  (skipped in dry-run)${NC}"
 else
-  MANIFESTS=(data.js public/frames-pool.json public/edit-colors.json public/stream-map.json)
+  MANIFESTS=(data.js public/frames-pool.json public/edit-colors.json public/stream-map.js)
   if git diff --quiet -- "${MANIFESTS[@]}"; then
     echo -e "${DIM}  Manifests unchanged — nothing to commit.${NC}"
   else

@@ -4,7 +4,7 @@
 //
 // Returns null / falls back to the raw `<video src>` for any video not in the
 // map, so this is safe even if some videos aren't migrated.
-import streamMap from '../../public/stream-map.json';
+import streamMap from '../../public/stream-map.js';
 
 // Map keys are bucket-relative, URL-encoded, no query (e.g.
 // "5am%20in%20munich/clip_web.mp4"). item.src may arrive absolute

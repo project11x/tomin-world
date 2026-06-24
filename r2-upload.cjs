@@ -14,7 +14,6 @@
 
 const { execFile } = require('child_process');
 const fs = require('fs');
-const path = require('path');
 
 const R2_BUCKET = 'tomin-media';
 const DEFAULT_PARALLEL = 6;
@@ -32,7 +31,7 @@ function wranglerPut(key, filePath) {
 }
 
 function wranglerDelete(key) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     execFile(
       'npx',
       ['--yes', 'wrangler', 'r2', 'object', 'delete',

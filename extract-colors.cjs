@@ -210,7 +210,7 @@ function main() {
     for (const f of sampled) {
       const thumb = thumbLocalPath(f.thumb);
       if (!thumb || !fs.existsSync(thumb)) continue;
-      try { chunks.push(decodeImage(thumb)); } catch {}
+      try { chunks.push(decodeImage(thumb)); } catch { /* skip undecodable */ }
     }
     if (!chunks.length) { console.log('✗'); continue; }
     const palette = dominantColours(Buffer.concat(chunks), TOP_N);

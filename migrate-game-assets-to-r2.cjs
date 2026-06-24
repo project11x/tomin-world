@@ -107,7 +107,7 @@ function moveLocalToCache() {
         else fs.unlinkSync(full);
       }
       // Best-effort empty dir cleanup.
-      try { fs.rmSync(src, { recursive: true }); } catch {}
+      try { fs.rmSync(src, { recursive: true }); } catch { /* best-effort */ }
     } else {
       fs.renameSync(src, dest);
     }

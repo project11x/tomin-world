@@ -129,7 +129,7 @@ function getDuration(videoPath) {
       videoPath,
     ], { encoding: 'utf8' });
     return parseFloat(out.trim());
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -186,7 +186,7 @@ function extractFrame(videoPath, timestamp, outPath) {
       outPath,
     ], { stdio: ['ignore', 'ignore', 'pipe'] });
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 }

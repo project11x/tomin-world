@@ -625,7 +625,7 @@ function humanSize(b) {
 
 // ─── About / contact / theme / exit ───────────────────────────────
 function cmdAbout() {
-  print(`<span class="accent">shouli.de</span> <span class="dim">— eddie\'s portfolio shell</span>`);
+  print(`<span class="accent">shouli.de</span> <span class="dim">— eddie's portfolio shell</span>`);
   printPlain('A multi-skin portfolio: Aero, Material 3, and this TUI.', 'dim');
   printPlain('Try: ls, cd ldn, play, theme material, exit', 'dim');
 }

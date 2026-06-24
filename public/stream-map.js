@@ -1,4 +1,4 @@
-{
+export default {
   "5am%20in%20munich/5am%20in%20munich%20mid%20quality_web.mp4": {
     "uid": "14b16a8f769989f05cc2db97f4d0088c",
     "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/14b16a8f769989f05cc2db97f4d0088c/manifest/video.m3u8",
@@ -146,4 +146,4 @@
     "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/f6f16a72c76c5b67ac71e10022e2d94c/thumbnails/thumbnail.jpg",
     "duration": 40
   }
-}
+};

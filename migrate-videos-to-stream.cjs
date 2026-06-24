@@ -19,7 +19,7 @@ const fs = require('fs');
 const path = require('path');
 
 const MEDIA_BASE = 'https://media.shouli.de/'; // single source of truth: src/utils/media.js
-const MAP_PATH = path.resolve(__dirname, 'public/stream-map.json');
+const MAP_PATH = path.resolve(__dirname, 'public/stream-map.js');
 const DRY_RUN = process.argv.includes('--dry-run');
 
 const ACCOUNT = process.env.CLOUDFLARE_ACCOUNT_ID;
@@ -76,7 +76,11 @@ async function main() {
     console.error('✗ Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_STREAM_TOKEN first.');
     process.exit(1);
   }
-  const map = fs.existsSync(MAP_PATH) ? JSON.parse(fs.readFileSync(MAP_PATH, 'utf8')) : {};
+  let map = {};
+  if (fs.existsSync(MAP_PATH)) {
+    const txt = fs.readFileSync(MAP_PATH, 'utf8');
+    map = JSON.parse(txt.slice(txt.indexOf('{'), txt.lastIndexOf('}') + 1));
+  }
   const videos = await collectVideos();
   const todo = videos.filter((v) => !map[v.key]);
 
@@ -98,7 +102,7 @@ async function main() {
         poster: r.thumbnail || `https://videodelivery.net/${uid}/thumbnails/thumbnail.jpg`,
         duration: r.duration || null,
       };
-      fs.writeFileSync(MAP_PATH, JSON.stringify(map, null, 2)); // write after each so progress survives a crash
+      fs.writeFileSync(MAP_PATH, 'export default ' + JSON.stringify(map, null, 2) + ';\n'); // write after each so progress survives a crash
       console.log(' ready ✓');
     } catch (e) {
       console.log(` ✗ ${e.message}`);
