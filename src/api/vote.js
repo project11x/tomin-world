@@ -15,6 +15,7 @@
 // (week, visitor) AND per (week, IP).
 
 import { portfolioData } from '../../data.js';
+import { requireAdmin } from './access.js';
 
 // ── time helpers ─────────────────────────────────────────────────
 
@@ -241,8 +242,10 @@ async function handlePost({ request, env }) {
 
 async function handlePut({ request, env }) {
   if (!env.DB) return jsonResponse({ error: 'DB binding missing' }, 503);
-  const jwt = request.headers.get('cf-access-jwt-assertion');
-  if (!jwt) return jsonResponse({ error: 'unauthorized' }, 401);
+  // Public route → verify the Access cookie JWT, never a forgeable header.
+  if (!(await requireAdmin(request, env))) {
+    return jsonResponse({ error: 'unauthorized' }, 401);
+  }
 
   let body;
   try { body = await request.json(); }

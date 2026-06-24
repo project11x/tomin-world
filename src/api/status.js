@@ -14,14 +14,14 @@
 //   CF_ACCESS_TEAM_DOMAIN e.g. "shouli-admin.cloudflareaccess.com"
 //   CF_ACCESS_AUD         the Access application AUD tag
 
+import { authenticate, isAdmin } from './access.js';
+
 export async function onRequestPut(context) {
   const { request, env } = context;
 
   const email = await authenticate(request, env);
   if (!email) return json({ error: 'unauthenticated' }, 401);
-
-  const allow = (env.ADMIN_EMAILS || '').split(',').map((s) => s.trim()).filter(Boolean);
-  if (!allow.includes(email)) return json({ error: 'forbidden', email }, 403);
+  if (!isAdmin(email, env)) return json({ error: 'forbidden', email }, 403);
 
   if (!env.GH_TOKEN) return json({ error: 'GH_TOKEN not configured' }, 500);
   if (!env.GH_REPO) return json({ error: 'GH_REPO not configured' }, 500);
@@ -74,86 +74,9 @@ export async function onRequest(context) {
   return json({ error: 'method not allowed' }, 405);
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-// Auth helpers — verify the Cloudflare Access JWT directly.
-// ─────────────────────────────────────────────────────────────────────────
-
-async function authenticate(request, env) {
-  // Always verify the JWT cookie directly against the team's JWKS. The
-  // Cf-Access-Authenticated-User-Email header is intentionally ignored —
-  // any client that bypasses Access can forge it.
-  if (!env.CF_ACCESS_TEAM_DOMAIN || !env.CF_ACCESS_AUD) return null;
-
-  const cookie = request.headers.get('Cookie') || '';
-  const match = cookie.match(/CF_Authorization=([^;]+)/);
-  if (!match) return null;
-  const token = match[1];
-
-  try {
-    const payload = await verifyJwt(token, env.CF_ACCESS_TEAM_DOMAIN, env.CF_ACCESS_AUD);
-    return payload?.email || null;
-  } catch {
-    return null;
-  }
-}
-
-async function verifyJwt(token, teamDomain, expectedAud) {
-  const [headerB64, payloadB64, sigB64] = token.split('.');
-  if (!headerB64 || !payloadB64 || !sigB64) throw new Error('malformed jwt');
-
-  const header = JSON.parse(b64urlDecodeToString(headerB64));
-  const payload = JSON.parse(b64urlDecodeToString(payloadB64));
-
-  const now = Math.floor(Date.now() / 1000);
-  if (payload.exp && now >= payload.exp) throw new Error('expired');
-  if (payload.nbf && now < payload.nbf) throw new Error('not yet valid');
-  if (payload.iss !== `https://${teamDomain}`) throw new Error('bad issuer');
-  const auds = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
-  if (!auds.includes(expectedAud)) throw new Error('bad audience');
-
-  const jwks = await fetchJwks(teamDomain);
-  const jwk = jwks.keys.find((k) => k.kid === header.kid);
-  if (!jwk) throw new Error('unknown kid');
-
-  const key = await crypto.subtle.importKey(
-    'jwk',
-    jwk,
-    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-    false,
-    ['verify']
-  );
-  const data = new TextEncoder().encode(`${headerB64}.${payloadB64}`);
-  const signature = b64urlDecodeToBytes(sigB64);
-  const ok = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, signature, data);
-  if (!ok) throw new Error('bad signature');
-
-  return payload;
-}
-
-let jwksCache = { domain: '', expires: 0, value: null };
-async function fetchJwks(teamDomain) {
-  const now = Date.now();
-  if (jwksCache.value && jwksCache.domain === teamDomain && jwksCache.expires > now) {
-    return jwksCache.value;
-  }
-  const resp = await fetch(`https://${teamDomain}/cdn-cgi/access/certs`);
-  if (!resp.ok) throw new Error('jwks fetch failed');
-  const value = await resp.json();
-  jwksCache = { domain: teamDomain, expires: now + 10 * 60 * 1000, value };
-  return value;
-}
-
-function b64urlDecodeToString(s) {
-  return new TextDecoder().decode(b64urlDecodeToBytes(s));
-}
-function b64urlDecodeToBytes(s) {
-  const pad = s.length % 4 === 0 ? '' : '='.repeat(4 - (s.length % 4));
-  const b64 = (s + pad).replace(/-/g, '+').replace(/_/g, '/');
-  const bin = atob(b64);
-  const bytes = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-  return bytes;
-}
+// Auth (Cloudflare Access JWT verification + admin allowlist) lives in
+// ./access.js — shared with /api/pin and /api/vote so all admin gates use
+// the same verified path.
 
 function json(obj, status = 200) {
   return new Response(JSON.stringify(obj), {

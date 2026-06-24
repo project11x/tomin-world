@@ -12,6 +12,7 @@
 // must be in the preset list. Rate limit: one pin per IP per 24h.
 
 import { portfolioData } from '../../data.js';
+import { requireAdmin } from './access.js';
 
 // Preset stickers — must mirror the list shown in the pin-creation UI.
 const STICKERS = ['✨', '🌙', '🔥', '✂️', '🎬', '📸', '🎵', '🍷', '🌅', '⚡', '🥀', '💎'];
@@ -141,16 +142,15 @@ async function createPin({ request, env }) {
 
 // ── PUT: admin update (hide / unhide) ──────────────────────────────
 //
-// Same gating pattern as /api/status: the route is reachable only when
-// Cloudflare Access has minted a JWT for the caller, so we trust the
-// presence of the cf-access-jwt-assertion header.
+// This route is public (visitors POST pins), so we cannot trust an injected
+// Access header — it can be forged. Verify the CF_Authorization cookie's JWT
+// against the team JWKS, same as /api/status (see src/api/access.js).
 
 async function adminUpdate({ request, env }) {
   if (!env.DB) {
     return jsonResponse({ error: 'DB binding missing' }, 503);
   }
-  const jwt = request.headers.get('cf-access-jwt-assertion');
-  if (!jwt) {
+  if (!(await requireAdmin(request, env))) {
     return jsonResponse({ error: 'unauthorized' }, 401);
   }
 
