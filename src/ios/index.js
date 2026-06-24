@@ -5,6 +5,7 @@ import { safePlayVideo, killOtherVideos, attachBeachball } from '../utils/video.
 import { makeShareButton } from '../utils/share.js';
 import { folderToSlug, itemToSlug } from '../utils/slugs.js';
 import { srcsetAttr } from '../utils/media.js';
+import { playStream, upgradeVideos } from '../utils/stream.js';
 import { isItemRecent } from '../utils/recency.js';
 import { setIcon } from '../utils/icons.js';
 
@@ -494,7 +495,7 @@ function popURLToRoot() {
     // Skip reassigning .src to the same URL — reassigning forces the video
     // to redownload metadata and discard the buffered/decoded frames.
     if (iosEditsVideo.dataset.currentSrc !== item.src) {
-      iosEditsVideo.src = item.src;
+      playStream(iosEditsVideo, item.src);
       iosEditsVideo.dataset.currentSrc = item.src;
     }
     iosEditsBB.hide();
@@ -1053,6 +1054,7 @@ function popURLToRoot() {
         return `<div style="${pageStyle}"><img src="${f.src}"${srcsetAttr(f.src, '100vw')} style="max-width:100%;max-height:100%;object-fit:contain;" /></div>`;
       }
     }).join('');
+    upgradeVideos(iosBtsViewerPages);
 
     // Scroll to selected
     requestAnimationFrame(() => {

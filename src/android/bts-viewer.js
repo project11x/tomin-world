@@ -5,6 +5,7 @@
 
 import { portfolioData } from '../../data.js';
 import { srcsetAttr } from '../utils/media.js';
+import { upgradeVideos } from '../utils/stream.js';
 
 (function () {
   const overlay = document.getElementById('android-bts-viewer');
@@ -44,6 +45,7 @@ import { srcsetAttr } from '../utils/media.js';
           : `<img src="${f.src}"${srcsetAttr(f.src, '100vw')} loading="lazy" />`}
       </div>
     `).join('');
+    upgradeVideos(pagesEl);
     overlay.classList.add('open');
     requestAnimationFrame(() => {
       pagesEl.scrollTo({ left: pagesEl.clientWidth * (index || 0), behavior: 'instant' in pagesEl.scrollTo ? 'instant' : 'auto' });

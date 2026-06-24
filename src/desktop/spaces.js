@@ -6,6 +6,7 @@
 import { portfolioData } from '../../data.js';
 import { makeShareButton } from '../utils/share.js';
 import { srcsetAttr } from '../utils/media.js';
+import { playStream } from '../utils/stream.js';
 
 (function injectMagazineShareButton() {
   const ready = () => {
@@ -135,7 +136,7 @@ window.openMagazineReader = function (folder, index) {
       entries.forEach(e => {
         const v = e.target;
         if (e.isIntersecting) {
-          if (!v.src && v.dataset.src) { v.src = v.dataset.src; }
+          if (!v.src && !v._hls && v.dataset.src) { playStream(v, v.dataset.src); }
           v.play().catch(() => { });
         } else {
           v.pause();

@@ -4,6 +4,7 @@
 // Edits-tab list. Reuses Bootstrap Icons for the controls.
 
 import { portfolioData } from '../../data.js';
+import { playStream, stopStream } from '../utils/stream.js';
 
 (function () {
   const overlay = document.getElementById('android-edits-viewer');
@@ -103,7 +104,7 @@ import { portfolioData } from '../../data.js';
     if (queue.length === 0) return;
     cursor = ((idx % queue.length) + queue.length) % queue.length;
     const e = queue[cursor];
-    video.src = e.src;
+    playStream(video, e.src);
     title.textContent = e.baseName;
     folder.textContent = e.folder;
     name.textContent = e.baseName;
@@ -119,7 +120,7 @@ import { portfolioData } from '../../data.js';
   function close() {
     overlay.classList.remove('open');
     video.pause();
-    video.src = '';
+    stopStream(video);
   }
 
   function togglePlay() {

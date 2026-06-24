@@ -4,6 +4,7 @@ import { safePlayVideo, killOtherVideos, attachBeachball } from '../utils/video.
 import { switchToSpace } from './spaces.js';
 import { createWindow } from './windows.js';
 import { setIcon } from '../utils/icons.js';
+import { playStream, stopStream } from '../utils/stream.js';
 
 const editsViewer = document.getElementById('edits-viewer');
 const editsList = document.getElementById('edits-list');
@@ -120,7 +121,7 @@ const selectEdit = (index, autoPlay = true) => {
   // Hide video until first frame is ready (prevents stretch flash)
   editsVideo.style.opacity = '0';
   editsVideo.style.transition = 'opacity 0.15s ease';
-  editsVideo.src = item.src;
+  playStream(editsVideo, item.src);
   // Update aspect-ratio on metadata, show on first frame
   editsVideo.addEventListener('loadedmetadata', function updateAspect() {
     editsVideo.removeEventListener('loadedmetadata', updateAspect);
@@ -164,7 +165,7 @@ window.openEditsViewer = function () {
   editsItems = collectEdits();
   renderEditsList();
   selectedEditIndex = -1;
-  editsVideo.src = '';
+  stopStream(editsVideo);
   if (editsEmpty) editsEmpty.style.display = '';
 
   switchToSpace('edits');
@@ -176,7 +177,7 @@ window.openEditsViewer = function () {
 btnCloseEdits.addEventListener('click', () => {
   switchToSpace('desktop');
   editsVideo.pause();
-  editsVideo.src = '';
+  stopStream(editsVideo);
 });
 
 // Arrow key & Space navigation in edits viewer

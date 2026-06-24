@@ -6,6 +6,7 @@ import { bringToFront } from './windows.js';
 import { makeShareButton } from '../utils/share.js';
 import { setIcon } from '../utils/icons.js';
 import { srcsetAttr } from '../utils/media.js';
+import { playStream } from '../utils/stream.js';
 
 // Folder context of the currently shown item — drives ←/→ navigation and
 // neighbour preloading. null when Quick Look was opened without context.
@@ -95,7 +96,7 @@ window.openQuickLook = function (item, sourceEl = null, ctx = null) {
   let contentHtml;
   if (item.isVideo) {
     // Default 16:9 size so modal opens at correct dimensions before video loads
-    contentHtml = `<video class="object-contain block" src="${item.src}" loop playsinline style="width:min(640px,85vw);aspect-ratio:16/9;max-height:75vh;"></video>`;
+    contentHtml = `<video class="object-contain block" loop playsinline style="width:min(640px,85vw);aspect-ratio:16/9;max-height:75vh;"></video>`;
     qlControls.style.display = '';
   } else {
     // Lock the image to a constant viewport height so every Quick Look
@@ -123,6 +124,7 @@ window.openQuickLook = function (item, sourceEl = null, ctx = null) {
   if (playPauseBtn) playPauseBtn.textContent = 'pause_circle';
 
   if (videoEl) {
+    playStream(videoEl, item.src);
     // Attach beachball to QuickLook video
     const qlVideoContainer = videoEl.parentElement;
     attachBeachball(videoEl, qlVideoContainer);
