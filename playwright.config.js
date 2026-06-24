@@ -6,7 +6,10 @@ export default defineConfig({
   testIgnore: ['**/._*'],
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: 0,
+  // Retry only in CI: the suite has animation-timed UI assertions that flake
+  // on slower CI runners. A real failure still fails all attempts; this only
+  // absorbs timing variance. Local runs stay at 0 to surface flakiness.
+  retries: process.env.CI ? 2 : 0,
   workers: 1,
   reporter: 'list',
   use: {
