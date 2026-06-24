@@ -97,28 +97,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" />
 
-  <!-- OneSignal Web Push -->
-  <script>
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    window.__osScriptStatus = 'pending';
-    window.__osInitError = null;
-  </script>
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer
-    onload="window.__osScriptStatus='loaded'" onerror="window.__osScriptStatus='error'"></script>
-  <script>
-    OneSignalDeferred.push(async function (OneSignal) {
-      try {
-        await OneSignal.init({
-          appId: "4f713f1a-2daa-4d18-960a-4a98000a3c11"
-        });
-        window.__oneSignalReady = true;
-        window.dispatchEvent(new Event("onesignal:ready"));
-      } catch (e) {
-        window.__osInitError = (e && e.message) ? e.message : String(e);
-        console.error("OneSignal Init Error:", e);
-      }
-    });
-  </script>
+  <!-- OneSignal Web Push is lazy-loaded in push.js — only on shouli.de and
+       only when a visitor actually flips the push toggle. No eager SDK on
+       every page load, no off-domain console noise, no pre-consent tracking. -->
   <meta name="description"
     content="Shouli's creative portfolio — video edits, digital magazines and behind-the-scenes. Discover projects, motion work and more." />
   <meta name="robots" content="index, follow" />

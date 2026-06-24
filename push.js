@@ -6,6 +6,7 @@
  * @typedef {object} OneSignalSDK
  * @property {{ PushSubscription: any, addEventListener?: any }} User
  * @property {{ permission: boolean, addEventListener?: any }} Notifications
+ * @property {(opts: any) => Promise<void>} [init]
  */
 
 /** @typedef {Window & typeof globalThis & {
@@ -21,6 +22,16 @@ const W = /** @type {any} */ (window);
 (function () {
   /** @type {OneSignalSDK | null} */
   let __osRef = null;
+
+  function rememberedOptIn() {
+    try { return localStorage.getItem('pushOptedIn') === '1'; } catch { return false; }
+  }
+  function setRememberedOptIn(on) {
+    try {
+      if (on) localStorage.setItem('pushOptedIn', '1');
+      else localStorage.removeItem('pushOptedIn');
+    } catch { /* ignore */ }
+  }
 
   function isStandalonePwa() {
     return (
@@ -79,12 +90,15 @@ const W = /** @type {any} */ (window);
     });
 
     if (!__osRef) {
+      // SDK not loaded yet (lazy). Reflect the remembered state so the toggle
+      // looks right on return visits without pulling in the SDK.
+      const remembered = rememberedOptIn();
       toggles.forEach((t) => {
-        t.setAttribute('aria-checked', 'false');
-        t.style.background = 'rgba(120,120,128,0.32)';
+        t.setAttribute('aria-checked', remembered ? 'true' : 'false');
+        t.style.background = remembered ? '#34c759' : 'rgba(120,120,128,0.32)';
       });
-      knobs.forEach((k) => (k.style.transform = 'translateX(0px)'));
-      showPushHint('Initialisiere…');
+      knobs.forEach((k) => (k.style.transform = remembered ? 'translateX(20px)' : 'translateX(0px)'));
+      showPushHint(remembered ? 'Aktiv. Du bekommst Updates.' : 'Updates direkt auf dieses Gerät.');
       return;
     }
 
@@ -130,12 +144,14 @@ const W = /** @type {any} */ (window);
     if (iosToggle && iosToggle.dataset.disabled === 'true') return;
     if (desktopToggle && desktopToggle.dataset.disabled === 'true' && !iosToggle) return;
 
-    if (!__osRef && W.OneSignal && W.OneSignal.User) {
-      __osRef = W.OneSignal;
+    // Lazy-load the SDK the first time someone actually asks for notifications.
+    if (!__osRef) {
+      showPushHint('Verbinde…');
+      await ensureOneSignal();
     }
 
     if (!__osRef) {
-      showPushHint('SDK nicht bereit', '#ff9f0a');
+      showPushHint('Push hier nicht verfügbar.', '#ff9f0a');
       return;
     }
 
@@ -156,6 +172,7 @@ const W = /** @type {any} */ (window);
           showPushHint('Erlaubnis erteilt! Lade neu...', '#34c759');
           try {
             sessionStorage.setItem('reopen-contact-app', 'push-grant');
+            sessionStorage.setItem('os-autostart', '1');
           } catch (_e) {
             /* ignore */
           }
@@ -175,12 +192,14 @@ const W = /** @type {any} */ (window);
       if (optedIn) {
         showPushHint('Deaktiviere…');
         await sub.optOut();
+        setRememberedOptIn(false);
       } else {
         showPushHint('Aktiviere (System-Erlaubnis liegt vor)…', '#ff9f0a');
         const optInTimeout = new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Timeout beim Verbinden.')), 15000)
         );
         await Promise.race([sub.optIn(), optInTimeout]);
+        setRememberedOptIn(true);
         showPushHint('Aktiviert!', '#34c759');
       }
     } catch (e) {
@@ -226,25 +245,46 @@ const W = /** @type {any} */ (window);
     }
   }
 
-  W.OneSignalDeferred = W.OneSignalDeferred || [];
-  W.OneSignalDeferred.push(bindOneSignal);
-
-  let __osPolls = 0;
-  const __osInterval = setInterval(() => {
-    __osPolls++;
-    if (__osRef) {
-      clearInterval(__osInterval);
-      return;
-    }
-    if (W.OneSignal && W.OneSignal.User) {
-      bindOneSignal(W.OneSignal);
-      clearInterval(__osInterval);
-    }
-    if (__osPolls > 60) clearInterval(__osInterval);
-  }, 500);
+  // Lazy-load + init OneSignal — only on the production domain and only when a
+  // visitor actually asks for notifications. Memoized: the SDK script + init
+  // run at most once, and never on localhost / preview / prerendered pages.
+  let __osLoadPromise = null;
+  function ensureOneSignal() {
+    if (__osRef) return Promise.resolve(__osRef);
+    if (__osLoadPromise) return __osLoadPromise;
+    const host = location.hostname;
+    if (host !== 'shouli.de' && host !== 'www.shouli.de') return Promise.resolve(null);
+    __osLoadPromise = new Promise((resolve) => {
+      W.OneSignalDeferred = W.OneSignalDeferred || [];
+      W.OneSignalDeferred.push(async function (OneSignal) {
+        try {
+          await OneSignal.init({ appId: '4f713f1a-2daa-4d18-960a-4a98000a3c11' });
+          bindOneSignal(OneSignal);
+        } catch (e) {
+          showPushHint('Push-Dienst nicht erreichbar: ' + e.message, '#ff453a');
+        }
+        resolve(__osRef);
+      });
+      const s = document.createElement('script');
+      s.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
+      s.defer = true;
+      s.onerror = () => { showPushHint('Push-SDK konnte nicht laden.', '#ff453a'); resolve(null); };
+      document.head.appendChild(s);
+    });
+    return __osLoadPromise;
+  }
 
   document.addEventListener('DOMContentLoaded', () => {
     setTimeout(refreshPushToggleUI, 800);
+    // Finish a subscription interrupted by the permission-grant reload: the
+    // user already opted in, so load the SDK now (bindOneSignal auto-opts-in
+    // once the OS permission is granted). Lazy for everyone else.
+    let autostart = false;
+    try {
+      autostart = sessionStorage.getItem('os-autostart') === '1';
+      sessionStorage.removeItem('os-autostart');
+    } catch { /* ignore */ }
+    if (autostart) ensureOneSignal();
     if (isStandalonePwa()) {
       const iconSection = document.getElementById('ios-app-icon-section');
       if (iconSection) iconSection.style.display = 'none';
