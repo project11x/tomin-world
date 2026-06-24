@@ -15,7 +15,9 @@
 #   6. Verify R2 contains the expected files.
 #   7. Refresh Journal game assets (frames, clips, dominant colours).
 #      Output lands in public/ → bundled into dist/ at build time.
-#   8. Commit data.js (only) with a project-specific message and push.
+#  7b. Migrate any new videos into Cloudflare Stream (adaptive HLS) and
+#      refresh public/stream-map.json. Skipped if Stream creds aren't set.
+#   8. Commit data.js + stream-map.json with a project message and push.
 #   9. Build + deploy to Cloudflare via wrangler.
 #  10. Print the live URL.
 #
@@ -368,7 +370,26 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────────────
-# 8. Commit + push (data.js + frames-pool.json + edit-colors.json — the
+# 7b. Migrate any new videos into Cloudflare Stream (adaptive HLS) and
+#     refresh public/stream-map.json. Idempotent — already-migrated videos
+#     are skipped. Needs CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_STREAM_TOKEN;
+#     skipped with a warning if absent, so a publish never fails over Stream.
+# ─────────────────────────────────────────────────────────────────────
+echo ""
+echo -e "${YELLOW}[7b/10] Migrating new videos to Cloudflare Stream…${NC}"
+if $DRY_RUN; then
+  echo -e "${DIM}  (skipped in dry-run)${NC}"
+elif [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ] || [ -z "${CLOUDFLARE_STREAM_TOKEN:-}" ]; then
+  echo -e "${YELLOW}  ⚠ Stream creds not set (CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_STREAM_TOKEN) — skipping.${NC}"
+  echo -e "${DIM}    New videos play as raw MP4 until you run: npm run migrate-videos${NC}"
+elif npm run migrate-videos; then
+  echo -e "${GREEN}✓ Stream up to date${NC}"
+else
+  echo -e "${YELLOW}  ⚠ Stream migration had an issue — new videos fall back to raw MP4. Re-run: npm run migrate-videos${NC}"
+fi
+
+# ─────────────────────────────────────────────────────────────────────
+# 8. Commit + push (data.js + frames-pool.json + edit-colors.json + stream-map.json — the
 #    manifests only; the actual frame / clip binaries stay out of git
 #    via .gitignore and are deployed via wrangler from public/).
 # ─────────────────────────────────────────────────────────────────────
@@ -377,7 +398,7 @@ echo -e "${YELLOW}[8/10] Publishing to Git…${NC}"
 if $DRY_RUN; then
   echo -e "${DIM}  (skipped in dry-run)${NC}"
 else
-  MANIFESTS=(data.js public/frames-pool.json public/edit-colors.json)
+  MANIFESTS=(data.js public/frames-pool.json public/edit-colors.json public/stream-map.json)
   if git diff --quiet -- "${MANIFESTS[@]}"; then
     echo -e "${DIM}  Manifests unchanged — nothing to commit.${NC}"
   else
