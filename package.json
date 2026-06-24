@@ -12,6 +12,7 @@
     "extract-clips": "node extract-clips.cjs",
     "extract-colors": "node extract-colors.cjs",
     "migrate-game-assets": "node migrate-game-assets-to-r2.cjs",
+    "migrate-videos": "node migrate-videos-to-stream.cjs",
     "build:css": "tailwindcss -i ./src/tailwind.css -o ./tailwind.css --minify",
     "watch:css": "tailwindcss -i ./src/tailwind.css -o ./tailwind.css --watch",
     "build": "npm run build:css && npm run sync && vite build && npm run clean:appledouble",
