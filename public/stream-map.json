@@ -1,0 +1,149 @@
+{
+  "5am%20in%20munich/5am%20in%20munich%20mid%20quality_web.mp4": {
+    "uid": "14b16a8f769989f05cc2db97f4d0088c",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/14b16a8f769989f05cc2db97f4d0088c/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/14b16a8f769989f05cc2db97f4d0088c/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/14b16a8f769989f05cc2db97f4d0088c/thumbnails/thumbnail.jpg",
+    "duration": 117.4
+  },
+  "LDN%20x%20UKG/london%20x%20ukg_web.mp4": {
+    "uid": "69ca46bf8da04725b67d7fcdd1b151f0",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/69ca46bf8da04725b67d7fcdd1b151f0/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/69ca46bf8da04725b67d7fcdd1b151f0/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/69ca46bf8da04725b67d7fcdd1b151f0/thumbnails/thumbnail.jpg",
+    "duration": 32.1
+  },
+  "Lunatic/lunatic_web.mp4": {
+    "uid": "5de83f9421c8772a1c51a1039cf4326f",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/5de83f9421c8772a1c51a1039cf4326f/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/5de83f9421c8772a1c51a1039cf4326f/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/5de83f9421c8772a1c51a1039cf4326f/thumbnails/thumbnail.jpg",
+    "duration": 47.1
+  },
+  "TOMIN%20INDEX.TXT/032C/7.mp4": {
+    "uid": "39efd810f760b3fde314a034f07ded0a",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/39efd810f760b3fde314a034f07ded0a/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/39efd810f760b3fde314a034f07ded0a/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/39efd810f760b3fde314a034f07ded0a/thumbnails/thumbnail.jpg",
+    "duration": 0.5
+  },
+  "TOMIN%20INDEX.TXT/032C/14.mp4": {
+    "uid": "7f34d840e0669424ffca267bb341b527",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/7f34d840e0669424ffca267bb341b527/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/7f34d840e0669424ffca267bb341b527/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/7f34d840e0669424ffca267bb341b527/thumbnails/thumbnail.jpg",
+    "duration": 0.4
+  },
+  "bents%20n%20glitches/bent%20footage%20edit%20test%20HQ_web.mp4": {
+    "uid": "5d94157d430e0ceafd9088238f1fd928",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/5d94157d430e0ceafd9088238f1fd928/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/5d94157d430e0ceafd9088238f1fd928/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/5d94157d430e0ceafd9088238f1fd928/thumbnails/thumbnail.jpg",
+    "duration": 26
+  },
+  "birthday%20kisses/birthDayKisses_web.mp4": {
+    "uid": "bcbed409729e38bacaca13e28d48dd13",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/bcbed409729e38bacaca13e28d48dd13/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/bcbed409729e38bacaca13e28d48dd13/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/bcbed409729e38bacaca13e28d48dd13/thumbnails/thumbnail.jpg",
+    "duration": 42.9
+  },
+  "debut/debut_web.mp4": {
+    "uid": "29675ff94159592c02864bd9ea385cfc",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/29675ff94159592c02864bd9ea385cfc/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/29675ff94159592c02864bd9ea385cfc/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/29675ff94159592c02864bd9ea385cfc/thumbnails/thumbnail.jpg",
+    "duration": 109.4
+  },
+  "debut/IMG_004216.mov": {
+    "uid": "8e19ce81060ecf90a7956562e9db33b2",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/8e19ce81060ecf90a7956562e9db33b2/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/8e19ce81060ecf90a7956562e9db33b2/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/8e19ce81060ecf90a7956562e9db33b2/thumbnails/thumbnail.jpg",
+    "duration": 9
+  },
+  "debut/IMG_004222.mov": {
+    "uid": "7a3070f2c186a510a2b3ad59003ef75b",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/7a3070f2c186a510a2b3ad59003ef75b/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/7a3070f2c186a510a2b3ad59003ef75b/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/7a3070f2c186a510a2b3ad59003ef75b/thumbnails/thumbnail.jpg",
+    "duration": 6.1
+  },
+  "ftlotg/ftlotg_web.mp4": {
+    "uid": "6443d0daba0984cd270b0508cde963ec",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/6443d0daba0984cd270b0508cde963ec/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/6443d0daba0984cd270b0508cde963ec/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/6443d0daba0984cd270b0508cde963ec/thumbnails/thumbnail.jpg",
+    "duration": 38.6
+  },
+  "ftlotg/MOV250919-232418-000281F.mp4": {
+    "uid": "1e9b30d33ab2608049f7626942237001",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/1e9b30d33ab2608049f7626942237001/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/1e9b30d33ab2608049f7626942237001/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/1e9b30d33ab2608049f7626942237001/thumbnails/thumbnail.jpg",
+    "duration": 24.5
+  },
+  "hlfatpch/how%20life%20feels%20after%20the%20paycheck%20hits%20HQ_web.mp4": {
+    "uid": "f6132c9de7fb089e0d793d1db038ba60",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/f6132c9de7fb089e0d793d1db038ba60/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/f6132c9de7fb089e0d793d1db038ba60/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/f6132c9de7fb089e0d793d1db038ba60/thumbnails/thumbnail.jpg",
+    "duration": 49
+  },
+  "hlfatpch/how%20mf%20start%20movin%20after%20getting%20their%20moms%20car%20keys%20HQ_web.mp4": {
+    "uid": "8c55b1e47a568fe84cd8c3242a719256",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/8c55b1e47a568fe84cd8c3242a719256/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/8c55b1e47a568fe84cd8c3242a719256/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/8c55b1e47a568fe84cd8c3242a719256/thumbnails/thumbnail.jpg",
+    "duration": 27.7
+  },
+  "hlfatpch/late%20night%20sketches_web.mp4": {
+    "uid": "266b39de97a6c89685a95842f3680cd2",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/266b39de97a6c89685a95842f3680cd2/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/266b39de97a6c89685a95842f3680cd2/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/266b39de97a6c89685a95842f3680cd2/thumbnails/thumbnail.jpg",
+    "duration": 24
+  },
+  "lindsay%20lohan/lindsay%20lohan_web.mp4": {
+    "uid": "0362bda37f1482cf498e9dcebb88af87",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/0362bda37f1482cf498e9dcebb88af87/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/0362bda37f1482cf498e9dcebb88af87/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/0362bda37f1482cf498e9dcebb88af87/thumbnails/thumbnail.jpg",
+    "duration": 40.8
+  },
+  "milano/milano%20export_web.mp4": {
+    "uid": "aaba37cb1c13e71252c46158cb563393",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/aaba37cb1c13e71252c46158cb563393/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/aaba37cb1c13e71252c46158cb563393/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/aaba37cb1c13e71252c46158cb563393/thumbnails/thumbnail.jpg",
+    "duration": 37.2
+  },
+  "schimmel%20in%20schladming/schimmel%20in%20schladming%20HQ_web.mp4": {
+    "uid": "d4893917962cbabca4d4a790a88f7f52",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/d4893917962cbabca4d4a790a88f7f52/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/d4893917962cbabca4d4a790a88f7f52/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/d4893917962cbabca4d4a790a88f7f52/thumbnails/thumbnail.jpg",
+    "duration": 235.6
+  },
+  "stoical/new%20ideas%20120fps_web.mp4": {
+    "uid": "6710a7ac1adb4d1cb6d71aa43570c2a4",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/6710a7ac1adb4d1cb6d71aa43570c2a4/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/6710a7ac1adb4d1cb6d71aa43570c2a4/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/6710a7ac1adb4d1cb6d71aa43570c2a4/thumbnails/thumbnail.jpg",
+    "duration": 43.8
+  },
+  "tipsy%20triad/tipsy%20triad_web.mp4": {
+    "uid": "bae021417d388e2fc29680d4fd2a993e",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/bae021417d388e2fc29680d4fd2a993e/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/bae021417d388e2fc29680d4fd2a993e/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/bae021417d388e2fc29680d4fd2a993e/thumbnails/thumbnail.jpg",
+    "duration": 92.4
+  },
+  "valueME/valueME.mp4": {
+    "uid": "f6f16a72c76c5b67ac71e10022e2d94c",
+    "hls": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/f6f16a72c76c5b67ac71e10022e2d94c/manifest/video.m3u8",
+    "dash": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/f6f16a72c76c5b67ac71e10022e2d94c/manifest/video.mpd",
+    "poster": "https://customer-4gbrk5kt7610ywr7.cloudflarestream.com/f6f16a72c76c5b67ac71e10022e2d94c/thumbnails/thumbnail.jpg",
+    "duration": 40
+  }
+}
