@@ -25,6 +25,13 @@ export function hasStream(src) {
   return streamFor(src) != null;
 }
 
+// Poster still for a video src — the Cloudflare Stream thumbnail when the video
+// has been migrated, else null. Lets grid tiles show a real cover frame instead
+// of the black box a raw <video> paints before it's played.
+export function posterUrlForVideo(src) {
+  return streamFor(src)?.poster || null;
+}
+
 function canPlayHlsNatively(videoEl) {
   return !!(videoEl && videoEl.canPlayType && videoEl.canPlayType('application/vnd.apple.mpegurl'));
 }
@@ -68,7 +75,17 @@ export function upgradeVideos(root) {
 export function playStream(videoEl, src) {
   if (!videoEl) return;
   const entry = streamFor(src);
-  if (!entry) { videoEl.src = src; return; } // not migrated → raw fallback
+  if (!entry) {
+    // Raw R2 media has no CORS headers — a crossOrigin attr would block the
+    // load, so make sure it's cleared before the raw fallback.
+    videoEl.removeAttribute('crossorigin');
+    videoEl.src = src;
+    return;
+  }
+  // Cloudflare Stream serves ACAO:* → mark the load CORS-clean so a <canvas>
+  // can read its frames untainted (the edits ambilight), incl. the native-HLS
+  // path where the element loads the cross-origin manifest directly.
+  videoEl.crossOrigin = 'anonymous';
   if (entry.poster && !videoEl.getAttribute('poster')) videoEl.poster = entry.poster;
   if (canPlayHlsNatively(videoEl)) {
     if (videoEl._hls) stopStream(videoEl);

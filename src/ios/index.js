@@ -5,7 +5,7 @@ import { safePlayVideo, killOtherVideos, attachBeachball } from '../utils/video.
 import { makeShareButton } from '../utils/share.js';
 import { folderToSlug, itemToSlug } from '../utils/slugs.js';
 import { srcsetAttr } from '../utils/media.js';
-import { playStream, upgradeVideos } from '../utils/stream.js';
+import { playStream, upgradeVideos, posterUrlForVideo } from '../utils/stream.js';
 import { isItemRecent } from '../utils/recency.js';
 import { setIcon } from '../utils/icons.js';
 
@@ -932,15 +932,22 @@ function popURLToRoot() {
     iosBtsFolderTitle.textContent = folderName;
     if (iosBtsViewerTitle) iosBtsViewerTitle.textContent = folderName;
 
-    iosBtsFileGrid.innerHTML = iosBtsCurrentFiles.map((f, i) =>
-      f.isVideo
-        ? `<div onclick="iosBtsOpenViewer(${i})" style="aspect-ratio:1;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;background:#111;">
-            <video src="${f.src}" style="width:100%;height:100%;object-fit:cover;" muted playsinline preload="none"></video>
-          </div>`
-        : `<div onclick="iosBtsOpenViewer(${i})" style="aspect-ratio:1;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;background:#111;">
+    iosBtsFileGrid.innerHTML = iosBtsCurrentFiles.map((f, i) => {
+      const tile = 'aspect-ratio:1;overflow:hidden;cursor:pointer;-webkit-tap-highlight-color:transparent;background:#111;position:relative;';
+      if (f.isVideo) {
+        // Stream poster when migrated, else a #t=0.1 media-fragment + preload
+        // "metadata" so the browser paints the first frame instead of a black
+        // box (preload="none" loaded nothing → the black tiles).
+        const poster = posterUrlForVideo(f.src);
+        return `<div onclick="iosBtsOpenViewer(${i})" style="${tile}">
+            <video src="${f.src}#t=0.1"${poster ? ` poster="${poster}"` : ''} style="width:100%;height:100%;object-fit:cover;" muted playsinline preload="metadata"></video>
+            <span style="position:absolute;bottom:6px;right:6px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,0.55);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;pointer-events:none;"><i class="bi bi-play-fill"></i></span>
+          </div>`;
+      }
+      return `<div onclick="iosBtsOpenViewer(${i})" style="${tile}">
             <img src="${f.src}"${srcsetAttr(f.src, '33vw')} style="width:100%;height:100%;object-fit:cover;" />
-          </div>`
-    ).join('');
+          </div>`;
+    }).join('');
 
     // Push transition
     iosBtsScreenFiles.style.display = 'flex';

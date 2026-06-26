@@ -18,7 +18,7 @@
 // last section without rebuilding the DOM.
 // ─────────────────────────────────────────────────────────────────────
 
-import { bringToFront, createWindow } from './windows.js';
+import { bringToFront, createWindow, animateWindowTo } from './windows.js';
 import { renderBoard as renderBoardSection } from './journal-board.js';
 import { openDailyFrameModal } from './games/daily-frame.js';
 import { renderPlay } from './games/play-tab.js';
@@ -142,45 +142,22 @@ function attachWindowChrome(win) {
   win.querySelector('.btn-close-window')?.addEventListener('click', animateClose);
   win.querySelector('.btn-minimize-window')?.addEventListener('click', animateClose);
 
-  // Fullscreen toggle — uses the same fs-animating class as finder windows
-  // so width/height/left/top changes get animated through the existing
-  // transition rule in styles.css.
+  // Fullscreen toggle — shares the finder's WAAPI window animation so the grow
+  // is deterministic (the old fs-animating CSS path was removed).
   win.querySelector('.btn-fullscreen-window')?.addEventListener('click', () => {
     const isMax = win.dataset.isMaximized === 'true';
-
-    // Pin current geometry as pixels before enabling transitions so the
-    // first frame doesn't jump.
-    const rect = win.getBoundingClientRect();
-    win.style.left = `${rect.left}px`;
-    win.style.top = `${rect.top}px`;
-    win.style.width = `${rect.width}px`;
-    win.style.height = `${rect.height}px`;
-    void win.offsetWidth;
-    win.classList.add('fs-animating');
-    void win.offsetWidth;
-
+    const rootW = window.innerWidth, rootH = window.innerHeight;
+    const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    let target;
     if (isMax) {
-      win.style.width = '860px';
-      win.style.height = '600px';
-      win.style.left = `calc(50% - 430px)`;
-      win.style.top = `calc(50% - 280px)`;
+      const w = 860, h = 600;
+      target = { left: (rootW - w) / 2, top: (rootH - h) / 2, width: w, height: h };
       win.dataset.isMaximized = 'false';
     } else {
-      win.dataset.prevLeftPx = String(rect.left);
-      win.dataset.prevTopPx = String(rect.top);
-      win.style.width = `${window.innerWidth}px`;
-      win.style.height = `${window.innerHeight - 32}px`;
-      win.style.left = '0px';
-      win.style.top = '32px';
+      target = { left: 0, top: 2 * remPx, width: rootW, height: rootH - 2 * remPx };
       win.dataset.isMaximized = 'true';
     }
-
-    const cleanup = () => {
-      win.classList.remove('fs-animating');
-      win.removeEventListener('transitionend', cleanup);
-    };
-    win.addEventListener('transitionend', cleanup);
-    setTimeout(cleanup, 400);
+    animateWindowTo(win, target);
   });
 }
 

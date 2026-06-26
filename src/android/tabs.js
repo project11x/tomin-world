@@ -9,6 +9,7 @@
 import { portfolioData } from '../../data.js';
 
 import { srcsetAttr } from '../utils/media.js';
+import { posterUrlForVideo } from '../utils/stream.js';
 
 (function () {
   const navItems = document.querySelectorAll('#android-screen [data-android-tab]');
@@ -529,7 +530,7 @@ import { srcsetAttr } from '../utils/media.js';
           gridEl.innerHTML = files.map((f, i) => `
             <div class="md-bts-tile" data-bts-file-index="${i}">
               ${f.isVideo
-                ? `<video src="${f.src}#t=0.1" muted playsinline preload="metadata"></video><span class="md-bts-play"><i class="bi bi-play-fill"></i></span>`
+                ? `<video src="${f.src}#t=0.1"${posterUrlForVideo(f.src) ? ` poster="${posterUrlForVideo(f.src)}"` : ''} muted playsinline preload="metadata"></video><span class="md-bts-play"><i class="bi bi-play-fill"></i></span>`
                 : `<img src="${f.src}"${srcsetAttr(f.src, '33vw')} loading="lazy" />`}
             </div>
           `).join('');

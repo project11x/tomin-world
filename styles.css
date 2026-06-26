@@ -167,6 +167,58 @@
       box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
     }
 
+    /* Ambient backlight behind the edits player — a live "ambilight". Two soft
+       radial pools take the average colour of the playing frame's left/right
+       half (--edits-accent-l/-r, driven per-frame in edits-viewer.js). They
+       fall back to the edit's static dominant colour (--edits-accent) when the
+       live sampler is off or the video canvas is cross-origin tainted. Sits
+       above the dark-mode overlay, below the z-10 content. */
+    #edits-ambient {
+      position: absolute;
+      inset: -15%;
+      pointer-events: none;
+      background:
+        radial-gradient(55% 65% at 18% 28%, var(--edits-accent-l, var(--edits-accent, transparent)) 0%, transparent 66%),
+        radial-gradient(55% 65% at 84% 74%, var(--edits-accent-r, var(--edits-accent, transparent)) 0%, transparent 66%);
+      opacity: 0.4;
+      filter: blur(45px);
+      transition: opacity 400ms ease;
+    }
+    .dark #edits-ambient {
+      opacity: 0.72;
+    }
+
+    /* Edits viewer layout. The vertical band scales with the viewport, and the
+       bottom inset reserves the dock's footprint (~94px) plus a gap so the
+       player + list never collide with it. */
+    #edits-viewer {
+      padding: clamp(28px, 6vh, 64px) clamp(20px, 4vw, 56px) clamp(120px, 15vh, 190px);
+    }
+    /* Inner list+player row: fills the band, capped so it doesn't sprawl
+       edge-to-edge on very large monitors. */
+    #edits-stage {
+      width: 100%;
+      max-width: 1500px;
+      height: 100%;
+      max-height: 860px;
+    }
+    /* Left list scales with the window instead of a hard 260px. */
+    #edits-list-card {
+      width: clamp(200px, 17vw, 300px);
+    }
+    /* Player fits-contains inside its column: the largest box of the video's
+       aspect ratio (--r, set per-edit in JS) that fits both the column width
+       and height. No stretch, no overflow, no letterbox — and it scales with
+       the window. The wrapper is a size container so cqw/cqh = the column. */
+    #edits-player-wrap {
+      container-type: size;
+    }
+    #edits-right-card {
+      --r: 1.7778;
+      width: min(100cqw, 100cqh * var(--r));
+      height: min(100cqh, 100cqw / var(--r));
+    }
+
     /* Custom Range Slider */
     .mag-slider {
       transition: all 0.2s ease;
@@ -1109,20 +1161,8 @@
   will-change: transform, opacity;
 }
 
-/* Animate the green-button fullscreen toggle. The template uses
-   `transition-colors` (to avoid backdrop-filter flashbang on mount), so
-   size/position changes don't animate by default — add them explicitly. */
-.app-window.fs-animating {
-  transition-property: width, height, left, top, transform, background-color, color, border-color !important;
-  transition-duration: 280ms, 280ms, 280ms, 280ms, 280ms, 300ms, 300ms, 300ms !important;
-  transition-timing-function:
-    cubic-bezier(0.4, 0, 0.2, 1),
-    cubic-bezier(0.4, 0, 0.2, 1),
-    cubic-bezier(0.4, 0, 0.2, 1),
-    cubic-bezier(0.4, 0, 0.2, 1),
-    cubic-bezier(0.4, 0, 0.2, 1),
-    ease, ease, ease !important;
-}
+/* The green-button maximize/restore is animated in JS via the Web Animations
+   API (windows.js → toggleFullscreen), so no CSS transition rule is needed. */
 @media (prefers-reduced-motion: reduce) {
   .app-window.closing { animation-duration: 1ms; }
 }

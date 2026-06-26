@@ -103,8 +103,13 @@ window.openQuickLook = function (item, sourceEl = null, ctx = null) {
     // window opens at roughly the same Y size, regardless of whether
     // the photo is portrait, square or landscape — the WIDTH adapts to
     // the photo's aspect ratio (capped at 85vw for very wide shots).
-    contentHtml = `<img class="block object-contain"
-                        style="height:70vh; width:auto; max-width:85vw; max-height:70vh;"
+    // `width:auto` with an unknown intrinsic size collapses to min-width while
+    // the photo loads — that's the thin vertical strip. A placeholder
+    // aspect-ratio reserves a sensible width at height:70vh; it's cleared on
+    // load so the real ratio takes over (snap is invisible because a fresh
+    // open already waits for decode before revealing — see below).
+    contentHtml = `<img class="block object-contain" data-ql-photo
+                        style="height:70vh; width:auto; aspect-ratio:3/2; max-width:85vw; max-height:70vh;"
                         src="${item.src}"${srcsetAttr(item.src, '85vw')} />`;
     qlControls.style.display = 'none';
   }
@@ -206,6 +211,13 @@ window.openQuickLook = function (item, sourceEl = null, ctx = null) {
   // modal's real size — measuring while the <img> is still 0×0 would morph
   // onto the collapsed min-width box and then visibly re-layout.
   const imgEl = quickLookContent.querySelector('img');
+  if (imgEl) {
+    // Drop the placeholder ratio once the real dimensions are known so the
+    // box snaps to the photo's true aspect (portrait/square/landscape).
+    const adoptRealRatio = () => { imgEl.style.aspectRatio = ''; };
+    if (imgEl.complete && imgEl.naturalWidth) adoptRealRatio();
+    else imgEl.addEventListener('load', adoptRealRatio, { once: true });
+  }
   if (wasHidden && imgEl && !imgEl.complete && imgEl.decode) {
     Promise.race([
       imgEl.decode().catch(() => {}),

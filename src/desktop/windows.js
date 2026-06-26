@@ -717,53 +717,69 @@ window.handleItemClick = function (folder, index, event) {
   window.dispatchEvent(new CustomEvent('item-opened', { detail: { folder, index } }));
 };
 
-function toggleFullscreen(win) {
+// Animate a window's geometry to a target {left,top,width,height} (px numbers)
+// with the Web Animations API. Deterministic — unlike a freshly-added CSS
+// transition it's never batched away into an instant jump ("instantly big, no
+// growing"). Commits the end state inline so drag/restore read real geometry.
+// Shared by the finder + journal maximize buttons.
+export function animateWindowTo(win, target) {
+  // getBoundingClientRect reflects the live animated box, so reading it first
+  // lets a rapid re-click hand off smoothly from a still-running animation.
   const rect = win.getBoundingClientRect();
+  win.style.transform = 'none';
+  const commit = () => {
+    win.style.left = `${target.left}px`;
+    win.style.top = `${target.top}px`;
+    win.style.width = `${target.width}px`;
+    win.style.height = `${target.height}px`;
+  };
+  // Cancel any in-flight animation so its onfinish can't commit a stale target.
+  if (win._fsAnim) { try { win._fsAnim.cancel(); } catch { /* noop */ } win._fsAnim = null; }
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduce || typeof win.animate !== 'function') { commit(); return; }
+
+  const anim = win.animate(
+    [
+      { left: `${rect.left}px`, top: `${rect.top}px`, width: `${rect.width}px`, height: `${rect.height}px` },
+      { left: `${target.left}px`, top: `${target.top}px`, width: `${target.width}px`, height: `${target.height}px` },
+    ],
+    { duration: 300, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'both' }
+  );
+  win._fsAnim = anim;
+  anim.onfinish = () => {
+    commit();
+    try { anim.cancel(); } catch { /* noop */ }
+    if (win._fsAnim === anim) win._fsAnim = null;
+  };
+}
+
+function toggleFullscreen(win) {
   const rootH = window.innerHeight;
   const rootW = window.innerWidth;
   const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-
-  // Step 1: pin current geometry as px (no transition active yet) so the
-  // window's visible position doesn't jump when we drop the transform/%.
-  win.style.transform = 'none';
-  win.style.left = `${rect.left}px`;
-  win.style.top = `${rect.top}px`;
-  win.style.width = `${rect.width}px`;
-  win.style.height = `${rect.height}px`;
-
-  // Step 2: flush, then enable the transition rule, then flush again — Safari
-  // needs the transition to be live BEFORE the target values are written,
-  // otherwise it batches and skips straight to the end state.
-  void win.offsetWidth;
-  win.classList.add('fs-animating');
-  void win.offsetWidth;
-
-  // Step 3: write target geometry. Now the change is animated.
+  const rect = win.getBoundingClientRect();
   const willMaximize = win.dataset.isMaximized !== 'true';
+  let target;
   if (willMaximize) {
+    // Remember the pre-maximize box so restore returns to the exact size/spot.
     win.dataset.prevLeftPx = rect.left;
     win.dataset.prevTopPx = rect.top;
-    win.style.width = `${rootW}px`;
-    win.style.height = `${rootH - 2 * remPx}px`;
-    win.style.left = '0px';
-    win.style.top = `${2 * remPx}px`;
-    win.dataset.isMaximized = 'true';
+    win.dataset.prevWidthPx = rect.width;
+    win.dataset.prevHeightPx = rect.height;
+    target = { left: 0, top: 2 * remPx, width: rootW, height: rootH - 2 * remPx };
   } else {
-    const restoreLeft = win.dataset.prevLeftPx;
-    const restoreTop = win.dataset.prevTopPx;
-    win.style.width = '960px';
-    win.style.height = '620px';
-    win.style.left = restoreLeft != null ? `${restoreLeft}px` : `${(rootW - 960) / 2}px`;
-    win.style.top = restoreTop != null ? `${restoreTop}px` : `${(rootH - 620) / 2}px`;
-    win.dataset.isMaximized = 'false';
+    const w = win.dataset.prevWidthPx ? parseFloat(win.dataset.prevWidthPx) : 960;
+    const h = win.dataset.prevHeightPx ? parseFloat(win.dataset.prevHeightPx) : 620;
+    target = {
+      left: win.dataset.prevLeftPx != null ? parseFloat(win.dataset.prevLeftPx) : (rootW - w) / 2,
+      top: win.dataset.prevTopPx != null ? parseFloat(win.dataset.prevTopPx) : (rootH - h) / 2,
+      width: w,
+      height: h,
+    };
   }
-
-  const cleanup = () => {
-    win.classList.remove('fs-animating');
-    win.removeEventListener('transitionend', cleanup);
-  };
-  win.addEventListener('transitionend', cleanup);
-  setTimeout(cleanup, 400);
+  win.dataset.isMaximized = willMaximize ? 'true' : 'false';
+  animateWindowTo(win, target);
 }
 
 // --- Desktop Icons Dragging Logic ---
