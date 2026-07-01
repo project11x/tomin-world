@@ -18,7 +18,8 @@ import { gameAssetUrl } from './game-asset-url.js';
 const posterByBase = new Map();  // normalised video base name → R2 thumb key
 const editVideos = new Map();    // folder name (lowercase) → Set of base names
 const posterByEdit = new Map();  // folder name (lowercase) → R2 thumb key (first frame)
-const colorByEdit = new Map();   // folder name (lowercase) → '#rrggbb'
+const colorByEdit = new Map();   // folder name (lowercase) → '#rrggbb' (dominant)
+const paletteByEdit = new Map(); // folder name (lowercase) → ['#rrggbb', …]
 let ready = false;
 
 // "How Life Feels HQ_web.mp4" → "how life feels hq" — strips the extension
@@ -48,7 +49,10 @@ Promise.allSettled([
     }
   }
   for (const [edit, palette] of Object.entries(colors.value?.colors || {})) {
-    if (Array.isArray(palette) && palette.length) colorByEdit.set(edit.toLowerCase(), palette[0]);
+    if (Array.isArray(palette) && palette.length) {
+      colorByEdit.set(edit.toLowerCase(), palette[0]);
+      paletteByEdit.set(edit.toLowerCase(), palette);
+    }
   }
   if (posterByBase.size || colorByEdit.size) {
     ready = true;
@@ -75,4 +79,11 @@ export function posterForVideo(item, folderName) {
 export function accentForFolder(folderName) {
   if (!ready) return null;
   return colorByEdit.get((folderName || '').toLowerCase()) || null;
+}
+
+// Full dominant palette (up to 5 '#rrggbb') for a folder — for richer effects
+// like a multi-colour ambient background. null when the folder isn't analysed.
+export function paletteForFolder(folderName) {
+  if (!ready) return null;
+  return paletteByEdit.get((folderName || '').toLowerCase()) || null;
 }

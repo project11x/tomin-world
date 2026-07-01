@@ -1705,3 +1705,610 @@
   width: 0;
   transition: width 200ms linear;
 }
+
+/* ─── Wii Shell — pointer-free channel grid ───────────────────── */
+/* Hide the Aero/macOS shell under Wii on desktop — Wii replaces it. */
+@media (min-width: 768px) {
+  .theme-wii header,
+  .theme-wii #macos-dock,
+  .theme-wii main#desktop-main {
+    display: none !important;
+  }
+}
+/* Shell is hidden by default; only visible under .theme-wii on desktop. */
+#wii-shell { display: none; }
+@media (min-width: 768px) {
+  .theme-wii #wii-shell { display: flex; }
+}
+
+/* Registered so the ambient colours can transition smoothly when focus moves
+   between projects (plain custom properties don't animate). */
+@property --wii-amb-1 { syntax: '<color>'; inherits: true; initial-value: #2a2f36; }
+@property --wii-amb-2 { syntax: '<color>'; inherits: true; initial-value: #20242b; }
+@property --wii-amb-3 { syntax: '<color>'; inherits: true; initial-value: #15181c; }
+
+#wii-shell {
+  /* Ambient glows — set per focused project in JS (applyAmbilight). */
+  --wii-amb-1: #2a2f36;
+  --wii-amb-2: #20242b;
+  --wii-amb-3: #15181c;
+  --wii-ring-glow: #1fa6e0;
+  --wii-tile: #2b3036;
+  --wii-tile-edge: rgba(255, 255, 255, 0.14);
+  --wii-ink: #f1f4f8;
+  --wii-ink-dim: #9aa6b2;
+  --wii-glow: #1fa6e0;
+  position: fixed;
+  inset: 0;
+  flex-direction: column;
+  /* Project-tinted ambient pools over a dark base — the Ambilight. */
+  background:
+    radial-gradient(85% 90% at 18% 8%, var(--wii-amb-1), transparent 78%),
+    radial-gradient(80% 85% at 88% 24%, var(--wii-amb-2), transparent 80%),
+    radial-gradient(110% 95% at 55% 112%, var(--wii-amb-3), transparent 80%),
+    #0a0c0f;
+  transition: --wii-amb-1 700ms ease, --wii-amb-2 700ms ease, --wii-amb-3 700ms ease;
+  color: var(--wii-ink);
+  z-index: 50;
+  overflow: hidden;
+  font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+}
+
+/* Theme crossfade veil — animated ambient "blobs" that drift in and settle
+   (entering) / recede (leaving), slowly painting over / revealing the desktop.
+   z-index above the dock (10000) so it actually covers everything. */
+.wii-fade-veil {
+  position: fixed; inset: 0; z-index: 100000; pointer-events: none; overflow: hidden;
+  --wii-amb-1: #2a2f36; --wii-amb-2: #20242b; --wii-amb-3: #15181c;
+}
+.wii-veil-base { position: absolute; inset: 0; background: #0a0c0f; opacity: 0; }
+.wii-blob {
+  position: absolute; width: 115vw; height: 115vw; border-radius: 50%;
+  filter: blur(55px); opacity: 0; will-change: transform, opacity;
+  transform: translate(-50%, -50%) scale(.4);
+}
+.wii-blob-1 { left: 18%; top: 8%;   background: radial-gradient(circle, var(--wii-amb-1) 0%, transparent 62%); }
+.wii-blob-2 { left: 86%; top: 22%;  background: radial-gradient(circle, var(--wii-amb-2) 0%, transparent 64%); }
+.wii-blob-3 { left: 55%; top: 108%; background: radial-gradient(circle, var(--wii-amb-3) 0%, transparent 66%); }
+
+@keyframes wii-base-in {
+  0% { opacity: 0; } 32% { opacity: .12; } 62% { opacity: .5; } 88% { opacity: 1; } 100% { opacity: 1; }
+}
+@keyframes wii-blob-a {
+  0%   { opacity: 0; transform: translate(-50%,-50%) scale(.35) translate(-8vw, 5vw); }
+  22%  { opacity: 1; }
+  46%  { transform: translate(-50%,-50%) scale(1.13) translate(4.5vw, -3vw); }
+  68%  { transform: translate(-50%,-50%) scale(.95) translate(-1.5vw, 1vw); }
+  85%  { transform: translate(-50%,-50%) scale(1.03) translate(.6vw, -.4vw); }
+  100% { opacity: 1; transform: translate(-50%,-50%) scale(1) translate(0,0); }
+}
+@keyframes wii-blob-b {
+  0%   { opacity: 0; transform: translate(-50%,-50%) scale(.4) translate(7vw, 4vw); }
+  22%  { opacity: 1; }
+  48%  { transform: translate(-50%,-50%) scale(1.1) translate(-5vw, 2.5vw); }
+  72%  { transform: translate(-50%,-50%) scale(.97) translate(2vw, -1vw); }
+  100% { opacity: 1; transform: translate(-50%,-50%) scale(1) translate(0,0); }
+}
+@keyframes wii-blob-c {
+  0%   { opacity: 0; transform: translate(-50%,-50%) scale(.45) translate(0, 9vw); }
+  22%  { opacity: 1; }
+  46%  { transform: translate(-50%,-50%) scale(1.15) translate(3vw, -4vw); }
+  72%  { transform: translate(-50%,-50%) scale(.95) translate(-1vw, 1.5vw); }
+  100% { opacity: 1; transform: translate(-50%,-50%) scale(1) translate(0,0); }
+}
+
+.wii-fade-veil.is-on .wii-veil-base { animation: wii-base-in 1150ms ease forwards; }
+.wii-fade-veil.is-on .wii-blob-1 { animation: wii-blob-a 1250ms cubic-bezier(.3,.7,.3,1) forwards; }
+.wii-fade-veil.is-on .wii-blob-2 { animation: wii-blob-b 1300ms cubic-bezier(.3,.7,.3,1) forwards; }
+.wii-fade-veil.is-on .wii-blob-3 { animation: wii-blob-c 1250ms cubic-bezier(.3,.7,.3,1) 70ms forwards; }
+
+/* Exit: hold the full state, switch theme beneath, then play the blobs in
+   reverse (recede) to reveal the desktop. */
+.wii-fade-veil.is-full .wii-veil-base { opacity: 1; }
+.wii-fade-veil.is-full .wii-blob { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+.wii-fade-veil.is-off .wii-veil-base { animation: wii-base-in 900ms ease reverse forwards; }
+.wii-fade-veil.is-off .wii-blob-1 { animation: wii-blob-a 950ms cubic-bezier(.3,.7,.3,1) reverse forwards; }
+.wii-fade-veil.is-off .wii-blob-2 { animation: wii-blob-b 980ms cubic-bezier(.3,.7,.3,1) reverse forwards; }
+.wii-fade-veil.is-off .wii-blob-3 { animation: wii-blob-c 950ms cubic-bezier(.3,.7,.3,1) reverse forwards; }
+
+@media (prefers-reduced-motion: reduce) { .wii-fade-veil { display: none; } }
+
+.wii-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 22px 36px; flex-shrink: 0;
+}
+.wii-brand { font-weight: 700; letter-spacing: -0.01em; font-size: 18px; }
+.wii-topbar-right { display: flex; align-items: center; gap: 18px; }
+.wii-clock { font-variant-numeric: tabular-nums; color: var(--wii-ink-dim); font-weight: 600; }
+.wii-exit {
+  display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+  border: 1px solid var(--wii-tile-edge); border-radius: 999px;
+  background: rgba(255,255,255,.06); color: var(--wii-ink);
+  padding: 7px 15px 7px 12px; font-size: 13px; font-weight: 600;
+  transition: background 140ms ease, box-shadow 140ms ease;
+}
+.wii-exit:hover { background: rgba(255,255,255,.14); }
+.wii-exit:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--wii-ring-glow, #1fa6e0);
+}
+.wii-exit-icon { font-size: 15px; line-height: 1; opacity: .85; }
+
+/* ── Theme open / close (boot) animation ──────────────────────────
+   The shell background stays put; only its content moves, so no blank
+   frame is ever revealed. Tiles pop in/out as a staggered wave (--i). */
+@keyframes wii-slide-down { from { opacity: 0; transform: translateY(-120%); } to { opacity: 1; transform: none; } }
+@keyframes wii-slide-up   { from { opacity: 0; transform: translateY(120%); }  to { opacity: 1; transform: none; } }
+@keyframes wii-slide-out-up   { from { opacity: 1; } to { opacity: 0; transform: translateY(-120%); } }
+@keyframes wii-slide-out-down { from { opacity: 1; } to { opacity: 0; transform: translateY(120%); } }
+@keyframes wii-tile-in  { from { opacity: 0; transform: translateY(24px) scale(.85); } to { opacity: 1; transform: none; } }
+@keyframes wii-tile-out { from { opacity: 1; } to { opacity: 0; transform: translateY(14px) scale(.9); } }
+
+.wii-intro .wii-topbar { animation: wii-slide-down 520ms cubic-bezier(.2,.85,.3,1) backwards; }
+.wii-intro .wii-footer { animation: wii-slide-up 520ms cubic-bezier(.2,.85,.3,1) backwards; }
+.wii-outro .wii-topbar { animation: wii-slide-out-up 340ms ease forwards; }
+.wii-outro .wii-footer { animation: wii-slide-out-down 340ms ease forwards; }
+
+.wii-intro .wii-channel {
+  animation: wii-tile-in 440ms cubic-bezier(.2,.9,.3,1.25) backwards;
+  animation-delay: calc(var(--i, 0) * 32ms + 140ms);
+}
+.wii-outro .wii-channel {
+  animation: wii-tile-out 300ms cubic-bezier(.4,0,.7,.4) forwards;
+  animation-delay: calc(var(--i, 0) * 14ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .wii-intro .wii-topbar, .wii-intro .wii-footer, .wii-intro .wii-channel,
+  .wii-outro .wii-topbar, .wii-outro .wii-footer, .wii-outro .wii-channel { animation: none; }
+}
+
+.wii-channels {
+  flex: 1; display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px 30px;
+  align-content: center;
+  padding: 8px 56px 28px;
+  overflow-y: auto;
+}
+@media (min-width: 1280px) { .wii-channels { grid-template-columns: repeat(5, 1fr); } }
+
+.wii-channel {
+  appearance: none; border: 0; background: transparent; cursor: pointer;
+  display: flex; flex-direction: column; gap: 8px; align-items: center;
+  padding: 0; color: inherit; text-align: center;
+  transition: transform 180ms cubic-bezier(.2,.7,.3,1);
+}
+.wii-channel-face {
+  width: 100%; aspect-ratio: 16 / 10; border-radius: 18px;
+  background: var(--wii-tile) center/cover no-repeat;
+  border: 1px solid var(--wii-tile-edge);
+  box-shadow: 0 6px 16px rgba(20,30,40,.12), inset 0 1px 0 rgba(255,255,255,.6);
+  position: relative; overflow: hidden;
+}
+.wii-channel-face::after { /* glossy Wii-style top sheen */
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.4), rgba(255,255,255,0) 48%);
+  pointer-events: none;
+}
+.wii-channel-face.is-video { background: linear-gradient(135deg, #cbd6e0, #9fb0bf); }
+.dark .wii-channel-face.is-video { background: linear-gradient(135deg, #454c54, #2c3137); }
+/* Edit/cover frame fills the tile face (Stream poster image, or video still). */
+.wii-face-video, .wii-face-img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; pointer-events: none; z-index: 0;
+}
+.wii-play {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  font-size: 30px; color: rgba(255,255,255,.92);
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.35)); z-index: 1; pointer-events: none;
+}
+.wii-channel-label {
+  font-size: 14px; font-weight: 600; color: var(--wii-ink);
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.wii-channel-sub { font-size: 12px; color: var(--wii-ink-dim); }
+/* Label + meta stay hidden until the channel is hovered or focused (TV-menu
+   style). Opacity only, so the grid never reflows. */
+.wii-channel-label, .wii-channel-sub { opacity: 0; transition: opacity 160ms ease; }
+.wii-channel:hover .wii-channel-label,
+.wii-channel:hover .wii-channel-sub,
+.wii-channel.is-focused .wii-channel-label,
+.wii-channel.is-focused .wii-channel-sub { opacity: 1; }
+
+/* Apple-TV-style focus: lift + glow ring, no OS outline. Driven by a JS class
+   (.is-focused) so it survives window blur, plus :hover for mouse users. */
+.wii-channel:focus { outline: none; }
+.wii-channel.is-focused,
+.wii-channel:hover { transform: translateY(-6px) scale(1.05); }
+.wii-channel.is-focused .wii-channel-face,
+.wii-channel:hover .wii-channel-face {
+  box-shadow: 0 18px 38px rgba(0,0,0,.5),
+              0 0 0 3px rgba(255,255,255,.92),
+              0 0 30px 2px var(--wii-ring-glow),
+              inset 0 1px 0 rgba(255,255,255,.35);
+}
+
+.wii-footer {
+  display: flex; gap: 26px; justify-content: center; align-items: center;
+  padding: 16px; flex-shrink: 0; color: var(--wii-ink-dim);
+  border-top: 1px solid color-mix(in srgb, var(--wii-ink-dim) 26%, transparent);
+}
+.wii-hint { font-size: 13px; display: inline-flex; gap: 8px; align-items: center; }
+.wii-key {
+  font-weight: 700; color: var(--wii-ink);
+  background: var(--wii-tile); border: 1px solid var(--wii-tile-edge);
+  border-radius: 6px; padding: 2px 8px; font-size: 12px;
+}
+
+/* ── Channel open: the screen zooms INTO the tile, then blacks out. ── */
+.wii-channels {
+  transition: transform 460ms cubic-bezier(.55,0,.3,1), opacity 360ms ease 120ms;
+  transform-origin: center;
+}
+.wii-channels.is-zoomed { transform: scale(4.5); opacity: 0; }
+#wii-shell .wii-topbar, #wii-shell .wii-footer { transition: opacity 280ms ease; }
+#wii-shell.is-opening .wii-topbar,
+#wii-shell.is-opening .wii-footer { opacity: 0; pointer-events: none; }
+.wii-zoom-backdrop {
+  position: absolute; inset: 0; z-index: 55; background: #05080b;
+  opacity: 0; transition: opacity 360ms ease 100ms;
+}
+.wii-zoom-backdrop.is-on { opacity: 1; }
+
+/* ── Coverflow: three files at a time, centre flat & large. ── */
+.wii-overlay {
+  position: absolute; inset: 0; z-index: 60;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 260ms ease;
+}
+.wii-overlay.is-open { opacity: 1; }
+.wii-overlay:focus { outline: none; }
+.wii-cover {
+  position: relative; width: 100%; flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  perspective: 1600px;
+}
+.wii-cover-track {
+  position: relative; width: 100%; height: min(64vh, 560px);
+  transform-style: preserve-3d;
+}
+.wii-cover-card {
+  position: absolute; top: 50%; left: 50%;
+  width: min(40vw, 460px); cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  transform: translate(-50%, -50%);
+  transition: transform 360ms cubic-bezier(.25,.8,.3,1), opacity 320ms ease;
+  will-change: transform, opacity;
+}
+.wii-cover-media {
+  position: relative; width: 100%; aspect-ratio: 4 / 3;
+  border-radius: 18px; overflow: hidden; background: #000;
+  box-shadow: 0 24px 60px rgba(0,0,0,.55);
+  display: flex; align-items: center; justify-content: center;
+}
+.wii-cover-media img, .wii-cover-media video {
+  width: 100%; height: 100%; object-fit: cover; pointer-events: none;
+}
+.wii-cover-card.is-current .wii-cover-media {
+  box-shadow: 0 30px 80px rgba(0,0,0,.7), 0 0 0 3px rgba(255,255,255,.14);
+}
+/* The coverflow ▶ is a translucent circular play button. */
+.wii-cover-media .wii-play {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: rgba(255,255,255,.26); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; transform: translate(-50%, -50%);
+}
+.wii-cover-name {
+  color: #cdd9e4; font-size: 16px; font-weight: 600; text-align: center;
+  max-width: 92%; line-height: 1.25;
+}
+.wii-cover-card:not(.is-current) .wii-cover-name { opacity: .6; font-size: 14px; }
+.wii-cover-caption {
+  color: #8c97a3; font-size: 13px; font-variant-numeric: tabular-nums; margin-top: 8px;
+}
+.wii-cover-hint {
+  color: #6f7a86; font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+  margin-top: 6px; padding-bottom: 28px;
+}
+
+/* Nav arrows. */
+.wii-nav {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 4;
+  width: 54px; height: 54px; border-radius: 50%; border: 0; cursor: pointer;
+  background: rgba(255,255,255,.92); color: #1a1f26; font-size: 26px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 6px 18px rgba(0,0,0,.4);
+}
+.wii-nav:focus { outline: 3px solid var(--wii-glow, #1fa6e0); }
+.wii-nav-prev { left: 4%; }
+.wii-nav-next { right: 4%; }
+
+/* ── Fullscreen viewer (Enter on the centred file). ── */
+.wii-viewer {
+  position: absolute; inset: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(3,5,8,0); pointer-events: none;
+  opacity: 0; transition: opacity 220ms ease, background 220ms ease;
+}
+.wii-overlay.viewer-open .wii-viewer { pointer-events: auto; }
+.wii-viewer.is-open { opacity: 1; background: rgba(3,5,8,.95); }
+.wii-stage {
+  position: relative;
+  width: min(86vw, 1200px); height: min(82vh, 760px);
+  border-radius: 20px; overflow: hidden; background: #000;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 300ms cubic-bezier(.2,.8,.25,1);
+  box-shadow: 0 30px 90px rgba(0,0,0,.6);
+}
+/* CSS "fullscreen": fills the whole viewport (gamepad-safe, never stuck).
+   transform/transition:none override any FLIP-open transform and apply instantly
+   so it always fills, even if a transition is throttled. */
+.wii-stage.is-max {
+  width: 100vw; height: 100vh; border-radius: 0; box-shadow: none;
+  transform: none !important; transition: none !important;
+}
+.wii-media {
+  /* Fill the stage box, scaling UP small/low-res edits too, and stop when the
+     content hits the horizontal or vertical edge (contain = fit, no crop).
+     max-width/height alone only shrinks — it never grows a small video. */
+  width: 100%; height: 100%; object-fit: contain;
+  position: relative; z-index: 1; transition: opacity 260ms ease;
+}
+/* Blur-up placeholder + spinner while the full-res file streams in. */
+.wii-stage.is-loading .wii-media { opacity: 0; }
+.wii-ph {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;
+  filter: blur(14px); transform: scale(1.05); opacity: .55; z-index: 0;
+  transition: opacity 260ms ease;
+}
+.wii-stage:not(.is-loading) .wii-ph { opacity: 0; }
+.wii-loader {
+  position: absolute; z-index: 2; width: 46px; height: 46px; border-radius: 50%;
+  border: 3px solid rgba(255,255,255,.22); border-top-color: rgba(255,255,255,.9);
+  animation: wii-spin .8s linear infinite;
+}
+.wii-stage:not(.is-loading) .wii-loader { display: none; }
+@keyframes wii-spin { to { transform: rotate(360deg); } }
+
+/* ── Custom video controls (Wii-styled, accent-tinted) ── */
+.wii-play-overlay {
+  position: absolute; inset: 0; z-index: 3; border: 0; cursor: pointer;
+  display: grid; place-items: center; background: transparent;
+  transition: opacity 200ms ease;
+}
+.wii-stage[data-playing] .wii-play-overlay { opacity: 0; pointer-events: none; }
+.wii-play-fab {
+  width: 84px; height: 84px; border-radius: 50%; color: #fff;
+  background: rgba(18,22,28,.5); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.25); box-shadow: 0 8px 30px rgba(0,0,0,.45);
+  display: grid; place-items: center;
+}
+.wii-play-fab svg { width: 40px; height: 40px; margin-left: 3px; }
+
+.wii-controls {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 4;
+  display: flex; align-items: center; gap: 14px; padding: 26px 22px 18px;
+  background: linear-gradient(to top, rgba(6,8,11,.88), rgba(6,8,11,0));
+  transition: opacity 240ms ease, transform 240ms ease;
+}
+.wii-stage.controls-hidden .wii-controls { opacity: 0; transform: translateY(10px); pointer-events: none; }
+.wii-stage.controls-hidden { cursor: none; }
+.wii-pc-btn {
+  flex: 0 0 auto; width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer;
+  background: rgba(255,255,255,.12); color: #fff; display: grid; place-items: center;
+  transition: background 140ms ease;
+}
+.wii-pc-btn:hover { background: rgba(255,255,255,.22); }
+.wii-pc-btn:focus-visible { outline: 2px solid var(--wii-ring-glow, #1fa6e0); outline-offset: 2px; }
+.wii-pc-btn svg { width: 22px; height: 22px; }
+.wii-pc-time {
+  color: #cdd6df; font-size: 13px; font-variant-numeric: tabular-nums;
+  min-width: 40px; text-align: center;
+}
+.wii-pc-scrub { position: relative; flex: 1; height: 28px; display: flex; align-items: center; cursor: pointer; }
+.wii-pc-track, .wii-pc-buf, .wii-pc-fill {
+  position: absolute; left: 0; height: 5px; border-radius: 3px;
+}
+.wii-pc-track { width: 100%; background: rgba(255,255,255,.18); }
+.wii-pc-buf { width: 0; background: rgba(255,255,255,.3); }
+.wii-pc-fill {
+  width: 0; background: var(--wii-ring-glow, #1fa6e0);
+  box-shadow: 0 0 10px var(--wii-ring-glow, #1fa6e0);
+}
+.wii-pc-thumb {
+  position: absolute; left: 0; top: 50%; width: 14px; height: 14px; border-radius: 50%;
+  background: #fff; transform: translate(-50%, -50%); box-shadow: 0 1px 4px rgba(0,0,0,.5);
+  pointer-events: none;
+}
+.wii-pc-input {
+  position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer;
+}
+
+/* Close buttons (coverflow back + viewer close). */
+.wii-close {
+  position: absolute; top: 22px; right: 26px; z-index: 6;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(255,255,255,.14); border: 0; color: #e8eef4;
+  font-size: 26px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.wii-close:hover { background: rgba(255,255,255,.24); }
+.wii-close:focus { outline: 2px solid var(--wii-glow, #1fa6e0); }
+
+/* ── Magazine page reader (single-page horizontal pager) ── */
+.wii-reader {
+  position: absolute; inset: 0; z-index: 12;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(3,5,8,0); opacity: 0; pointer-events: none;
+  transition: opacity 240ms ease, background 240ms ease;
+}
+.wii-overlay.reader-open .wii-reader { pointer-events: auto; }
+.wii-reader.is-open { opacity: 1; background: #05080b; }
+.wii-reader-title {
+  position: absolute; top: 24px; left: 0; right: 0; text-align: center;
+  color: #e8eef4; font-size: 15px; font-weight: 600; letter-spacing: .01em;
+}
+.wii-reader-stage {
+  --wii-page-w: 560px;
+  position: relative; width: min(96vw, 1640px); height: min(82vh, 880px);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 300ms cubic-bezier(.2,.8,.25,1);
+}
+/* Wide window centred on the current page: prev/next peek on either side.
+   The track slides inside; overflow clips the strip at the stage edges. */
+.wii-reader-viewport {
+  width: 100%; height: 100%; overflow: hidden; cursor: grab;
+}
+.wii-reader-viewport.is-dragging { cursor: grabbing; }
+/* Pages butt edge-to-edge — no gap, no rounding — so a photo that bleeds
+   across pages stays continuous. The track slides via transform. */
+.wii-reader-track {
+  display: flex; height: 100%; will-change: transform;
+  transition: transform 360ms cubic-bezier(.25,.85,.3,1);
+}
+.wii-reader-page {
+  flex: 0 0 var(--wii-page-w); width: var(--wii-page-w); height: 100%;
+}
+.wii-reader-page img, .wii-reader-page video {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  border-radius: 0; user-select: none; -webkit-user-drag: none; pointer-events: none;
+}
+/* Arrows sit just outside the centred page, over the neighbour peek. */
+.wii-reader .wii-nav-prev { left: calc(50% - var(--wii-page-w) / 2 - 56px); }
+.wii-reader .wii-nav-next { right: calc(50% - var(--wii-page-w) / 2 - 56px); }
+.wii-nav:disabled { opacity: .3; pointer-events: none; }
+.wii-reader-foot {
+  position: absolute; bottom: 28px; left: 0; right: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.wii-reader-progress {
+  width: min(42vw, 360px); height: 4px; border-radius: 2px;
+  background: rgba(255,255,255,.18); overflow: hidden;
+}
+.wii-reader-progress-fill {
+  height: 100%; width: 0; border-radius: 2px;
+  background: var(--wii-ring-glow, #1fa6e0);
+  box-shadow: 0 0 10px var(--wii-ring-glow, #1fa6e0);
+  transition: width 220ms ease;
+}
+.wii-reader-counter { color: #aeb8c2; font-size: 13px; font-variant-numeric: tabular-nums; }
+
+/* Detection prompt — controller/TV-remote nudge. Centred alert dialog on a
+   dimmed scrim; liquid-glass card (deep blur + saturation, specular top edge),
+   capsule buttons, HIG order (secondary left, preferred action right). */
+.wii-prompt {
+  position: fixed; inset: 0; z-index: 100001; /* above the dock (10000) */
+  display: grid; place-items: center;
+  background: rgba(8, 12, 17, 0.32);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  animation: wii-prompt-scrim-in 260ms ease;
+}
+.wii-prompt:focus { outline: none; }
+@keyframes wii-prompt-scrim-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes wii-prompt-card-in {
+  from { opacity: 0; transform: scale(.94) translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.wii-prompt-card {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  width: min(88vw, 420px); padding: 34px 32px 22px;
+  border-radius: 32px; text-align: center;
+  font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+  /* Liquid glass: deep blur + saturation, sheen gradient, specular top edge. */
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,.22) 46%, rgba(255,255,255,.34)),
+    rgba(244, 248, 252, 0.42);
+  -webkit-backdrop-filter: blur(34px) saturate(1.9); backdrop-filter: blur(34px) saturate(1.9);
+  border: 1px solid rgba(255,255,255,.55);
+  box-shadow:
+    0 32px 90px rgba(10,16,24,.35),
+    inset 0 1px 0 rgba(255,255,255,.75),
+    inset 0 -1px 1px rgba(255,255,255,.2);
+  color: #16202a;
+  animation: wii-prompt-card-in 340ms cubic-bezier(.2,.9,.3,1.05) backwards;
+}
+.dark .wii-prompt-card {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04) 46%, rgba(255,255,255,.07)),
+    rgba(26, 32, 40, 0.5);
+  border-color: rgba(255,255,255,.16);
+  box-shadow:
+    0 32px 90px rgba(0,0,0,.55),
+    inset 0 1px 0 rgba(255,255,255,.22),
+    inset 0 -1px 1px rgba(255,255,255,.06);
+  color: #f2f6fa;
+}
+
+.wii-prompt-icon {
+  display: grid; place-items: center; width: 74px; height: 74px; margin-bottom: 6px;
+  border-radius: 50%; color: #0a76a8;
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255,255,255,.75), rgba(255,255,255,.15)),
+    rgba(31,166,224,.22);
+  border: 1px solid rgba(255,255,255,.6);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.7), 0 6px 22px rgba(31,166,224,.25);
+}
+.dark .wii-prompt-icon {
+  color: #9fdcf8; border-color: rgba(255,255,255,.2);
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255,255,255,.2), rgba(255,255,255,.03)),
+    rgba(31,166,224,.2);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 6px 26px rgba(31,166,224,.3);
+}
+.wii-prompt-icon svg { width: 38px; height: 38px; }
+
+.wii-prompt-title { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+.wii-prompt-msg {
+  margin: 0; font-size: 13.5px; line-height: 1.5; max-width: 30ch;
+  color: rgba(22,32,42,.62);
+}
+.dark .wii-prompt-msg { color: rgba(242,246,250,.6); }
+
+.wii-prompt-actions { display: flex; gap: 10px; width: 100%; margin-top: 16px; }
+.wii-prompt-btn {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  cursor: pointer; border-radius: 999px; padding: 12px 0;
+  font-size: 14px; font-weight: 650;
+  transition: filter 120ms ease, transform 120ms ease;
+}
+.wii-prompt-btn:hover { filter: brightness(1.06); }
+.wii-prompt-btn:active { transform: scale(.98); }
+.wii-prompt-btn:focus-visible { outline: 3px solid rgba(31,166,224,.55); outline-offset: 2px; }
+/* Preferred action: tinted glass capsule. */
+.wii-prompt-yes {
+  border: 1px solid rgba(255,255,255,.5); color: #04131c;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.42), rgba(255,255,255,0) 55%),
+    linear-gradient(180deg, #4fc3f0, #1fa6e0);
+  box-shadow: 0 6px 22px rgba(31,166,224,.4), inset 0 1px 0 rgba(255,255,255,.55);
+}
+/* Secondary: neutral glass capsule. */
+.wii-prompt-no {
+  border: 1px solid rgba(255,255,255,.45); color: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,.42), rgba(255,255,255,.16));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+}
+.dark .wii-prompt-no {
+  border-color: rgba(255,255,255,.14);
+  background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.05));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18);
+}
+.wii-btn-badge {
+  display: inline-grid; place-items: center; width: 21px; height: 21px;
+  border-radius: 50%; font-size: 11px; font-weight: 800;
+  background: rgba(255,255,255,.92); color: #0a76a8;
+  box-shadow: 0 1px 2px rgba(0,0,0,.15);
+}
+.wii-prompt-no .wii-btn-badge { background: rgba(255,255,255,.55); color: #3c4a58; }
+.dark .wii-prompt-no .wii-btn-badge { background: rgba(255,255,255,.16); color: #dbe3ea; }
+
+.wii-prompt-foot {
+  margin-top: 10px; font-size: 11.5px; color: rgba(22,32,42,.42);
+}
+.dark .wii-prompt-foot { color: rgba(242,246,250,.38); }
+
+@media (prefers-reduced-motion: reduce) {
+  .wii-prompt, .wii-prompt-card { animation: none; }
+}

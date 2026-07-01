@@ -59,6 +59,7 @@ function updateThemeCheckmarks() {
     'theme-item-default': storedPalette === 'default',
     'theme-item-material': storedPalette === 'material',
     'theme-item-tui': storedPalette === 'tui',
+    'theme-item-wii': storedPalette === 'wii',
   };
   Object.entries(marks).forEach(([id, active]) => {
     const el = document.getElementById(id);
@@ -114,21 +115,25 @@ function setTheme(mode) {
   // point so legacy menu items / stored values never re-skin the page.
   if (mode === 'pink') mode = 'default';
   const previous = html.classList.contains('theme-material') ? 'material'
-    : html.classList.contains('theme-tui') ? 'tui' : 'default';
-  // Remember the non-TUI palette so mobile can fall back to it.
+    : html.classList.contains('theme-tui') ? 'tui'
+    : html.classList.contains('theme-wii') ? 'wii' : 'default';
+  // TUI and Wii are desktop-only shells — remember the prior palette so mobile
+  // can fall back to it (and so leaving the shell restores what came before).
+  const isDesktopOnly = (m) => m === 'tui' || m === 'wii';
   try {
-    if (mode === 'tui' && previous !== 'tui') {
+    if (isDesktopOnly(mode) && !isDesktopOnly(previous)) {
       localStorage.setItem('palette-prev', previous);
     }
   } catch (e) { /* ignore */ }
-  html.classList.remove('theme-material', 'theme-tui');
+  html.classList.remove('theme-material', 'theme-tui', 'theme-wii');
   const isMobile = window.matchMedia('(max-width: 767px)').matches;
   let effective = mode;
-  if (mode === 'tui' && isMobile) {
+  if (isDesktopOnly(mode) && isMobile) {
     try { effective = localStorage.getItem('palette-prev') || 'default'; } catch (e) { effective = 'default'; }
   }
   if (effective === 'material') html.classList.add('theme-material');
   if (effective === 'tui') html.classList.add('theme-tui');
+  if (effective === 'wii') html.classList.add('theme-wii');
   try { localStorage.setItem('palette', mode); } catch (e) { /* ignore */ }
   updateThemeCheckmarks();
   document.dispatchEvent(new Event('theme-change'));
@@ -164,12 +169,13 @@ try {
   const isMobile = window.matchMedia('(max-width: 767px)').matches;
   let effective = stored;
   if (effective === 'pink') effective = 'default';
-  if (stored === 'tui' && isMobile) {
+  if ((stored === 'tui' || stored === 'wii') && isMobile) {
     const prev = localStorage.getItem('palette-prev') || 'default';
     effective = prev === 'pink' ? 'default' : prev;
   }
   if (effective === 'material') document.documentElement.classList.add('theme-material');
   else if (effective === 'tui') document.documentElement.classList.add('theme-tui');
+  else if (effective === 'wii') document.documentElement.classList.add('theme-wii');
 } catch (e) { /* ignore */ }
 
 // Re-apply on viewport changes so resizing the window past the mobile threshold
@@ -177,19 +183,20 @@ try {
 window.addEventListener('resize', () => {
   let stored = 'default';
   try { stored = localStorage.getItem('palette') || 'default'; } catch (e) { /* ignore */ }
-  if (stored !== 'tui') return;
+  if (stored !== 'tui' && stored !== 'wii') return;
+  const themeClass = stored === 'tui' ? 'theme-tui' : 'theme-wii';
   const isMobile = window.matchMedia('(max-width: 767px)').matches;
   const html = document.documentElement;
-  const hasTui = html.classList.contains('theme-tui');
-  if (isMobile && hasTui) {
-    html.classList.remove('theme-tui');
+  const hasShell = html.classList.contains(themeClass);
+  if (isMobile && hasShell) {
+    html.classList.remove(themeClass);
     let prev = 'default';
     try { prev = localStorage.getItem('palette-prev') || 'default'; } catch (e) { /* ignore */ }
     if (prev === 'pink') prev = 'default';
     if (prev === 'material') html.classList.add('theme-material');
-  } else if (!isMobile && !hasTui) {
+  } else if (!isMobile && !hasShell) {
     html.classList.remove('theme-material');
-    html.classList.add('theme-tui');
+    html.classList.add(themeClass);
   }
 });
 

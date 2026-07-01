@@ -16,6 +16,7 @@ import { setDarkMode, setTheme } from './system-bar.js';
   on($('theme-item-default'), () => setTheme('default'));
   on($('theme-item-material'), () => setTheme('material'));
   on($('theme-item-tui'), () => setTheme('tui'));
+  on($('theme-item-wii'), () => (window.enterWiiTheme ? window.enterWiiTheme() : setTheme('wii')));
 
   // Desktop dock
   $$('[data-dock]').forEach((el) => {

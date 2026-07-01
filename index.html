@@ -35,7 +35,7 @@
       // TUI is desktop-only — on mobile fall back to the previously chosen palette.
       var isMobile = window.matchMedia('(max-width: 767px)').matches;
       var effectivePalette = palette;
-      if (palette === 'tui' && isMobile) {
+      if ((palette === 'tui' || palette === 'wii') && isMobile) {
         try { effectivePalette = localStorage.getItem('palette-prev') || 'default'; } catch (e) { effectivePalette = 'default'; }
       }
       // Legacy: users with the retired "pink"/Fiona palette in localStorage
@@ -43,6 +43,7 @@
       // applied so the styling can't pop back even briefly.
       if (effectivePalette === 'material') document.documentElement.classList.add('theme-material');
       else if (effectivePalette === 'tui') document.documentElement.classList.add('theme-tui');
+      else if (effectivePalette === 'wii') document.documentElement.classList.add('theme-wii');
       document.documentElement.setAttribute('data-seed', seed || 'burgundy');
 
       // Determine if we should use dark splash screen colors
@@ -201,6 +202,9 @@
                 </div>
                 <div class="dropdown-item" id="theme-item-tui">
                   <span>Terminal</span>
+                </div>
+                <div class="dropdown-item" id="theme-item-wii">
+                  <span>Wii</span>
                 </div>
               </div>
             </div>
@@ -415,6 +419,25 @@
           <span id="tui-input-text" class="tui-input-text"></span><span class="tui-cursor"></span>
         </span>
       </div>
+    </div>
+  </div>
+
+  <!-- Wii Shell — pointer-free channel grid. Only under .theme-wii on desktop (≥768px). -->
+  <div id="wii-shell" aria-hidden="true">
+    <div class="wii-topbar">
+      <span class="wii-brand">tomin channels</span>
+      <div class="wii-topbar-right">
+        <span id="wii-clock" class="wii-clock">--:--</span>
+        <button type="button" id="wii-exit" class="wii-exit" aria-label="Wii-Theme verlassen">
+          <span class="wii-exit-icon" aria-hidden="true">⏻</span> Verlassen
+        </button>
+      </div>
+    </div>
+    <div id="wii-channels" class="wii-channels" role="grid" aria-label="Projekte"></div>
+    <div class="wii-footer">
+      <span class="wii-hint"><span class="wii-key">↑ ↓ ← →</span> bewegen</span>
+      <span class="wii-hint"><span class="wii-key">Enter / A</span> öffnen</span>
+      <span class="wii-hint"><span class="wii-key">Esc / B</span> verlassen</span>
     </div>
   </div>
 
