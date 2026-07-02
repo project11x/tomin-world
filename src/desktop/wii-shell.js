@@ -119,6 +119,31 @@ function magazinesOf(host) {
     .filter((m) => m.pages.length);
 }
 
+// The magazine channel deserves a face that reads as "magazines" rather than a
+// random inner page of the first issue: a fanned stack of the real issue covers
+// (up to three), peeled like a coverflow so the tile previews what's inside.
+function magStackFace(host) {
+  // Newest issues surface on the tile (the placeholder array carries each
+  // magazine's publication date), capped at three so the fan stays clean no
+  // matter how many issues get added later.
+  const dateOf = {};
+  for (const m of (portfolioData[host] || [])) dateOf[m.name] = Date.parse(m.date) || 0;
+  const mags = magazinesOf(host)
+    .filter((m) => m.src)
+    .sort((a, b) => (dateOf[b.name] || 0) - (dateOf[a.name] || 0))
+    .slice(0, 3);
+  if (!mags.length) return '';
+  // Offset each card from the stack's centre so 1, 2 or 3 covers all fan out
+  // symmetrically; the middle card sits on top.
+  const mid = (mags.length - 1) / 2;
+  const cards = mags.map((m, i) => {
+    const off = i - mid;
+    const z = 3 - Math.abs(off);
+    return `<span class="wii-mag-card" style="--off:${off};z-index:${z}"><img src="${transformUrl(m.src, 480)}" alt="" draggable="false" /></span>`;
+  }).join('');
+  return `<span class="wii-mag-stack">${cards}</span>`;
+}
+
 // ─── Channel grid ──────────────────────────────────────────────
 let rendered = false;
 
@@ -133,7 +158,11 @@ function renderGrid() {
     let faceCls = 'wii-channel-face';
     let style = '';
     let inner = '';
-    if (f.kind === 'image') {
+    const magStack = isMagazineHost(name) ? magStackFace(name) : '';
+    if (magStack) {
+      faceCls += ' is-mag';
+      inner = magStack;
+    } else if (f.kind === 'image') {
       style = `style="background-image:url('${transformUrl(f.src, 640)}')"`;
     } else if (f.kind === 'video') {
       const poster = videoThumb(f.src, 640);

@@ -1897,6 +1897,29 @@
   position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; pointer-events: none; z-index: 0;
 }
+/* Magazine index face: a fanned stack of the real issue covers. The tile is a
+   soft neutral backdrop; three portrait covers peel out from centre like a
+   coverflow so the channel reads as "magazines" at a glance. */
+.wii-channel-face.is-mag { background: linear-gradient(160deg, #e7ecf1, #cdd6de); }
+.dark .wii-channel-face.is-mag { background: linear-gradient(160deg, #3a4048, #23272c); }
+.wii-mag-stack {
+  position: absolute; inset: 0; z-index: 0;
+  display: flex; align-items: center; justify-content: center;
+  perspective: 800px;
+}
+.wii-mag-card {
+  position: absolute; width: 46%; aspect-ratio: 3 / 4; border-radius: 6px;
+  overflow: hidden; background: #d0d6dc;
+  box-shadow: 0 6px 14px rgba(15,22,30,.32);
+  transform: translateX(calc(var(--off) * 30%)) rotate(calc(var(--off) * 8deg));
+  transition: transform 260ms cubic-bezier(.2,.7,.3,1);
+}
+.wii-mag-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* On focus/hover the stack fans wider — a small "come look" flourish. */
+.wii-channel.is-focused .wii-mag-card,
+.wii-channel:hover .wii-mag-card {
+  transform: translateX(calc(var(--off) * 40%)) rotate(calc(var(--off) * 11deg));
+}
 .wii-play {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   font-size: 30px; color: rgba(255,255,255,.92);
@@ -2188,8 +2211,7 @@
 }
 .wii-reader-progress-fill {
   height: 100%; width: 0; border-radius: 2px;
-  background: var(--wii-ring-glow, #1fa6e0);
-  box-shadow: 0 0 10px var(--wii-ring-glow, #1fa6e0);
+  background: #fff;
   transition: width 220ms ease;
 }
 .wii-reader-counter { color: #aeb8c2; font-size: 13px; font-variant-numeric: tabular-nums; }
