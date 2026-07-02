@@ -10,6 +10,7 @@
 import { portfolioData } from '../../data.js';
 import { setIcon } from '../utils/icons.js';
 import { isItemRecent, isFolderRecent } from '../utils/recency.js';
+import { streamFor, playStream } from '../utils/stream.js';
 
 const TAB_LABELS = {
   edits: 'Edits',
@@ -636,8 +637,27 @@ function wirePlayer(root) {
 
   const setSym = (el, name) => setIcon(el, name);
 
+  // Cloudflare Stream upgrade, lazily: show the Stream poster + real duration
+  // now, attach the adaptive HLS source on first play. Eager attach would
+  // start downloading segments for every gallery player at once — the raw
+  // preload="metadata" this replaces only ever fetched the moov box.
+  const rawSrc = video.getAttribute('src');
+  const stream = streamFor(rawSrc);
+  if (stream) {
+    video.removeAttribute('src');
+    video.preload = 'none';
+    if (stream.poster) video.poster = stream.poster;
+    if (stream.duration) tDur.textContent = fmtTime(stream.duration);
+    let attached = false;
+    // 'play' fires even before a source is attached (paused flips false first),
+    // so this also covers the lightbox's direct video.play() calls.
+    video.addEventListener('play', () => {
+      if (!attached) { attached = true; playStream(video, rawSrc); }
+    });
+  }
+
   function togglePlay() {
-    if (video.paused) video.play();
+    if (video.paused) video.play().catch(() => { /* source still attaching */ });
     else video.pause();
   }
 

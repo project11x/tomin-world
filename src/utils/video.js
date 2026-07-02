@@ -1,10 +1,14 @@
 // Video utilities: buffered playback, single-active enforcement,
 // and a beachball loader overlay attached to a <video>.
 
+import { stopStream } from './stream.js';
+
 // Ensures smooth video playback: waits for enough buffer before playing,
 // auto-pauses if buffer runs low, resumes when buffered enough.
 export function safePlayVideo(video) {
-  if (!video || !video.src) return;
+  // An hls.js-attached element has no src attribute until the async attach
+  // lands — it still deserves the buffer babysitting below.
+  if (!video || (!video.src && !video._hls)) return;
   // Remove any previous listeners from this system
   if (video._bufferCleanup) video._bufferCleanup();
 
@@ -48,8 +52,11 @@ export function safePlayVideo(video) {
     if (waitingTimer) { clearInterval(waitingTimer); waitingTimer = null; }
   };
 
-  // Ensure loading has started (needed when preload="none" and src was set without load())
-  if (video.networkState === 0 || video.networkState === 1) {
+  // Ensure loading has started (needed when preload="none" and src was set
+  // without load()). Only when nothing is decoded yet: an already-buffered
+  // video reports NETWORK_IDLE too, and load() would throw its buffer away and
+  // redownload on every replay. Never load() an MSE element — it detaches hls.js.
+  if (!video._hls && video.readyState === 0 && video.networkState <= 1) {
     video.load();
   }
   // Start playing
@@ -59,10 +66,11 @@ export function safePlayVideo(video) {
 // Kill all other video downloads to free bandwidth for the active video.
 export function killOtherVideos(activeVideo) {
   document.querySelectorAll('video').forEach(v => {
-    if (v !== activeVideo && v.src && !v.closest('.mag-page-container') && !v.muted) {
+    if (v !== activeVideo && (v.src || v._hls) && !v.closest('.mag-page-container') && !v.muted) {
       v.pause();
-      v.removeAttribute('src');
-      v.load(); // releases network connection
+      // Releases the network connection AND destroys any hls.js instance —
+      // a bare removeAttribute would leave its loader fetching segments.
+      stopStream(v);
     }
   });
 }
