@@ -76,6 +76,21 @@ export function upgradeVideos(root) {
 // loops seamlessly. Covers the sub-second magazine page clips.
 const MIN_HLS_SECONDS = 5;
 
+// First-guess bandwidth for hls.js before any real measurement exists. Only
+// the very first seconds ride on this — after the first loads, measured
+// bandwidth takes over and ABR steps up/down as usual. Devices that declare a
+// constrained connection (Network Information API — Chrome/Android; Safari
+// doesn't expose it) or Save-Data start conservatively; everyone else starts
+// near the top rendition instead of hls.js's blurry 500 kbps default.
+function initialBandwidthEstimate() {
+  const c = navigator.connection || {};
+  if (c.saveData) return 700_000;
+  const t = c.effectiveType || '';
+  if (t.includes('2g')) return 300_000;
+  if (t === '3g') return 1_200_000;
+  return 5_000_000;
+}
+
 // Native HLS only where MSE is missing or the platform mandates it (iOS —
 // including iPadOS, which masquerades as macOS but is touch). Desktop Safari
 // goes through hls.js like everyone else: the native player exposes no ABR
@@ -124,11 +139,10 @@ export function playStream(videoEl, src) {
     if (Hls && Hls.isSupported()) {
       if (videoEl._hls) { try { videoEl._hls.destroy(); } catch { /* noop */ } }
       const hls = new Hls({
-        // hls.js defaults to a ~500 kbps bandwidth estimate, so the first
-        // seconds play the bottom rung — a visible blur-in the old progressive
-        // mp4s never had. Assume a fat pipe and let ABR step DOWN if the
-        // connection disagrees; portfolio = quality first, no player-size cap.
-        abrEwmaDefaultEstimate: 5_000_000,
+        // Start near the top rung unless the device itself reports a slow
+        // connection (see initialBandwidthEstimate) — no player-size cap;
+        // portfolio = quality first, measured ABR handles the rest.
+        abrEwmaDefaultEstimate: initialBandwidthEstimate(),
       });
       hls.loadSource(entry.hls);
       hls.attachMedia(videoEl);
