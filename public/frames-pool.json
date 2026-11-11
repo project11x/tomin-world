@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-10T08:57:53.022Z",
+  "generated": "2026-11-11T20:43:36.124Z",
   "frames": [
     {
       "id": "5am_in_munich_001",
@@ -3838,6 +3838,314 @@
       "thumb": "game/frames/schimmel in schladming/schimmel_in_schladming_030.jpg",
       "state": "approved",
       "extractedAt": "2026-06-04T16:25:04.857Z"
+    },
+    {
+      "id": "silbertablett_001",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 4.72,
+      "thumb": "game/frames/silbertablett/silbertablett_001.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:23.225Z",
+      "clip": "game/clips/silbertablett/silbertablett_001.mp4"
+    },
+    {
+      "id": "silbertablett_002",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 6.92,
+      "thumb": "game/frames/silbertablett/silbertablett_002.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:23.281Z",
+      "clip": "game/clips/silbertablett/silbertablett_002.mp4"
+    },
+    {
+      "id": "silbertablett_003",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 7.96,
+      "thumb": "game/frames/silbertablett/silbertablett_003.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:23.347Z",
+      "clip": "game/clips/silbertablett/silbertablett_003.mp4"
+    },
+    {
+      "id": "silbertablett_004",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 10.92,
+      "thumb": "game/frames/silbertablett/silbertablett_004.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:23.407Z",
+      "clip": "game/clips/silbertablett/silbertablett_004.mp4"
+    },
+    {
+      "id": "silbertablett_005",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 14.56,
+      "thumb": "game/frames/silbertablett/silbertablett_005.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:23.479Z",
+      "clip": "game/clips/silbertablett/silbertablett_005.mp4"
+    },
+    {
+      "id": "silbertablett_006",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 16.2,
+      "thumb": "game/frames/silbertablett/silbertablett_006.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:23.540Z",
+      "clip": "game/clips/silbertablett/silbertablett_006.mp4"
+    },
+    {
+      "id": "silbertablett_007",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 19.6,
+      "thumb": "game/frames/silbertablett/silbertablett_007.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:23.603Z",
+      "clip": "game/clips/silbertablett/silbertablett_007.mp4"
+    },
+    {
+      "id": "silbertablett_008",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 22.96,
+      "thumb": "game/frames/silbertablett/silbertablett_008.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:23.659Z",
+      "clip": "game/clips/silbertablett/silbertablett_008.mp4"
+    },
+    {
+      "id": "silbertablett_009",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 23.96,
+      "thumb": "game/frames/silbertablett/silbertablett_009.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:23.713Z"
+    },
+    {
+      "id": "silbertablett_010",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 27.16,
+      "thumb": "game/frames/silbertablett/silbertablett_010.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:23.784Z"
+    },
+    {
+      "id": "silbertablett_011",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 32,
+      "thumb": "game/frames/silbertablett/silbertablett_011.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:23.840Z"
+    },
+    {
+      "id": "silbertablett_012",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 33.32,
+      "thumb": "game/frames/silbertablett/silbertablett_012.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:23.895Z"
+    },
+    {
+      "id": "silbertablett_013",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 35.88,
+      "thumb": "game/frames/silbertablett/silbertablett_013.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:23.950Z"
+    },
+    {
+      "id": "silbertablett_014",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 40.48,
+      "thumb": "game/frames/silbertablett/silbertablett_014.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:24.011Z"
+    },
+    {
+      "id": "silbertablett_015",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 41.88,
+      "thumb": "game/frames/silbertablett/silbertablett_015.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:24.085Z"
+    },
+    {
+      "id": "silbertablett_016",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 44.44,
+      "thumb": "game/frames/silbertablett/silbertablett_016.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:24.144Z"
+    },
+    {
+      "id": "silbertablett_017",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 45.56,
+      "thumb": "game/frames/silbertablett/silbertablett_017.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:24.200Z"
+    },
+    {
+      "id": "silbertablett_018",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 48,
+      "thumb": "game/frames/silbertablett/silbertablett_018.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:24.267Z"
+    },
+    {
+      "id": "silbertablett_019",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 50.64,
+      "thumb": "game/frames/silbertablett/silbertablett_019.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:24.329Z"
+    },
+    {
+      "id": "silbertablett_020",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 51.8,
+      "thumb": "game/frames/silbertablett/silbertablett_020.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:24.383Z"
+    },
+    {
+      "id": "silbertablett_021",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 54.36,
+      "thumb": "game/frames/silbertablett/silbertablett_021.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:24.448Z"
+    },
+    {
+      "id": "silbertablett_022",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 59.56,
+      "thumb": "game/frames/silbertablett/silbertablett_022.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:24.510Z"
+    },
+    {
+      "id": "silbertablett_023",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 61.08,
+      "thumb": "game/frames/silbertablett/silbertablett_023.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:24.568Z"
+    },
+    {
+      "id": "silbertablett_024",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 63.72,
+      "thumb": "game/frames/silbertablett/silbertablett_024.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:24.639Z"
+    },
+    {
+      "id": "silbertablett_025",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 66.32,
+      "thumb": "game/frames/silbertablett/silbertablett_025.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:24.698Z"
+    },
+    {
+      "id": "silbertablett_026",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 67.32,
+      "thumb": "game/frames/silbertablett/silbertablett_026.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:24.769Z"
+    },
+    {
+      "id": "silbertablett_027",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 69.44,
+      "thumb": "game/frames/silbertablett/silbertablett_027.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:24.828Z"
+    },
+    {
+      "id": "silbertablett_028",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 74.56,
+      "thumb": "game/frames/silbertablett/silbertablett_028.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:24.897Z"
+    },
+    {
+      "id": "silbertablett_029",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 78.08,
+      "thumb": "game/frames/silbertablett/silbertablett_029.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:24.955Z"
+    },
+    {
+      "id": "silbertablett_030",
+      "edit": "silbertablett",
+      "video": "silbertablett_web.mp4",
+      "videoMtime": 1794428841360,
+      "timestamp": 83.32,
+      "thumb": "game/frames/silbertablett/silbertablett_030.jpg",
+      "state": "approved",
+      "extractedAt": "2026-11-11T20:43:25.019Z"
     },
     {
       "id": "stoical_001",

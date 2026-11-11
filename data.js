@@ -656,6 +656,16 @@ export const portfolioData = {
       "isVideo": true
     }
   ],
+  "docs": [
+    {
+      "name": "FEATURES.md",
+      "type": "File",
+      "size": "17 KB",
+      "date": "Jul 10, 2026",
+      "src": "docs/FEATURES.md?v=1783680343320",
+      "isVideo": false
+    }
+  ],
   "ftlotg": [
     {
       "name": "ftlotg.mp4",
@@ -727,6 +737,16 @@ export const portfolioData = {
       "size": "188.1 MB",
       "date": "Mar 6, 2026",
       "src": "schimmel%20in%20schladming/schimmel%20in%20schladming%20HQ_web.mp4?v=1774990726790",
+      "isVideo": true
+    }
+  ],
+  "silbertablett": [
+    {
+      "name": "silbertablett.mp4",
+      "type": "Video",
+      "size": "127.8 MB",
+      "date": "Jul 29, 2026",
+      "src": "silbertablett/silbertablett_web.mp4?v=1794428841360",
       "isVideo": true
     }
   ],
@@ -841,4 +861,4 @@ export const portfolioData = {
     }
   ]
 };
-export const globalLatestFileTime = 1779832800000;
+export const globalLatestFileTime = 1785276000000;
