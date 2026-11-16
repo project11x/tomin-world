@@ -53,3 +53,6 @@ playwright-report/
 # (public/frames-pool.json + public/edit-colors.json) ARE committed.
 .cache/
 
+
+# OneSignal REST API key for publish.sh push notifications (local only)
+.onesignal.local

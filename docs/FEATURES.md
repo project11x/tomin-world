@@ -7,7 +7,7 @@
 > (Neues eintragen, Entferntes streichen). Die Smoke-Checkliste unten ist die
 > Kurzfassung zum Durchklicken nach einem Deploy.
 >
-> **Stand:** 2026-07-10 · Commit `d535edd`
+> **Stand:** 2026-11-16 · Commit `91d2ffc` + Push beim Upload (uncommitted)
 
 ---
 
@@ -170,6 +170,7 @@ Alles hinter Cloudflare Access. Kein Secret im Frontend (per Test abgesichert: k
 
 - **Manifeste:** `manifest.json` + Alternativen `manifest-eddie.json` / `manifest-instagram.json` (passend zum App-Icon-Picker).
 - **Push:** OneSignal, SDK wird lazy erst bei Bedarf geladen (nicht auf jeder Page) — Toggle sitzt in der iOS-Contact-App ([push.js](../push.js), `public/OneSignalSDKWorker.js`).
+- **Push beim Upload:** [publish.sh](../publish.sh) Schritt 10 schickt nach dem Deploy eine OneSignal-Nachricht „Neu auf shouli — <Projekt> ist jetzt online.“, Tippen öffnet `/projects/<slug>/`; `data.project` ist für die iOS-App. Standard nur bei neuen Projekten (Re-Publish fragt, Default nein), Text vorher änderbar, `--no-notify` überspringt. Schlüssel in `.onesignal.local` (gitignored). Smoke: `./publish.sh "<Projekt>" --dry-run` zeigt Text + Link.
 - **Status:** `public/status.json` — vom Admin gesetzter Status, angezeigt im Zeit/Wetter-Widget.
 
 ---

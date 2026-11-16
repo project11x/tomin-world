@@ -5,6 +5,7 @@
 # Usage:
 #   ./publish.sh "Project Name"           # full publish flow
 #   ./publish.sh "Project Name" --dry-run # show what would happen, change nothing
+#   ./publish.sh "Project Name" --no-notify # publish without a push notification
 #
 # What this does, in order:
 #   1. Validate the local project folder exists and has files.
@@ -19,7 +20,9 @@
 #      refresh public/stream-map.js. Skipped if Stream creds aren't set.
 #   8. Commit data.js + stream-map.js with a project message and push.
 #   9. Build + deploy to Cloudflare via wrangler.
-#  10. Print the live URL.
+#  10. Offer a push notification (OneSignal) that opens the project page.
+#      New projects only by default; --no-notify skips it.
+#  11. Print the live URL.
 #
 # Requires:
 #   ffmpeg, npx (wrangler is invoked via npx — first run pulls it).
@@ -43,9 +46,11 @@ REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 # ─────────────────────────────────────────────────────────────────────
 PROJECT=""
 DRY_RUN=false
+NOTIFY=true
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
+    --no-notify) NOTIFY=false ;;
     *) [ -z "$PROJECT" ] && PROJECT="$arg" ;;
   esac
 done
@@ -225,6 +230,17 @@ fi
 # ─────────────────────────────────────────────────────────────────────
 echo ""
 echo -e "${YELLOW}[4/7] Updating data.js…${NC}"
+# Was the project already on the site before this run? Decides whether step 10
+# offers a push (new project) or only asks (re-publish). Same NFC compare as below.
+WAS_LIVE=false
+if node -e '
+  const fs = require("fs");
+  const needle = process.argv[1].normalize("NFC");
+  const hay = fs.readFileSync("data.js", "utf8").normalize("NFC");
+  process.exit(hay.includes(`"${needle}"`) ? 0 : 1);
+' "$PROJECT" 2>/dev/null; then
+  WAS_LIVE=true
+fi
 if $DRY_RUN; then
   echo -e "${DIM}  (skipped in dry-run)${NC}"
 else
@@ -427,6 +443,71 @@ else
 fi
 
 # ─────────────────────────────────────────────────────────────────────
+# 10. Push notification (OneSignal → website subscribers, and the iOS app
+#     once it is registered in the same OneSignal app). Tapping it opens the
+#     project page directly. Only offered by default for NEW projects, so a
+#     re-publish doesn't ping everyone again. Skip with --no-notify.
+#     Key: ONESIGNAL_REST_API_KEY in .onesignal.local (gitignored) or the env.
+# ─────────────────────────────────────────────────────────────────────
+ONESIGNAL_APP_ID="4f713f1a-2daa-4d18-960a-4a98000a3c11"
+SLUG=$(node -e 'process.stdout.write(String(process.argv[1]).toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""))' "$PROJECT")
+PROJECT_URL="${LIVE_URL}/projects/${SLUG}/"
+PUSH_TITLE="Neu auf shouli"
+PUSH_TEXT="${PROJECT} ist jetzt online."
+
+echo ""
+echo -e "${YELLOW}[10/10] Benachrichtigung…${NC}"
+if ! $NOTIFY; then
+  echo -e "${DIM}  (übersprungen: --no-notify)${NC}"
+elif $DRY_RUN; then
+  echo -e "${DIM}  (dry-run) Würde senden: \"${PUSH_TITLE}\" — \"${PUSH_TEXT}\" → ${PROJECT_URL}${NC}"
+  $WAS_LIVE && echo -e "${DIM}  '${PROJECT}' ist schon online → es würde vorher nachgefragt (Standard: nein).${NC}"
+else
+  [ -f "$REPO_DIR/.onesignal.local" ] && . "$REPO_DIR/.onesignal.local"
+  if [ -z "${ONESIGNAL_REST_API_KEY:-}" ] || [ "${ONESIGNAL_REST_API_KEY}" = "HIER_EINFUEGEN" ]; then
+    echo -e "${DIM}  Kein OneSignal-Schlüssel in .onesignal.local — übersprungen.${NC}"
+  else
+    echo -e "  ${PUSH_TITLE}: ${PUSH_TEXT}"
+    echo -e "  ${DIM}Öffnet: ${PROJECT_URL}${NC}"
+    if $WAS_LIVE; then
+      read -r -p "  '${PROJECT}' war schon online. Trotzdem senden? [j/N] " answer
+      [[ "$answer" =~ ^[jJyY]$ ]] && SEND=true || SEND=false
+    else
+      read -r -p "  Benachrichtigung an alle Abonnenten senden? [J/n] " answer
+      [[ "$answer" =~ ^[nN]$ ]] && SEND=false || SEND=true
+    fi
+    if $SEND; then
+      read -r -p "  Text ändern? (Enter = so lassen) " custom
+      [ -n "$custom" ] && PUSH_TEXT="$custom"
+      BODY=$(node -e '
+        const [appId, title, text, url, project] = process.argv.slice(1);
+        process.stdout.write(JSON.stringify({
+          app_id: appId,
+          target_channel: "push",
+          included_segments: ["Total Subscriptions"],
+          headings: { en: title, de: title },
+          contents: { en: text, de: text },
+          web_url: url,                 // website: opens the project page
+          data: { project, url },       // iOS app: opens the project in the app
+        }));
+      ' "$ONESIGNAL_APP_ID" "$PUSH_TITLE" "$PUSH_TEXT" "$PROJECT_URL" "$PROJECT")
+      RESPONSE=$(curl -sS -X POST "https://api.onesignal.com/notifications?c=push" \
+        -H "Authorization: Key ${ONESIGNAL_REST_API_KEY}" \
+        -H "Content-Type: application/json" \
+        -d "$BODY" || true)
+      if echo "$RESPONSE" | grep -q '"id":"[^"]'; then
+        echo -e "${GREEN}✓ Benachrichtigung gesendet${NC}"
+      else
+        echo -e "${RED}✗ OneSignal hat abgelehnt:${NC} ${RESPONSE}"
+        echo -e "  Die Seite ist trotzdem live — nur die Benachrichtigung fehlt."
+      fi
+    else
+      echo -e "${DIM}  Nicht gesendet.${NC}"
+    fi
+  fi
+fi
+
+# ─────────────────────────────────────────────────────────────────────
 # Done
 # ─────────────────────────────────────────────────────────────────────
 echo ""
@@ -438,3 +519,15 @@ else
   echo -e "  Live: ${LIVE_URL}"
 fi
 echo -e "========================================${NC}"
+
+# ─────────────────────────────────────────────────────────────────────
+# 0. Cloudflare Login prüfen
+# ─────────────────────────────────────────────────────────────────────
+echo -e "${YELLOW}[0/7] Prüfe Cloudflare-Login…${NC}"
+if ! npx wrangler whoami >/dev/null 2>&1; then
+  echo -e "${RED}✗ Du bist nicht bei Cloudflare angemeldet!${NC}"
+  echo -e "  Bitte führe im Terminal zuerst aus: ${YELLOW}npx wrangler login${NC}"
+  exit 1
+fi
+echo -e "${GREEN}✓ Angemeldet${NC}"
+echo ""
