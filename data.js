@@ -186,6 +186,15 @@ export const portfolioData = {
       "src": "",
       "isVideo": false,
       "isMagazine": true
+    },
+    {
+      "name": "stxdyoz",
+      "type": "Magazine",
+      "size": "--",
+      "date": "Nov 16, 2026",
+      "src": "",
+      "isVideo": false,
+      "isMagazine": true
     }
   ],
   "TOMIN INDEX.TXT/032C": [
@@ -610,6 +619,168 @@ export const portfolioData = {
       "isVideo": false
     }
   ],
+  "TOMIN INDEX.TXT/stxdyoz": [
+    {
+      "name": "1.png",
+      "type": "Image",
+      "size": "2.4 MB",
+      "date": "Nov 13, 2026",
+      "src": "TOMIN%20INDEX.TXT/stxdyoz/1.png?v=1794587825350",
+      "isVideo": false
+    },
+    {
+      "name": "2.png",
+      "type": "Image",
+      "size": "1.9 MB",
+      "date": "Nov 13, 2026",
+      "src": "TOMIN%20INDEX.TXT/stxdyoz/2.png?v=1794587825380",
+      "isVideo": false
+    },
+    {
+      "name": "3.png",
+      "type": "Image",
+      "size": "2 MB",
+      "date": "Nov 13, 2026",
+      "src": "TOMIN%20INDEX.TXT/stxdyoz/3.png?v=1794587825390",
+      "isVideo": false
+    },
+    {
+      "name": "4.png",
+      "type": "Image",
+      "size": "855.3 KB",
+      "date": "Nov 13, 2026",
+      "src": "TOMIN%20INDEX.TXT/stxdyoz/4.png?v=1794587825490",
+      "isVideo": false
+    },
+    {
+      "name": "5.png",
+      "type": "Image",
+      "size": "880.2 KB",
+      "date": "Nov 13, 2026",
+      "src": "TOMIN%20INDEX.TXT/stxdyoz/5.png?v=1794587825440",
+      "isVideo": false
+    },
+    {
+      "name": "6.png",
+      "type": "Image",
+      "size": "1.3 MB",
+      "date": "Nov 13, 2026",
+      "src": "TOMIN%20INDEX.TXT/stxdyoz/6.png?v=1794587825420",
+      "isVideo": false
+    },
+    {
+      "name": "7.png",
+      "type": "Image",
+      "size": "889.2 KB",
+      "date": "Nov 13, 2026",
+      "src": "TOMIN%20INDEX.TXT/stxdyoz/7.png?v=1794587825450",
+      "isVideo": false
+    },
+    {
+      "name": "8.png",
+      "type": "Image",
+      "size": "1.5 MB",
+      "date": "Nov 13, 2026",
+      "src": "TOMIN%20INDEX.TXT/stxdyoz/8.png?v=1794587825450",
+      "isVideo": false
+    },
+    {
+      "name": "9.png",
+      "type": "Image",
+      "size": "2.3 MB",
+      "date": "Nov 13, 2026",
+      "src": "TOMIN%20INDEX.TXT/stxdyoz/9.png?v=1794587825370",
+      "isVideo": false
+    },
+    {
+      "name": "10.png",
+      "type": "Image",
+      "size": "1.5 MB",
+      "date": "Nov 13, 2026",
+      "src": "TOMIN%20INDEX.TXT/stxdyoz/10.png?v=1794587825370",
+      "isVideo": false
+    },
+    {
+      "name": "11.png",
+      "type": "Image",
+      "size": "1.2 MB",
+      "date": "Nov 13, 2026",
+      "src": "TOMIN%20INDEX.TXT/stxdyoz/11.png?v=1794587825460",
+      "isVideo": false
+    },
+    {
+      "name": "12.png",
+      "type": "Image",
+      "size": "1.6 MB",
+      "date": "Nov 13, 2026",
+      "src": "TOMIN%20INDEX.TXT/stxdyoz/12.png?v=1794587825470",
+      "isVideo": false
+    },
+    {
+      "name": "13.png",
+      "type": "Image",
+      "size": "1.9 MB",
+      "date": "Nov 13, 2026",
+      "src": "TOMIN%20INDEX.TXT/stxdyoz/13.png?v=1794587825400",
+      "isVideo": false
+    },
+    {
+      "name": "14.png",
+      "type": "Image",
+      "size": "1.4 MB",
+      "date": "Nov 13, 2026",
+      "src": "TOMIN%20INDEX.TXT/stxdyoz/14.png?v=1794587825420",
+      "isVideo": false
+    },
+    {
+      "name": "15.png",
+      "type": "Image",
+      "size": "1.4 MB",
+      "date": "Nov 13, 2026",
+      "src": "TOMIN%20INDEX.TXT/stxdyoz/15.png?v=1794587825480",
+      "isVideo": false
+    },
+    {
+      "name": "16.png",
+      "type": "Image",
+      "size": "1.2 MB",
+      "date": "Nov 13, 2026",
+      "src": "TOMIN%20INDEX.TXT/stxdyoz/16.png?v=1794587825480",
+      "isVideo": false
+    },
+    {
+      "name": "17.png",
+      "type": "Image",
+      "size": "1.2 MB",
+      "date": "Nov 13, 2026",
+      "src": "TOMIN%20INDEX.TXT/stxdyoz/17.png?v=1794591024520",
+      "isVideo": false
+    },
+    {
+      "name": "18.png",
+      "type": "Image",
+      "size": "1.1 MB",
+      "date": "Nov 13, 2026",
+      "src": "TOMIN%20INDEX.TXT/stxdyoz/18.png?v=1794591190530",
+      "isVideo": false
+    },
+    {
+      "name": "19.png",
+      "type": "Image",
+      "size": "251.5 KB",
+      "date": "Nov 13, 2026",
+      "src": "TOMIN%20INDEX.TXT/stxdyoz/19.png?v=1794591024540",
+      "isVideo": false
+    },
+    {
+      "name": "20.png",
+      "type": "Image",
+      "size": "1012.2 KB",
+      "date": "Nov 13, 2026",
+      "src": "TOMIN%20INDEX.TXT/stxdyoz/20.png?v=1794588633030",
+      "isVideo": false
+    }
+  ],
   "bents n glitches": [
     {
       "name": "bent footage edit test HQ.mp4",
@@ -660,9 +831,9 @@ export const portfolioData = {
     {
       "name": "FEATURES.md",
       "type": "File",
-      "size": "17 KB",
-      "date": "Jul 10, 2026",
-      "src": "docs/FEATURES.md?v=1783680343320",
+      "size": "17.5 KB",
+      "date": "Nov 16, 2026",
+      "src": "docs/FEATURES.md?v=1794859488170",
       "isVideo": false
     }
   ],
@@ -861,4 +1032,4 @@ export const portfolioData = {
     }
   ]
 };
-export const globalLatestFileTime = 1785276000000;
+export const globalLatestFileTime = 1794783600000;
