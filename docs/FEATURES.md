@@ -144,12 +144,12 @@ Alle dynamischen GET-Endpoints folgen der Edge-Cache-Konvention: `caches.default
 | `/api/status` | PUT | Admin setzt Status-Text (committet `public/status.json` via GitHub) | CF Access JWT |
 | `/api/commits` | GET | Gecachter GitHub-Commits-Proxy fürs Changelog-Widget (schont das 60/h-Limit) | — |
 | `/api/daily-frame` | GET | Tages-Puzzle aus `frames-pool.json` (nur approved) | — (edge-cached) |
-| `/api/pinboard` | GET | Neueste nicht versteckte Pins aus D1 | — |
+| `/api/pinboard` | GET | Neueste nicht versteckte Pins aus D1; `?visitorId=` markiert eigene Pins (`isMine`), Visitor-IDs werden nie ausgeliefert | — |
 | `/api/pin` | POST (+Admin-Aktionen) | Pin anlegen; Moderation | Admin-Aktionen: CF Access JWT |
-| `/api/vote` | GET/POST (+Admin) | Wochen-Matchup lesen / Stimme abgeben | Admin-Aktionen: CF Access JWT |
-| `/api/passport` | GET/POST | Journal-State per 6-stelligem Code lesen/schreiben (D1) | — |
+| `/api/vote` | GET/POST (+Admin) | Wochen-Matchup lesen / Stimme abgeben; eine Stimme pro Besucher, max. 20 pro Netz (IP) und Woche | Admin-Aktionen: CF Access JWT |
+| `/api/passport` | GET/PUT | Journal-State per 6-stelligem Code lesen/schreiben (D1); nur bekannte Sync-Keys, max. 5 neue Codes/Tag und 30 Fehlversuche/Stunde pro Netz | — |
 
-Sicherheits-Notizen: `workers_dev`/`preview_urls` sind aus (kein Access-Bypass über workers.dev); Header-Bypass auf `/api/status` wurde 2026-06 gehärtet, Tokens rotiert.
+Sicherheits-Notizen: `workers_dev`/`preview_urls` sind aus (kein Access-Bypass über workers.dev); Header-Bypass auf `/api/status` wurde 2026-06 gehärtet, Tokens rotiert. IP-Hashes für Rate-Limits sind HMAC mit dem Worker-Secret `IP_HASH_SECRET` ([api/ip.js](../src/api/ip.js)), nicht umkehrbar.
 
 ---
 
@@ -225,7 +225,7 @@ Alles hinter Cloudflare Access. Kein Secret im Frontend (per Test abgesichert: k
 - [ ] Ordner öffnen → Travel-Stamp + ggf. Toast
 - [ ] Jedes der 6 Games einmal starten
 - [ ] Pin anlegen → erscheint auf dem Board
-- [ ] Vote abgeben → Tally erscheint, zweite Stimme geblockt
+- [ ] Vote abgeben → Tally erscheint, zweite Stimme geblockt; zweiter Browser im selben WLAN kann trotzdem abstimmen
 - [ ] Passport-Code erzeugen → auf zweitem Gerät/Browser einlösen
 
 **Wii:**

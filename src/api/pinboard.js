@@ -17,6 +17,10 @@ export async function onRequest({ request, env }) {
   }
 
   const url = new URL(request.url);
+  // The caller's own id, only to mark their pins (`isMine`). Visitor ids are
+  // never sent back: they also identify a visitor's weekly vote, and a
+  // public list of them let anyone vote in someone else's name.
+  const myId = (url.searchParams.get('visitorId') || '').trim();
   const rawLimit = parseInt(url.searchParams.get('limit') || '100', 10);
   const limit = Number.isFinite(rawLimit) ? Math.max(1, Math.min(rawLimit, 200)) : 100;
 
@@ -36,7 +40,7 @@ export async function onRequest({ request, env }) {
 
   const pins = (result.results || []).map((row) => ({
     id: row.id,
-    visitorId: row.visitor_id,
+    isMine: !!myId && row.visitor_id === myId,
     folder: row.polaroid_folder,
     name: row.polaroid_name,
     src: row.polaroid_src,
@@ -47,7 +51,10 @@ export async function onRequest({ request, env }) {
   }));
 
   return jsonResponse({ pins }, 200, {
-    'cache-control': 'public, max-age=5, s-maxage=15, stale-while-revalidate=60',
+    // Personalised (isMine) when a visitorId is passed → no shared caches.
+    'cache-control': myId
+      ? 'private, max-age=5'
+      : 'public, max-age=5, s-maxage=15, stale-while-revalidate=60',
   });
 }
 

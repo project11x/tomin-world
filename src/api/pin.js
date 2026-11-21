@@ -13,6 +13,7 @@
 
 import { portfolioData } from '../../data.js';
 import { requireAdmin } from './access.js';
+import { ipHash as hashIp } from './ip.js';
 
 // Preset stickers — must mirror the list shown in the pin-creation UI.
 const STICKERS = ['✨', '🌙', '🔥', '✂️', '🎬', '📸', '🎵', '🍷', '🌅', '⚡', '🥀', '💎'];
@@ -81,12 +82,8 @@ async function createPin({ request, env }) {
       ? visitorId
       : crypto.randomUUID();
 
-  // ── IP hash for rate-limit ──
-  const ip =
-    request.headers.get('CF-Connecting-IP') ||
-    request.headers.get('X-Forwarded-For')?.split(',')[0]?.trim() ||
-    '0.0.0.0';
-  const ipHash = await sha256(ip);
+  // ── IP hash for rate-limit (keyed, see ./ip.js) ──
+  const ipHash = await hashIp(request, env);
 
   // ── rate-limit check ──
   const since = Date.now() - RATE_WINDOW_MS;
@@ -178,13 +175,6 @@ async function adminUpdate({ request, env }) {
 }
 
 // ── helpers ────────────────────────────────────────────────────────
-
-async function sha256(s) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
-  return [...new Uint8Array(buf)]
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-}
 
 function jsonResponse(body, status = 200, extra = {}) {
   return new Response(JSON.stringify(body), {

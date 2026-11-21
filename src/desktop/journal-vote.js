@@ -53,7 +53,9 @@ export async function castVote(edit) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ edit, visitorId: getVisitorId() }),
   });
-  return res.json();
+  let body = null;
+  try { body = await res.json(); } catch {}
+  return { status: res.status, body };
 }
 
 // ── rendering ────────────────────────────────────────────────────
@@ -140,17 +142,27 @@ function renderSide(edit, count, pct, voted, isMine, weekKey) {
 async function onPickSide(host, data, edit, variant) {
   const buttons = host.querySelectorAll('[data-vote-edit]');
   buttons.forEach((b) => (b.disabled = true));
-  let result;
+  let status, result;
   try {
-    result = await castVote(edit);
+    ({ status, body: result } = await castVote(edit));
   } catch {
     buttons.forEach((b) => (b.disabled = false));
     return;
   }
   // Server can respond:
   //   201 ok            { ok, myVote, counts }
-  //   409 already voted { myVote }
-  // In either case, we have the visitor's effective vote.
+  //   409 already voted { myVote }  (this visitor's own earlier vote)
+  //   429 / other       not counted — keep the card open to retry
+  if (status !== 201 && status !== 409) {
+    buttons.forEach((b) => (b.disabled = false));
+    const meta = host.querySelector('.vote-card-meta');
+    if (meta) {
+      meta.textContent = status === 429
+        ? 'Too many votes from this network this week.'
+        : 'Your vote couldn’t be counted. Try again.';
+    }
+    return;
+  }
   const myVote = result?.myVote || edit;
   try { localStorage.setItem(LAST_VOTE_WEEK_KEY, data.weekKey); } catch {}
   window.dispatchEvent(new CustomEvent('journal:vote-cast'));

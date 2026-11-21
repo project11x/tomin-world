@@ -271,7 +271,7 @@ import { paintIosHeroes } from '../desktop/journal-hero-cards.js';
     if (!boardGrid) return;
     boardGrid.innerHTML = '<div class="ios-journal-board-loading">Loading…</div>';
     try {
-      const res = await fetch('/api/pinboard');
+      const res = await fetch(`/api/pinboard?visitorId=${encodeURIComponent(getVisitorId())}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       paintIosBoard(data.pins || []);
@@ -292,8 +292,7 @@ import { paintIosHeroes } from '../desktop/journal-hero-cards.js';
       `;
       return;
     }
-    const myId = getVisitorId();
-    boardGrid.innerHTML = pins.map((pin) => renderIosPin(pin, pin.visitorId === myId)).join('');
+    boardGrid.innerHTML = pins.map((pin) => renderIosPin(pin, pin.isMine === true)).join('');
   }
 
   function renderIosPin(pin, isMine) {

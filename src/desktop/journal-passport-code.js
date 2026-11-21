@@ -40,10 +40,12 @@ export function clearStoredCode() {
 }
 
 export function generateCode() {
+  // The code is the passport's only secret, so use the crypto RNG.
+  // 256 / 32 = 8 exactly, so `% 32` has no bias.
+  const bytes = new Uint8Array(6);
+  crypto.getRandomValues(bytes);
   let s = '';
-  for (let i = 0; i < 6; i++) {
-    s += ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
-  }
+  for (const b of bytes) s += ALPHABET[b % ALPHABET.length];
   return s.slice(0, 3) + '-' + s.slice(3);
 }
 
@@ -84,13 +86,19 @@ function restoreState(state) {
 
 // ── server I/O ───────────────────────────────────────────────────
 
-async function putToServer(code) {
-  const res = await fetch('/api/passport', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code: normalise(code), state: gatherState() }),
-  });
-  return res.ok;
+// Returns the HTTP status (0 = network error). `create` asks the server to
+// refuse (409) instead of overwriting when the code already exists.
+async function putToServer(code, { create = false } = {}) {
+  try {
+    const res = await fetch('/api/passport', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: normalise(code), state: gatherState(), ...(create ? { create: true } : {}) }),
+    });
+    return res.status;
+  } catch {
+    return 0;
+  }
 }
 
 async function getFromServer(code) {
@@ -102,11 +110,17 @@ async function getFromServer(code) {
 // ── public actions ───────────────────────────────────────────────
 
 export async function createCode() {
-  const code = generateCode();
-  const ok = await putToServer(code);
-  if (!ok) return null;
-  storeCode(code);
-  return code;
+  // A random code can collide with an existing passport; never overwrite
+  // it — draw a new one instead.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const code = generateCode();
+    const status = await putToServer(code, { create: true });
+    if (status === 409) continue;
+    if (status < 200 || status >= 300) return null;
+    storeCode(code);
+    return code;
+  }
+  return null;
 }
 
 export async function restoreCode(raw) {
@@ -122,7 +136,8 @@ export async function restoreCode(raw) {
 export async function syncNow() {
   const code = getStoredCode();
   if (!code) return false;
-  return putToServer(code);
+  const status = await putToServer(code);
+  return status >= 200 && status < 300;
 }
 
 // ── auto-sync on state-change events ─────────────────────────────

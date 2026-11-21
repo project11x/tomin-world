@@ -10,12 +10,17 @@
 // two random portfolio folders and inserts them. That keeps the card
 // alive even when no admin has curated. PUT can overwrite.
 //
-// Anti-double-vote: visitor_id (cleared if localStorage wiped) AND
-// SHA-256 of the source IP (covers the wipe case). One vote per
-// (week, visitor) AND per (week, IP).
+// Anti-double-vote: one vote per (week, visitor_id) — the primary key.
+// The IP is only a soft cap (MAX_VOTES_PER_IP per week) against scripted
+// stuffing: one vote per IP would lock out everyone sharing a household
+// Wi-Fi or a mobile carrier's CGNAT address, and showed one person's vote
+// to the others as "your vote".
 
 import { portfolioData } from '../../data.js';
 import { requireAdmin } from './access.js';
+import { ipHash as hashIp } from './ip.js';
+
+const MAX_VOTES_PER_IP = 20;
 
 // ── time helpers ─────────────────────────────────────────────────
 
@@ -45,11 +50,6 @@ function nextWeekKey(weekKey) {
 }
 
 // ── helpers ──────────────────────────────────────────────────────
-
-async function sha256(s) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s || ''));
-  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
-}
 
 function eligibleFolders() {
   return Object.keys(portfolioData).filter(
@@ -133,7 +133,8 @@ async function handleGet({ request, env }) {
   counts[matchup.edit_a] = counts[matchup.edit_a] || 0;
   counts[matchup.edit_b] = counts[matchup.edit_b] || 0;
 
-  // myVote: check by visitorId from query string, fall back to IP hash
+  // myVote: only this visitor's own vote. (No IP fallback — that showed
+  // another person on the same network their neighbour's vote.)
   const url = new URL(request.url);
   const visitorId = (url.searchParams.get('visitorId') || '').trim();
   let myVote = null;
@@ -141,17 +142,6 @@ async function handleGet({ request, env }) {
     const row = await env.DB
       .prepare('SELECT edit FROM vote_cast WHERE week_key = ? AND visitor_id = ?')
       .bind(weekKey, visitorId)
-      .first();
-    if (row) myVote = row.edit;
-  }
-  if (!myVote) {
-    const ip = request.headers.get('CF-Connecting-IP')
-      || request.headers.get('X-Forwarded-For')?.split(',')[0]?.trim()
-      || '';
-    const ipHash = await sha256(ip);
-    const row = await env.DB
-      .prepare('SELECT edit FROM vote_cast WHERE week_key = ? AND ip_hash = ? ORDER BY created_at ASC LIMIT 1')
-      .bind(weekKey, ipHash)
       .first();
     if (row) myVote = row.edit;
   }
@@ -196,32 +186,48 @@ async function handlePost({ request, env }) {
       ? visitorIdRaw
       : crypto.randomUUID();
 
-  const ip = request.headers.get('CF-Connecting-IP')
-    || request.headers.get('X-Forwarded-For')?.split(',')[0]?.trim()
-    || '0.0.0.0';
-  const ipHash = await sha256(ip);
+  const ipHash = await hashIp(request, env);
 
-  // Anti-double-vote — by visitor first, then by IP. Returns gracefully if
-  // the visitor has already cast for this week.
+  const alreadyVoted = (row) => jsonResponse(
+    { error: 'already voted', message: 'You already voted this week.', myVote: row.edit },
+    409
+  );
+
+  // One vote per visitor and week — returns the visitor's own earlier vote.
   const existing = await env.DB
-    .prepare(
-      `SELECT edit FROM vote_cast
-       WHERE week_key = ? AND (visitor_id = ? OR ip_hash = ?)
-       ORDER BY created_at ASC LIMIT 1`
-    )
-    .bind(weekKey, visitorId, ipHash)
+    .prepare('SELECT edit FROM vote_cast WHERE week_key = ? AND visitor_id = ?')
+    .bind(weekKey, visitorId)
     .first();
-  if (existing) {
+  if (existing) return alreadyVoted(existing);
+
+  // Soft per-IP cap against scripted ballot stuffing. Never reveals what
+  // the others on this IP voted.
+  const fromIp = await env.DB
+    .prepare('SELECT COUNT(*) AS n FROM vote_cast WHERE week_key = ? AND ip_hash = ?')
+    .bind(weekKey, ipHash)
+    .first();
+  if ((Number(fromIp?.n) || 0) >= MAX_VOTES_PER_IP) {
     return jsonResponse(
-      { error: 'already voted', message: 'You already voted this week.', myVote: existing.edit },
-      409
+      { error: 'rate-limit', message: 'Too many votes from this network this week.' },
+      429
     );
   }
 
-  await env.DB.prepare(
-    `INSERT INTO vote_cast (week_key, visitor_id, ip_hash, edit, created_at)
-     VALUES (?, ?, ?, ?, ?)`
-  ).bind(weekKey, visitorId, ipHash, edit, Date.now()).run();
+  try {
+    await env.DB.prepare(
+      `INSERT INTO vote_cast (week_key, visitor_id, ip_hash, edit, created_at)
+       VALUES (?, ?, ?, ?, ?)`
+    ).bind(weekKey, visitorId, ipHash, edit, Date.now()).run();
+  } catch {
+    // Primary key (week_key, visitor_id): a parallel request from the same
+    // visitor won the race. Report that vote instead of a 500.
+    const row = await env.DB
+      .prepare('SELECT edit FROM vote_cast WHERE week_key = ? AND visitor_id = ?')
+      .bind(weekKey, visitorId)
+      .first();
+    if (row) return alreadyVoted(row);
+    return jsonResponse({ error: 'vote failed' }, 502);
+  }
 
   // Return fresh counts
   const tallyRows = await env.DB

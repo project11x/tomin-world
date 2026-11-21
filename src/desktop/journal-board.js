@@ -65,7 +65,7 @@ export function renderBoard(host) {
 async function loadAndPaintPins(grid) {
   if (!grid) return;
   try {
-    const res = await fetch('/api/pinboard');
+    const res = await fetch(`/api/pinboard?visitorId=${encodeURIComponent(getVisitorId())}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     const pins = data.pins || [];
@@ -86,8 +86,7 @@ function paintPins(grid, pins) {
     `;
     return;
   }
-  const myId = getVisitorId();
-  grid.innerHTML = pins.map((pin) => renderPinHTML(pin, pin.visitorId === myId)).join('');
+  grid.innerHTML = pins.map((pin) => renderPinHTML(pin, pin.isMine === true)).join('');
 }
 
 function renderPinHTML(pin, isMine) {
