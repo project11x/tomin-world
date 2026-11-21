@@ -12,4 +12,6 @@
 ## Offene Punkte (Stand 2026-11-21)
 
 - Worker-Secret `IP_HASH_SECRET` ist gesetzt (2026-11-21) und darf nicht neu gesetzt werden, sonst greifen die laufenden Rate-Limits (Pins 24 h, Votes Woche, Passport) einmalig nicht.
-- **GitHub-Secret `CLOUDFLARE_API_TOKEN` braucht zusätzlich „D1: Edit“**, sonst bricht der Deploy in GitHub Actions jetzt bei `npm run migrate` ab (lokal über `publish.sh` geht es mit dem `wrangler login`). Ungeprüft — beim ersten roten Actions-Lauf hier nachsehen.
+- **GitHub-Deploy ist rot, bis der Token „D1: Edit“ hat:** Dem GitHub-Secret `CLOUDFLARE_API_TOKEN` fehlt das D1-Recht, deshalb bricht `.github/workflows/deploy.yml` bei `npm run migrate` ab (Fehler 7403, bestätigt am 2026-11-21) — *bevor* deployt wird, die Live-Seite bleibt also unverändert. Bis das behoben ist, nach jedem Code-Push lokal `npm run deploy` ausführen (der lokale `wrangler login` hat D1-Rechte); `publish.sh` macht das ohnehin. Behebung: im Cloudflare-Dashboard unter My Profile → API Tokens den Token um „Account → D1 → Edit“ erweitern.
+- **CI (`ci.yml`) ist rot, unabhängig davon:** `ubuntu-latest` ist jetzt Ubuntu 26.04, darauf installiert Playwright 1.59 kein Chromium. Fix: `runs-on: ubuntu-24.04` oder Playwright aktualisieren.
+- Der Security-Stand vom 2026-11-21 (Commit `42ca8d8`) ist live (lokal deployt, Version `040b4240`).
