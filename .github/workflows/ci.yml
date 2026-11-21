@@ -8,7 +8,10 @@ on:
 
 jobs:
   lint-test-build:
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest moved to 26.04, where Playwright 1.59 can't
+    # install Chromium (`--with-deps` fails before any test runs). Move
+    # forward once Playwright supports it.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 

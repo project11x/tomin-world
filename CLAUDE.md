@@ -13,4 +13,4 @@
 
 - Worker-Secret `IP_HASH_SECRET` ist gesetzt (2026-11-21) und darf nicht neu gesetzt werden, sonst greifen die laufenden Rate-Limits (Pins 24 h, Votes Woche, Passport) einmalig nicht.
 - Der GitHub-Deploy läuft wieder grün (seit 2026-11-21): Das GitHub-Secret `CLOUDFLARE_API_TOKEN` ist der API-Token **„Edit Cloudflare Workers“** (der mit passendem „Last used“; ein gleichnamiger zweiter wurde nie benutzt) und hat jetzt auch D1 Read + Edit. Braucht der Deploy künftig ein weiteres Cloudflare-Produkt, muss dieser Token erweitert werden — sonst bricht Actions mit Fehler 7403 ab.
-- **CI (`ci.yml`) ist rot, unabhängig vom Deploy:** `ubuntu-latest` ist jetzt Ubuntu 26.04, darauf installiert Playwright 1.59 kein Chromium. Fix: `runs-on: ubuntu-24.04` oder Playwright aktualisieren.
+- CI (`ci.yml`) läuft auf `ubuntu-24.04` statt `ubuntu-latest`, weil Playwright 1.59 auf Ubuntu 26.04 kein Chromium installieren kann (2026-11-21). Zurück auf `ubuntu-latest`, sobald Playwright aktualisiert ist und 26.04 unterstützt.
