@@ -63,7 +63,7 @@ cd "$REPO_DIR"
 #   - every magazine subfolder under "TOMIN INDEX.TXT/" (each is its
 #     own publishable unit per sync.cjs's special handling)
 # ─────────────────────────────────────────────────────────────────────
-EXCLUDED="node_modules dist public src tests test-results functions icons playwright-report .git .github .vite migrations .cache .wrangler .husky .claude"
+EXCLUDED="node_modules dist public src tests test-results functions icons playwright-report .git .github .vite migrations .cache .wrangler .husky .claude docs"
 list_publishable() {
   local entry name
   for entry in "$REPO_DIR"/*/; do
@@ -159,7 +159,7 @@ fi
 
 # Reject names that sync.cjs ignores
 case "$PROJECT" in
-  node_modules|dist|public|src|tests|test-results|functions|icons|playwright-report|.git|.github|.vite|migrations|.cache|.wrangler|.husky|.claude)
+  node_modules|dist|public|src|tests|test-results|functions|icons|playwright-report|.git|.github|.vite|migrations|.cache|.wrangler|.husky|.claude|docs)
     echo -e "${RED}✗ '$PROJECT' is in sync.cjs's EXCLUDED_FOLDERS — it will never appear on the site.${NC}"
     exit 1
     ;;

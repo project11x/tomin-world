@@ -827,16 +827,6 @@ export const portfolioData = {
       "isVideo": true
     }
   ],
-  "docs": [
-    {
-      "name": "FEATURES.md",
-      "type": "File",
-      "size": "17.9 KB",
-      "date": "Nov 21, 2026",
-      "src": "docs/FEATURES.md?v=1795268541280",
-      "isVideo": false
-    }
-  ],
   "ftlotg": [
     {
       "name": "ftlotg.mp4",
@@ -1032,4 +1022,4 @@ export const portfolioData = {
     }
   ]
 };
-export const globalLatestFileTime = 1795215600000;
+export const globalLatestFileTime = 1794783600000;

@@ -72,6 +72,10 @@ const EXCLUDED_FOLDERS = new Set([
     '.wrangler',
     '.husky',
     '.claude',
+    // Repo documentation (docs/FEATURES.md). It is tracked in git, so in a
+    // CI checkout it was the only folder found and replaced the whole
+    // baked portfolio with { docs } (2026-11-16 → only valueME on mobile).
+    'docs',
 ]);
 
 function generateData() {
@@ -205,6 +209,13 @@ function generateData() {
     // Overwriting with {} would wipe out the baked portfolio data.
     if (Object.keys(portfolioData).length === 0) {
         console.log('⚠ No local media folders found — keeping existing data.js.');
+        return;
+    }
+    // CI (GitHub Actions sets CI=true) never has the media folders — they are
+    // gitignored and live on R2. Whatever it finds is a repo folder, not the
+    // portfolio, so the committed data.js is always the truth there.
+    if (process.env.CI) {
+        console.log('⚠ CI build — keeping the committed data.js.');
         return;
     }
 

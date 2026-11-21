@@ -140,7 +140,7 @@ Alle dynamischen GET-Endpoints folgen der Edge-Cache-Konvention: `caches.default
 
 | Route | Methoden | Zweck | Auth |
 |---|---|---|---|
-| `/api/portfolio` | GET | Live-R2-Listing des Portfolios | — (edge-cached) |
+| `/api/portfolio` | GET | Live-R2-Listing des Portfolios (Magazinseiten in Seitenreihenfolge, wie `data.js`) | — (edge-cached) |
 | `/api/status` | PUT | Admin setzt Status-Text (committet `public/status.json` via GitHub) | CF Access JWT |
 | `/api/commits` | GET | Gecachter GitHub-Commits-Proxy fürs Changelog-Widget (schont das 60/h-Limit) | — |
 | `/api/daily-frame` | GET | Tages-Puzzle aus `frames-pool.json` (nur approved) | — (edge-cached) |

@@ -36,7 +36,7 @@ const EXCLUDED_FOLDERS = new Set([
   'node_modules', 'dist', 'public', 'src', 'tests', 'test-results',
   'functions', 'icons', 'playwright-report', '.git', '.github', '.vite',
   'migrations', '.cache', '.wrangler', '.husky', '.claude',
-  'game',
+  'game', 'docs',
 ]);
 
 const VIDEO_EXTS = new Set(['.mp4', '.mov', '.webm', '.mkv']);
@@ -189,8 +189,16 @@ export async function onRequestGet({ env, waitUntil }) {
     portfolioData[folder].push(makeFileEntry(fileName, obj, srcKey));
   }
 
-  // Sort each folder: videos first, then alphabetical.
+  // Sort each folder: videos first, then alphabetical. Magazine pages are
+  // the exception: they are read in page order (1, 2, …, 7.mp4, 7.png, …),
+  // exactly like sync.cjs bakes them — videos first put 032C's clips in
+  // front of page 1.
   for (const key of Object.keys(portfolioData)) {
+    if (key.startsWith('TOMIN INDEX.TXT/')) {
+      portfolioData[key].sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+      continue;
+    }
     portfolioData[key].sort((a, b) => {
       if (a.isVideo && !b.isVideo) return -1;
       if (!a.isVideo && b.isVideo) return 1;
